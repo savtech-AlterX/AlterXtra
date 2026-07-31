@@ -13,12 +13,12 @@ export default function Loading() {
   useEffect(() => {
     Animated.timing(progress, {
       toValue: 1,
-      duration: 1400,
+      duration: 2800,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
 
-    const timer = setTimeout(() => router.replace('/(tabs)'), 1600);
+    const timer = setTimeout(() => router.replace('/(tabs)'), 3000);
     return () => clearTimeout(timer);
   }, []);
 
