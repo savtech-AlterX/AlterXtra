@@ -5,16 +5,23 @@ const SETTINGS_KEY = 'alterx:settings:v1';
 
 type Settings = {
   appLockEnabled: boolean;
+  dailyReminderEnabled: boolean;
+  dailyReminderHour: number;
+  dailyReminderMinute: number;
 };
 
 const defaultSettings: Settings = {
   appLockEnabled: false,
+  dailyReminderEnabled: false,
+  dailyReminderHour: 19,
+  dailyReminderMinute: 0,
 };
 
 type SettingsContextValue = {
   settings: Settings;
   isLoaded: boolean;
   setAppLockEnabled: (enabled: boolean) => void;
+  setDailyReminder: (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -41,9 +48,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, appLockEnabled: enabled }));
   }, []);
 
+  const setDailyReminder = useCallback(
+    (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => {
+      setSettings((prev) => ({ ...prev, ...partial }));
+    },
+    []
+  );
+
   const value = useMemo(
-    () => ({ settings, isLoaded, setAppLockEnabled }),
-    [settings, isLoaded, setAppLockEnabled]
+    () => ({ settings, isLoaded, setAppLockEnabled, setDailyReminder }),
+    [settings, isLoaded, setAppLockEnabled, setDailyReminder]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

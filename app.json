@@ -44,6 +44,12 @@
         {
           "faceIDPermission": "AlterX uses Face ID to keep your identity data private if you enable App Lock."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#03050f"
+        }
       ]
     ],
     "extra": {

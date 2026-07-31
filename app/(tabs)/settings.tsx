@@ -6,16 +6,50 @@ import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { exportBackup, importBackup } from '../../src/lib/backup';
+import { disableDailyReminder, enableDailyReminder } from '../../src/lib/notifications';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
 import { colors } from '../../src/theme/colors';
 import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
+function formatTime(hour: number, minute: number) {
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const h12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${h12}:${String(minute).padStart(2, '0')} ${period}`;
+}
+
 export default function Settings() {
   const router = useRouter();
   const { data, resetAll, restoreAll } = useAppData();
-  const { settings, setAppLockEnabled } = useSettings();
+  const { settings, setAppLockEnabled, setDailyReminder } = useSettings();
   const [backupBusy, setBackupBusy] = useState(false);
+  const [reminderBusy, setReminderBusy] = useState(false);
+
+  async function handleReminderToggle(enabled: boolean) {
+    setReminderBusy(true);
+    if (enabled) {
+      const result = await enableDailyReminder(settings.dailyReminderHour, settings.dailyReminderMinute);
+      if (result.ok) {
+        setDailyReminder({ dailyReminderEnabled: true });
+      } else {
+        Alert.alert('Could not enable reminder', result.reason);
+      }
+    } else {
+      await disableDailyReminder();
+      setDailyReminder({ dailyReminderEnabled: false });
+    }
+    setReminderBusy(false);
+  }
+
+  async function adjustReminderTime(deltaMinutes: number) {
+    const total = (settings.dailyReminderHour * 60 + settings.dailyReminderMinute + deltaMinutes + 24 * 60) % (24 * 60);
+    const hour = Math.floor(total / 60);
+    const minute = total % 60;
+    setDailyReminder({ dailyReminderHour: hour, dailyReminderMinute: minute });
+    if (settings.dailyReminderEnabled) {
+      await enableDailyReminder(hour, minute);
+    }
+  }
 
   async function handleExport() {
     setBackupBusy(true);
@@ -105,6 +139,51 @@ export default function Settings() {
         </GlowCard>
       )}
 
+      {Platform.OS !== 'web' && (
+        <GlowCard style={styles.card}>
+          <View style={styles.lockCard}>
+            <View style={styles.lockText}>
+              <Text style={typography.label}>DAILY REMINDER</Text>
+              <Text style={styles.lockDesc}>
+                One gentle nudge a day to check in — log a habit, review a goal, or write to your future self.
+              </Text>
+            </View>
+            <Switch
+              value={settings.dailyReminderEnabled}
+              onValueChange={handleReminderToggle}
+              disabled={reminderBusy}
+              trackColor={{ false: colors.borderDim, true: colors.glow }}
+              thumbColor={colors.textPrimary}
+            />
+          </View>
+          {settings.dailyReminderEnabled && (
+            <View style={styles.timeRow}>
+              <Text style={styles.timeValue}>{formatTime(settings.dailyReminderHour, settings.dailyReminderMinute)}</Text>
+              <View style={styles.timeSteppers}>
+                <Ionicons
+                  name="chevron-back"
+                  size={18}
+                  color={colors.glow}
+                  style={iconGlow}
+                  onPress={() => adjustReminderTime(-15)}
+                  accessibilityRole="button"
+                  accessibilityLabel="15 minutes earlier"
+                />
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={colors.glow}
+                  style={iconGlow}
+                  onPress={() => adjustReminderTime(15)}
+                  accessibilityRole="button"
+                  accessibilityLabel="15 minutes later"
+                />
+              </View>
+            </View>
+          )}
+        </GlowCard>
+      )}
+
       <GlowCard style={styles.card}>
         <Text style={typography.label}>BACKUP</Text>
         <Text style={styles.lockDesc}>
@@ -165,6 +244,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     color: colors.textSecondary,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderDim,
+  },
+  timeValue: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 16,
+    color: colors.textPrimary,
+    ...glowShadow,
+  },
+  timeSteppers: {
+    flexDirection: 'row',
+    gap: 18,
   },
   value: {
     fontFamily: typography.cardTitle.fontFamily,
