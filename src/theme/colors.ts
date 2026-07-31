@@ -1,8 +1,11 @@
+// Colors sampled directly from the reference design (pixel-picked from the
+// provided screenshots), not eyeballed. Card interiors are near-pure black
+// with almost no fill tint — the border + glow alone define the card.
 export const colors = {
-  background: '#020408',
+  background: '#000000',
   backgroundElevated: '#050b14',
-  panel: 'rgba(9, 22, 38, 0.55)',
-  panelSolid: '#0a1420',
+  panel: 'rgba(2, 6, 16, 0.65)',
+  panelSolid: '#020408',
 
   glow: '#3fa9ff',
   glowStrong: '#63c2ff',
@@ -14,7 +17,8 @@ export const colors = {
   textSecondary: '#7fa8c9',
   textMuted: '#4d6b85',
 
-  accentTeal: '#4ee1c9',
+  // Sampled from the "build your reality" tagline in the reference.
+  accentTeal: '#72ddf2',
   danger: '#ff4d5e',
   success: '#3fe08a',
   warning: '#ffb648',

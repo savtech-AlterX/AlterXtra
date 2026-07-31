@@ -1,14 +1,17 @@
 import { colors } from './colors';
 
-// "LCD" titles -> Orbitron (blocky, geometric, HUD-style display font).
-// Body / "Spaceline" text -> Rajdhani (clean sci-fi-adjacent sans, highly legible).
+// Titles -> the actual "LCD" font (Samuel Reynolds, freeware, segmented
+// display face). LCD2 has wider gaps between segments, more legible at
+// smaller sizes; plain LCD reads better large. Both are uppercase-only.
+// Body text -> the actual "Spaceline" font (Din Studio, free for personal
+// use — a commercial license is needed if this app is published/sold).
 export const fonts = {
-  title: 'Orbitron_700Bold',
-  titleMedium: 'Orbitron_600SemiBold',
-  titleRegular: 'Orbitron_500Medium',
-  body: 'Rajdhani_500Medium',
-  bodyBold: 'Rajdhani_700Bold',
-  bodyLight: 'Rajdhani_400Regular',
+  title: 'LCD-Bold',
+  titleMedium: 'LCD2-Bold',
+  titleRegular: 'LCD2-Bold',
+  body: 'Spaceline-Regular',
+  bodyBold: 'Spaceline-Regular',
+  bodyLight: 'Spaceline-Regular',
 };
 
 // Shared neon-glow halo, reused on titles and icons throughout the app.

@@ -2,10 +2,9 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
-import { IdentityMark } from '../../src/components/IdentityMark';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
 import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
@@ -57,7 +56,7 @@ export default function Home() {
       <View style={styles.topRow}>
         <IconBox icon="create-outline" label="QUICK NOTES" />
         <View style={styles.wordmarkBlock}>
-          <Text style={[typography.wordmark, styles.wordmark]}>ALTER X</Text>
+          <Image source={require('../../assets/wordmark.png')} style={styles.wordmarkImage} resizeMode="contain" />
           <Text style={styles.wordmarkSubtitle}>IDENTITY TRANSFORMATION</Text>
         </View>
         <Pressable style={styles.iconBox}>
@@ -80,9 +79,7 @@ export default function Home() {
           end={{ x: 1, y: 0 }}
           style={styles.heroAccentLine}
         />
-        <View style={styles.heroIcon}>
-          <IdentityMark size={50} />
-        </View>
+        <Image source={require('../../assets/identity-mark.png')} style={styles.heroIcon} resizeMode="contain" />
         <Text style={[typography.cardTitle, styles.heroTitle]}>LIFESTYLE{'\n'}REPROGRAMMING</Text>
         <Text style={styles.heroTagline}>build your reality</Text>
         <Pressable style={styles.heroArrow} onPress={() => router.push('/onboarding/identity')}>
@@ -148,8 +145,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  wordmark: {
-    fontSize: 22,
+  wordmarkImage: {
+    width: 200,
+    height: 39,
   },
   wordmarkSubtitle: {
     fontFamily: typography.label.fontFamily,
@@ -179,14 +177,9 @@ const styles = StyleSheet.create({
     height: 2,
   },
   heroIcon: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 18,
+    width: 120,
+    height: 203,
+    marginBottom: 4,
   },
   heroTitle: {
     textAlign: 'center',
@@ -196,7 +189,7 @@ const styles = StyleSheet.create({
   heroTagline: {
     fontFamily: typography.body.fontFamily,
     fontStyle: 'italic',
-    color: colors.glowStrong,
+    color: colors.accentTeal,
     marginTop: 8,
     marginBottom: 20,
   },
