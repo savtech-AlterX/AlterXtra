@@ -53,6 +53,13 @@ export default function Settings() {
       />
 
       <GlowButton
+        label="PRIVACY POLICY"
+        variant="outline"
+        icon={<Ionicons name="shield-checkmark-outline" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push('/privacy-policy')}
+      />
+
+      <GlowButton
         label="RESET ALL DATA"
         variant="outline"
         icon={<Ionicons name="trash" size={16} color={colors.danger} />}

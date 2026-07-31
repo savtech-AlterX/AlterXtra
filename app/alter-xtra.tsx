@@ -60,11 +60,8 @@ export default function AlterXtra() {
         </GlowCard>
       ))}
 
-      <GlowButton label="SUBSCRIBE" style={styles.spacer} />
-      <Text style={styles.disclaimer}>
-        Subscriptions aren't wired up yet — this needs App Store / Play Store in-app purchase setup before it can
-        actually charge anyone.
-      </Text>
+      <GlowButton label="COMING SOON" disabled style={styles.spacer} />
+      <Text style={styles.disclaimer}>Alter-Xtra isn't available to subscribe to yet — check back soon.</Text>
     </HudScreen>
   );
 }
