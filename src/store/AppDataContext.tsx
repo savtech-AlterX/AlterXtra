@@ -5,6 +5,7 @@ import {
   AppData,
   emptyAppData,
   FutureSelfLetter,
+  FutureSelfVideo,
   Goal,
   GoalStep,
   HabitReprogram,
@@ -27,6 +28,8 @@ type AppDataContextValue = {
   setIdentity: (identity: Identity) => void;
   addJournalEntry: (date: string, title: string, body: string) => void;
   addFutureSelfLetter: (title: string, body: string) => void;
+  addFutureSelfVideo: (question: string, videoUri: string, answerDate: string) => void;
+  addFutureSelfVideoReply: (id: string, replyVideoUri: string) => void;
   addGoal: (objective: string, targetDate: string, steps: string[]) => void;
   toggleGoalStep: (goalId: string, stepIndex: number) => void;
   addLogEntry: (aligned: boolean, proof: string, correction: string) => void;
@@ -89,6 +92,26 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       body,
     };
     setData((prev) => ({ ...prev, futureSelfLetters: [letter, ...prev.futureSelfLetters] }));
+  }, []);
+
+  const addFutureSelfVideo = useCallback((question: string, videoUri: string, answerDate: string) => {
+    const video: FutureSelfVideo = {
+      id: makeId(),
+      createdAt: new Date().toISOString(),
+      question,
+      videoUri,
+      answerDate,
+    };
+    setData((prev) => ({ ...prev, futureSelfVideos: [video, ...prev.futureSelfVideos] }));
+  }, []);
+
+  const addFutureSelfVideoReply = useCallback((id: string, replyVideoUri: string) => {
+    setData((prev) => ({
+      ...prev,
+      futureSelfVideos: prev.futureSelfVideos.map((v) =>
+        v.id === id ? { ...v, replyVideoUri, repliedAt: new Date().toISOString() } : v
+      ),
+    }));
   }, []);
 
   const addGoal = useCallback((objective: string, targetDate: string, steps: string[]) => {
@@ -202,6 +225,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setIdentity,
       addJournalEntry,
       addFutureSelfLetter,
+      addFutureSelfVideo,
+      addFutureSelfVideoReply,
       addGoal,
       toggleGoalStep,
       addLogEntry,
@@ -221,6 +246,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setIdentity,
       addJournalEntry,
       addFutureSelfLetter,
+      addFutureSelfVideo,
+      addFutureSelfVideoReply,
       addGoal,
       toggleGoalStep,
       addLogEntry,

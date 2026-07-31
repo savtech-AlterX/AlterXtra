@@ -47,6 +47,16 @@ export type FutureSelfLetter = {
   body: string;
 };
 
+export type FutureSelfVideo = {
+  id: string;
+  createdAt: string;
+  question: string;
+  videoUri: string;
+  answerDate: string;
+  replyVideoUri?: string;
+  repliedAt?: string;
+};
+
 export type GoalStep = {
   text: string;
   done: boolean;
@@ -79,6 +89,7 @@ export type AppData = {
   identity: Identity | null;
   journalEntries: JournalEntry[];
   futureSelfLetters: FutureSelfLetter[];
+  futureSelfVideos: FutureSelfVideo[];
   goals: Goal[];
   logEntries: LogEntry[];
   albums: Album[];
@@ -91,6 +102,7 @@ export const emptyAppData: AppData = {
   identity: null,
   journalEntries: [],
   futureSelfLetters: [],
+  futureSelfVideos: [],
   goals: [],
   logEntries: [],
   albums: [],
