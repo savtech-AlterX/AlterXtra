@@ -107,7 +107,7 @@ export async function importBackup(): Promise<ImportResult> {
   }
 }
 
-function validateBackup(parsed: unknown): ImportResult {
+export function validateBackup(parsed: unknown): ImportResult {
   if (
     typeof parsed !== 'object' ||
     parsed === null ||
