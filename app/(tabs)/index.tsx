@@ -54,15 +54,21 @@ export default function Home() {
   return (
     <HudScreen>
       <View style={styles.topRow}>
-        <IconBox icon="create-outline" label="QUICK NOTES" />
+        <IconBox icon="create-outline" label="QUICK NOTES" onPress={() => router.push('/quick-notes')} />
         <View style={styles.wordmarkBlock}>
           <Image source={require('../../assets/wordmark.png')} style={styles.wordmarkImage} resizeMode="contain" />
           <Text style={styles.wordmarkSubtitle}>IDENTITY TRANSFORMATION</Text>
         </View>
-        <Pressable style={styles.iconBox}>
-          <MaterialCommunityIcons name="crown-outline" size={20} color={colors.glow} style={iconGlow} />
-          <Text style={styles.iconBoxLabel}>ALTER-XTRA</Text>
-        </Pressable>
+        <View style={styles.rightIcons}>
+          <Pressable style={styles.iconBoxSmall} onPress={() => router.push('/limited-beliefs')}>
+            <Ionicons name="bulb-outline" size={18} color={colors.glow} style={iconGlow} />
+            <Text style={styles.iconBoxLabel}>LB</Text>
+          </Pressable>
+          <Pressable style={styles.iconBoxSmall} onPress={() => router.push('/alter-xtra')}>
+            <MaterialCommunityIcons name="crown-outline" size={18} color={colors.glow} style={iconGlow} />
+            <Text style={styles.iconBoxLabel}>XTRA</Text>
+          </Pressable>
+        </View>
       </View>
 
       <View>
@@ -82,7 +88,7 @@ export default function Home() {
         <Image source={require('../../assets/identity-mark.png')} style={styles.heroIcon} resizeMode="contain" />
         <Text style={[typography.cardTitle, styles.heroTitle]}>LIFESTYLE{'\n'}REPROGRAMMING</Text>
         <Text style={styles.heroTagline}>build your reality</Text>
-        <Pressable style={styles.heroArrow} onPress={() => router.push('/onboarding/identity')}>
+        <Pressable style={styles.heroArrow} onPress={() => router.push('/habit-reprogramming')}>
           <Ionicons name="arrow-forward" size={20} color={colors.glow} style={iconGlow} />
         </Pressable>
       </GlowCard>
@@ -125,8 +131,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   iconBox: {
-    width: 68,
-    height: 60,
+    width: 58,
+    height: 54,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -135,9 +141,23 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 4,
   },
+  rightIcons: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  iconBoxSmall: {
+    width: 46,
+    height: 54,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
   iconBoxLabel: {
     fontFamily: typography.label.fontFamily,
-    fontSize: 8,
+    fontSize: 7,
     color: colors.glow,
     textAlign: 'center',
   },
@@ -146,8 +166,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   wordmarkImage: {
-    width: 200,
-    height: 39,
+    width: 150,
+    height: 29,
   },
   wordmarkSubtitle: {
     fontFamily: typography.label.fontFamily,

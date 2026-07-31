@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "alterxtra",
-    "backgroundColor": "#000000",
+    "backgroundColor": "#03050f",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alterxtra.app"
@@ -15,7 +15,7 @@
     "android": {
       "package": "com.alterxtra.app",
       "adaptiveIcon": {
-        "backgroundColor": "#000000",
+        "backgroundColor": "#03050f",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"

@@ -13,8 +13,12 @@ import { AppIconChoice } from '../../src/store/types';
 
 export default function ChooseIdentity() {
   const router = useRouter();
-  const { icon } = useLocalSearchParams<{ icon: AppIconChoice }>();
-  const { setIdentity } = useAppData();
+  const { icon, name, email } = useLocalSearchParams<{
+    icon: AppIconChoice;
+    name?: string;
+    email?: string;
+  }>();
+  const { data, setIdentity } = useAppData();
   const [query, setQuery] = useState('');
   const [customName, setCustomName] = useState('');
 
@@ -24,8 +28,13 @@ export default function ChooseIdentity() {
   );
 
   function embody(label: string) {
-    setIdentity({ archetype: label, icon: icon ?? 'mystery', name: 'Sav' });
-    router.replace('/(tabs)');
+    setIdentity({
+      archetype: label,
+      icon: icon ?? data.identity?.icon ?? 'mystery',
+      name: name || data.identity?.name || 'there',
+      email: email || data.identity?.email,
+    });
+    router.push('/onboarding/loading');
   }
 
   return (

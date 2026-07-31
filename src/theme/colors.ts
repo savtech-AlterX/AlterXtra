@@ -1,11 +1,11 @@
 // Colors sampled directly from the reference design (pixel-picked from the
-// provided screenshots), not eyeballed. Card interiors are near-pure black
-// with almost no fill tint — the border + glow alone define the card.
+// provided screenshots), then deepened to navy per explicit request rather
+// than staying pure black.
 export const colors = {
-  background: '#000000',
-  backgroundElevated: '#050b14',
-  panel: 'rgba(2, 6, 16, 0.65)',
-  panelSolid: '#020408',
+  background: '#03050f',
+  backgroundElevated: '#060a1a',
+  panel: 'rgba(6, 12, 28, 0.7)',
+  panelSolid: '#050912',
 
   glow: '#3fa9ff',
   glowStrong: '#63c2ff',

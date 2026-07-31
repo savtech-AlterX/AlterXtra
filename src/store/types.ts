@@ -4,6 +4,32 @@ export type Identity = {
   archetype: string;
   icon: AppIconChoice;
   name: string;
+  email?: string;
+};
+
+export type LimitedBelief = {
+  id: string;
+  createdAt: string;
+  belief: string;
+  origin: string;
+  replacement: string;
+};
+
+export type HabitReprogram = {
+  id: string;
+  createdAt: string;
+  trigger: string;
+  oldHabit: string;
+  replacement: string;
+  reward: string;
+  identityStatement: string;
+};
+
+export type QuickNote = {
+  id: string;
+  createdAt: string;
+  title: string;
+  body: string;
 };
 
 export type JournalEntry = {
@@ -49,6 +75,9 @@ export type AppData = {
   goals: Goal[];
   logEntries: LogEntry[];
   albums: Album[];
+  limitedBeliefs: LimitedBelief[];
+  habitReprograms: HabitReprogram[];
+  quickNotes: QuickNote[];
 };
 
 export const emptyAppData: AppData = {
@@ -58,4 +87,7 @@ export const emptyAppData: AppData = {
   goals: [],
   logEntries: [],
   albums: [],
+  limitedBeliefs: [],
+  habitReprograms: [],
+  quickNotes: [],
 };

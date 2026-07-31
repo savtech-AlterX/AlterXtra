@@ -53,7 +53,7 @@ export default function ChooseIcon() {
         <GlowButton
           label="CONTINUE"
           icon={<Ionicons name="arrow-forward" size={16} color="#02141f" />}
-          onPress={() => router.push({ pathname: '/onboarding/identity', params: { icon: selected } })}
+          onPress={() => router.push({ pathname: '/onboarding/account', params: { icon: selected } })}
         />
       </View>
     </HudScreen>

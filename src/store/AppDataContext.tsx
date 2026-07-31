@@ -6,9 +6,12 @@ import {
   emptyAppData,
   FutureSelfLetter,
   Goal,
+  HabitReprogram,
   Identity,
   JournalEntry,
+  LimitedBelief,
   LogEntry,
+  QuickNote,
 } from './types';
 
 const STORAGE_KEY = 'alterx:appData:v1';
@@ -28,6 +31,17 @@ type AppDataContextValue = {
   deleteLogEntry: (id: string) => void;
   addAlbum: (title: string) => Album;
   addPhotosToAlbum: (albumId: string, uris: string[]) => void;
+  addLimitedBelief: (belief: string, origin: string, replacement: string) => void;
+  addHabitReprogram: (
+    trigger: string,
+    oldHabit: string,
+    replacement: string,
+    reward: string,
+    identityStatement: string
+  ) => void;
+  addQuickNote: () => QuickNote;
+  updateQuickNote: (id: string, title: string, body: string) => void;
+  deleteQuickNote: (id: string) => void;
   resetAll: () => void;
 };
 
@@ -104,6 +118,50 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const addLimitedBelief = useCallback((belief: string, origin: string, replacement: string) => {
+    const entry: LimitedBelief = {
+      id: makeId(),
+      createdAt: new Date().toISOString(),
+      belief,
+      origin,
+      replacement,
+    };
+    setData((prev) => ({ ...prev, limitedBeliefs: [entry, ...prev.limitedBeliefs] }));
+  }, []);
+
+  const addHabitReprogram = useCallback(
+    (trigger: string, oldHabit: string, replacement: string, reward: string, identityStatement: string) => {
+      const entry: HabitReprogram = {
+        id: makeId(),
+        createdAt: new Date().toISOString(),
+        trigger,
+        oldHabit,
+        replacement,
+        reward,
+        identityStatement,
+      };
+      setData((prev) => ({ ...prev, habitReprograms: [entry, ...prev.habitReprograms] }));
+    },
+    []
+  );
+
+  const addQuickNote = useCallback(() => {
+    const note: QuickNote = { id: makeId(), createdAt: new Date().toISOString(), title: '', body: '' };
+    setData((prev) => ({ ...prev, quickNotes: [note, ...prev.quickNotes] }));
+    return note;
+  }, []);
+
+  const updateQuickNote = useCallback((id: string, title: string, body: string) => {
+    setData((prev) => ({
+      ...prev,
+      quickNotes: prev.quickNotes.map((n) => (n.id === id ? { ...n, title, body } : n)),
+    }));
+  }, []);
+
+  const deleteQuickNote = useCallback((id: string) => {
+    setData((prev) => ({ ...prev, quickNotes: prev.quickNotes.filter((n) => n.id !== id) }));
+  }, []);
+
   const resetAll = useCallback(() => {
     setData(emptyAppData);
   }, []);
@@ -120,9 +178,31 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       deleteLogEntry,
       addAlbum,
       addPhotosToAlbum,
+      addLimitedBelief,
+      addHabitReprogram,
+      addQuickNote,
+      updateQuickNote,
+      deleteQuickNote,
       resetAll,
     }),
-    [data, isLoaded, setIdentity, addJournalEntry, addFutureSelfLetter, addGoal, addLogEntry, deleteLogEntry, addAlbum, addPhotosToAlbum, resetAll]
+    [
+      data,
+      isLoaded,
+      setIdentity,
+      addJournalEntry,
+      addFutureSelfLetter,
+      addGoal,
+      addLogEntry,
+      deleteLogEntry,
+      addAlbum,
+      addPhotosToAlbum,
+      addLimitedBelief,
+      addHabitReprogram,
+      addQuickNote,
+      updateQuickNote,
+      deleteQuickNote,
+      resetAll,
+    ]
   );
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
