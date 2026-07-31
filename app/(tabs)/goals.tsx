@@ -6,7 +6,7 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
 export default function Goals() {
   const router = useRouter();
@@ -17,13 +17,13 @@ export default function Goals() {
       <View style={styles.header}>
         <Text style={typography.screenTitle}>GOALS</Text>
         <Pressable style={styles.addButton} onPress={() => router.push('/goals/new')}>
-          <Ionicons name="add" size={22} color={colors.glow} />
+          <Ionicons name="add" size={22} color={colors.glow} style={iconGlow} />
         </Pressable>
       </View>
 
       {data.goals.length === 0 && (
         <GlowCard style={styles.emptyCard}>
-          <Ionicons name="flag-outline" size={36} color={colors.glow} />
+          <Ionicons name="flag-outline" size={36} color={colors.glow} style={iconGlow} />
           <Text style={styles.emptyText}>
             No objectives yet. Tap + to set your primary objective and step plan.
           </Text>
@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.cardTitle.fontFamily,
     fontSize: 18,
     color: colors.textPrimary,
+    ...glowShadow,
   },
   goalDate: {
     fontFamily: typography.body.fontFamily,

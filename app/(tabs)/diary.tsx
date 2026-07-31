@@ -5,7 +5,7 @@ import { StyleSheet, Text } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { iconGlow, typography } from '../../src/theme/typography';
 
 export default function DiaryHub() {
   const router = useRouter();
@@ -16,13 +16,13 @@ export default function DiaryHub() {
       <Text style={styles.subtitle}>YOUR INNER WORLD</Text>
 
       <GlowCard style={styles.card} onPress={() => router.push('/diary/journal')}>
-        <Ionicons name="book" size={40} color={colors.glow} />
+        <Ionicons name="book" size={40} color={colors.glow} style={iconGlow} />
         <Text style={[typography.cardTitle, styles.cardTitle]}>JOURNAL</Text>
         <Text style={styles.cardSubtitle}>PERSONAL REFLECTIONS</Text>
       </GlowCard>
 
       <GlowCard style={styles.card} onPress={() => router.push('/diary/future-self')}>
-        <Ionicons name="sparkles" size={40} color={colors.glow} />
+        <Ionicons name="sparkles" size={40} color={colors.glow} style={iconGlow} />
         <Text style={[typography.cardTitle, styles.cardTitle]}>FUTURE SELF</Text>
         <Text style={styles.cardSubtitle}>LETTERS FORWARD IN TIME</Text>
       </GlowCard>

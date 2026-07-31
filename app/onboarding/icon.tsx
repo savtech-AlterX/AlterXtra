@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { iconGlow, typography } from '../../src/theme/typography';
 import { AppIconChoice } from '../../src/store/types';
 
 const OPTIONS: { key: AppIconChoice; icon: keyof typeof Ionicons.glyphMap }[] = [
@@ -39,6 +39,7 @@ export default function ChooseIcon() {
                 name={opt.icon}
                 size={44}
                 color={isSelected ? colors.glowStrong : colors.glow}
+                style={iconGlow}
               />
             </Pressable>
           );

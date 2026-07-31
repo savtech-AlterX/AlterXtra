@@ -7,7 +7,7 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { iconGlow, typography } from '../../src/theme/typography';
 
 export default function AlbumDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -42,12 +42,12 @@ export default function AlbumDetail() {
     <HudScreen>
       <StackHeader
         title={album.title.toUpperCase()}
-        right={<Ionicons name="add" size={22} color={colors.glow} onPress={pickImages} />}
+        right={<Ionicons name="add" size={22} color={colors.glow} style={iconGlow} onPress={pickImages} />}
       />
 
       {album.photoUris.length === 0 ? (
         <View style={styles.empty}>
-          <Ionicons name="images-outline" size={48} color={colors.glow} />
+          <Ionicons name="images-outline" size={48} color={colors.glow} style={iconGlow} />
           <Text style={styles.emptyText}>No photos yet. Tap + to add from your library.</Text>
         </View>
       ) : (

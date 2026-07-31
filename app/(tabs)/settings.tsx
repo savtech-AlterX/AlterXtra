@@ -7,7 +7,7 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
 export default function Settings() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function Settings() {
       <GlowButton
         label="CHANGE IDENTITY"
         variant="outline"
-        icon={<Ionicons name="swap-horizontal" size={16} color={colors.glow} />}
+        icon={<Ionicons name="swap-horizontal" size={16} color={colors.glow} style={iconGlow} />}
         onPress={() => router.push('/onboarding/identity')}
       />
 
@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.cardTitle.fontFamily,
     fontSize: 16,
     color: colors.textPrimary,
+    ...glowShadow,
   },
   dangerButton: {
     borderColor: colors.danger,

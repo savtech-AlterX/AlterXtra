@@ -8,7 +8,7 @@ import { HudTextInput } from '../../src/components/HudTextInput';
 import { archetypes } from '../../src/data/archetypes';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 import { AppIconChoice } from '../../src/store/types';
 
 export default function ChooseIdentity() {
@@ -42,10 +42,10 @@ export default function ChooseIdentity() {
         {filtered.map((a) => (
           <Pressable key={a.id} style={styles.archetypeCard} onPress={() => embody(a.label)}>
             <View style={styles.archetypeIcon}>
-              <Ionicons name={a.icon} size={18} color={colors.glow} />
+              <Ionicons name={a.icon} size={18} color={colors.glow} style={iconGlow} />
             </View>
             <Text style={styles.archetypeLabel}>{a.label.toUpperCase()}</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.glow} />
+            <Ionicons name="chevron-forward" size={16} color={colors.glow} style={iconGlow} />
           </Pressable>
         ))}
       </View>
@@ -100,6 +100,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textPrimary,
     letterSpacing: 1,
+    ...glowShadow,
   },
   sectionLabel: {
     marginTop: 8,

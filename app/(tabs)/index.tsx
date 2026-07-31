@@ -1,12 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
+import { IdentityMark } from '../../src/components/IdentityMark';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
 function IconBox({
   icon,
@@ -19,7 +21,7 @@ function IconBox({
 }) {
   return (
     <Pressable style={styles.iconBox} onPress={onPress}>
-      <Ionicons name={icon} size={20} color={colors.glow} />
+      <Ionicons name={icon} size={20} color={colors.glow} style={iconGlow} />
       <Text style={styles.iconBoxLabel}>{label}</Text>
     </Pressable>
   );
@@ -38,7 +40,7 @@ function GridCard({
 }) {
   return (
     <GlowCard containerStyle={styles.gridCardContainer} style={styles.gridCard} onPress={onPress}>
-      <Ionicons name={icon} size={26} color={colors.glow} />
+      <Ionicons name={icon} size={26} color={colors.glow} style={iconGlow} />
       <Text style={styles.gridTitle}>{title}</Text>
       <Text style={styles.gridSubtitle}>{subtitle}</Text>
     </GlowCard>
@@ -53,9 +55,15 @@ export default function Home() {
   return (
     <HudScreen>
       <View style={styles.topRow}>
-        <IconBox icon="create" label="QUICK NOTES" />
-        <Text style={[typography.wordmark, styles.wordmark]}>ALTER X</Text>
-        <IconBox icon="diamond" label="ALTER-XTRA" />
+        <IconBox icon="create-outline" label="QUICK NOTES" />
+        <View style={styles.wordmarkBlock}>
+          <Text style={[typography.wordmark, styles.wordmark]}>ALTER X</Text>
+          <Text style={styles.wordmarkSubtitle}>IDENTITY TRANSFORMATION</Text>
+        </View>
+        <Pressable style={styles.iconBox}>
+          <MaterialCommunityIcons name="crown-outline" size={20} color={colors.glow} style={iconGlow} />
+          <Text style={styles.iconBoxLabel}>ALTER-XTRA</Text>
+        </Pressable>
       </View>
 
       <View>
@@ -66,13 +74,19 @@ export default function Home() {
       </View>
 
       <GlowCard strong style={styles.hero}>
+        <LinearGradient
+          colors={['transparent', colors.glowStrong, 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.heroAccentLine}
+        />
         <View style={styles.heroIcon}>
-          <Ionicons name="body" size={54} color={colors.glowStrong} />
+          <IdentityMark size={50} />
         </View>
         <Text style={[typography.cardTitle, styles.heroTitle]}>LIFESTYLE{'\n'}REPROGRAMMING</Text>
         <Text style={styles.heroTagline}>build your reality</Text>
         <Pressable style={styles.heroArrow} onPress={() => router.push('/onboarding/identity')}>
-          <Ionicons name="arrow-forward" size={20} color={colors.glow} />
+          <Ionicons name="arrow-forward" size={20} color={colors.glow} style={iconGlow} />
         </Pressable>
       </GlowCard>
 
@@ -130,8 +144,18 @@ const styles = StyleSheet.create({
     color: colors.glow,
     textAlign: 'center',
   },
+  wordmarkBlock: {
+    alignItems: 'center',
+    gap: 2,
+  },
   wordmark: {
     fontSize: 22,
+  },
+  wordmarkSubtitle: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    color: colors.glowStrong,
+    letterSpacing: 3,
   },
   welcome: {
     fontFamily: typography.body.fontFamily,
@@ -144,6 +168,15 @@ const styles = StyleSheet.create({
   hero: {
     alignItems: 'center',
     paddingVertical: 32,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  heroAccentLine: {
+    position: 'absolute',
+    top: 0,
+    left: '20%',
+    right: '20%',
+    height: 2,
   },
   heroIcon: {
     width: 110,
@@ -192,6 +225,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     marginTop: 4,
+    ...glowShadow,
   },
   gridSubtitle: {
     fontFamily: typography.bodyMuted.fontFamily,

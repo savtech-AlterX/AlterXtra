@@ -6,7 +6,7 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { fonts, typography } from '../../src/theme/typography';
+import { fonts, glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -41,13 +41,13 @@ export default function LogBook() {
 
       <GlowCard style={styles.logToday} onPress={() => router.push('/logbook/new')}>
         <View style={styles.logTodayIcon}>
-          <Ionicons name="document-text-outline" size={22} color={colors.glow} />
+          <Ionicons name="document-text-outline" size={22} color={colors.glow} style={iconGlow} />
         </View>
         <View style={styles.logTodayText}>
           <Text style={styles.logTodayTitle}>LOG TODAY</Text>
           <Text style={styles.logTodaySubtitle}>Record proof, misalignment, and corrections.</Text>
         </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.glow} />
+        <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
       </GlowCard>
 
       <Text style={typography.label}>THIS WEEK</Text>
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     letterSpacing: 1,
+    ...glowShadow,
   },
   logTodaySubtitle: {
     fontFamily: typography.bodyMuted.fontFamily,

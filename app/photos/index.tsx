@@ -9,7 +9,7 @@ import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
 export default function PhotoAlbums() {
   const router = useRouter();
@@ -27,11 +27,14 @@ export default function PhotoAlbums() {
 
   return (
     <HudScreen>
-      <StackHeader title="PHOTO ALBUM" right={<Ionicons name="add" size={22} color={colors.glow} onPress={() => setCreating(true)} />} />
+      <StackHeader
+        title="PHOTO ALBUM"
+        right={<Ionicons name="add" size={22} color={colors.glow} style={iconGlow} onPress={() => setCreating(true)} />}
+      />
 
       {data.albums.length === 0 && !creating && (
         <View style={styles.empty}>
-          <Ionicons name="images-outline" size={56} color={colors.glow} />
+          <Ionicons name="images-outline" size={56} color={colors.glow} style={iconGlow} />
           <Text style={styles.emptyText}>Create your first album to store photos & videos.</Text>
           <GlowButton
             label="CREATE ALBUM"
@@ -60,14 +63,14 @@ export default function PhotoAlbums() {
               <Image source={{ uri: album.photoUris[0] }} style={styles.thumb} />
             ) : (
               <View style={styles.thumbPlaceholder}>
-                <Ionicons name="image" size={22} color={colors.glow} />
+                <Ionicons name="image" size={22} color={colors.glow} style={iconGlow} />
               </View>
             )}
             <View style={styles.albumInfo}>
               <Text style={styles.albumTitle}>{album.title}</Text>
               <Text style={styles.albumCount}>{album.photoUris.length} items</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.glow} />
+            <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
           </GlowCard>
         </Pressable>
       ))}
@@ -117,6 +120,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.cardTitle.fontFamily,
     fontSize: 15,
     color: colors.textPrimary,
+    ...glowShadow,
   },
   albumCount: {
     fontFamily: typography.bodyMuted.fontFamily,

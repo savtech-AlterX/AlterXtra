@@ -3,14 +3,14 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
+import { iconGlow, typography } from '../theme/typography';
 
 export function StackHeader({ title, right }: { title: string; right?: React.ReactNode }) {
   const router = useRouter();
   return (
     <View style={styles.row}>
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={22} color={colors.glow} />
+        <Ionicons name="chevron-back" size={22} color={colors.glow} style={iconGlow} />
       </Pressable>
       <Text style={[typography.screenTitle, styles.title]} numberOfLines={1}>
         {title}

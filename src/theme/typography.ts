@@ -11,26 +11,40 @@ export const fonts = {
   bodyLight: 'Rajdhani_400Regular',
 };
 
+// Shared neon-glow halo, reused on titles and icons throughout the app.
+export const glowShadow = {
+  textShadowColor: colors.glowDim,
+  textShadowRadius: 12,
+  textShadowOffset: { width: 0, height: 0 },
+} as const;
+
+// Pass to any @expo/vector-icons component's `style` prop for the same glow halo.
+export const iconGlow = {
+  textShadowColor: colors.glowDim,
+  textShadowRadius: 10,
+  textShadowOffset: { width: 0, height: 0 },
+} as const;
+
 export const typography = {
   wordmark: {
     fontFamily: fonts.title,
     color: colors.textPrimary,
     letterSpacing: 6,
+    ...glowShadow,
   },
   screenTitle: {
     fontFamily: fonts.title,
     fontSize: 22,
     color: colors.textPrimary,
     letterSpacing: 3,
-    textShadowColor: colors.glowDim,
-    textShadowRadius: 12,
-    textShadowOffset: { width: 0, height: 0 },
+    ...glowShadow,
   },
   cardTitle: {
     fontFamily: fonts.titleMedium,
     fontSize: 18,
     color: colors.textPrimary,
     letterSpacing: 2,
+    ...glowShadow,
   },
   label: {
     fontFamily: fonts.titleRegular,
