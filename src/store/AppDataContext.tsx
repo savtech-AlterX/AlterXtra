@@ -15,6 +15,7 @@ import {
   LogEntry,
   QuickNote,
 } from './types';
+import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
 
 const STORAGE_KEY = 'alterx:appData:v1';
 
@@ -48,6 +49,7 @@ type AppDataContextValue = {
   updateQuickNote: (id: string, title: string, body: string) => void;
   deleteQuickNote: (id: string) => void;
   resetAll: () => void;
+  restoreAll: (incoming: unknown, fromVersion: number) => void;
 };
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
@@ -59,14 +61,28 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
-        if (raw) setData({ ...emptyAppData, ...JSON.parse(raw) });
+        if (!raw) return;
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          // Corrupted storage — start clean rather than crashing on launch.
+          return;
+        }
+        if (isEnvelope(parsed)) {
+          setData(migrate(parsed.data, parsed.schemaVersion));
+        } else {
+          // Pre-migration data (no envelope) shipped as schemaVersion 1's shape.
+          setData(migrate(parsed, 1));
+        }
       })
       .finally(() => setIsLoaded(true));
   }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data)).catch(() => {});
+    const envelope = { schemaVersion: SCHEMA_VERSION, data };
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(envelope)).catch(() => {});
   }, [data, isLoaded]);
 
   const setIdentity = useCallback((identity: Identity) => {
@@ -218,6 +234,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData(emptyAppData);
   }, []);
 
+  const restoreAll = useCallback((incoming: unknown, fromVersion: number) => {
+    setData(migrate(incoming, fromVersion));
+  }, []);
+
   const value = useMemo(
     () => ({
       data,
@@ -239,6 +259,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       updateQuickNote,
       deleteQuickNote,
       resetAll,
+      restoreAll,
     }),
     [
       data,
@@ -260,6 +281,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       updateQuickNote,
       deleteQuickNote,
       resetAll,
+      restoreAll,
     ]
   );
 

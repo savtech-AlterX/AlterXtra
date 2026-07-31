@@ -15,16 +15,9 @@ export default function CreateAccount() {
   const { icon } = useLocalSearchParams<{ icon: AppIconChoice }>();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailConfirm, setEmailConfirm] = useState('');
-  const [notARobot, setNotARobot] = useState(false);
+  const [consent, setConsent] = useState(false);
 
-  const canContinue =
-    fullName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    password.length > 0 &&
-    emailConfirm.trim() === email.trim() &&
-    notARobot;
+  const canContinue = fullName.trim().length > 0 && consent;
 
   function proceed() {
     router.push({
@@ -36,13 +29,13 @@ export default function CreateAccount() {
   return (
     <HudScreen>
       <StackHeader title="" />
-      <Text style={typography.screenTitle}>CREATE YOUR{'\n'}ACCOUNT</Text>
+      <Text style={typography.screenTitle}>CREATE YOUR{'\n'}PROFILE</Text>
       <Text style={styles.subtitle}>Your transformation starts here.</Text>
 
       <Text style={typography.label}>FULL NAME</Text>
       <HudTextInput placeholder="Your name" value={fullName} onChangeText={setFullName} />
 
-      <Text style={[typography.label, styles.spacer]}>EMAIL</Text>
+      <Text style={[typography.label, styles.spacer]}>EMAIL (OPTIONAL)</Text>
       <HudTextInput
         placeholder="your@email.com"
         value={email}
@@ -50,24 +43,16 @@ export default function CreateAccount() {
         autoCapitalize="none"
         keyboardType="email-address"
       />
+      <Text style={styles.note}>
+        This is a local profile, not an account — there's no password because there's no server. Everything you
+        enter stays on this device.
+      </Text>
 
-      <Text style={[typography.label, styles.spacer]}>PASSWORD</Text>
-      <HudTextInput placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
-
-      <Text style={[typography.label, styles.spacer]}>EMAIL CONFIRMATION</Text>
-      <HudTextInput
-        placeholder="Confirm your email"
-        value={emailConfirm}
-        onChangeText={setEmailConfirm}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-
-      <Pressable style={styles.checkboxRow} onPress={() => setNotARobot((v) => !v)}>
-        <View style={[styles.checkbox, notARobot && styles.checkboxChecked]}>
-          {notARobot && <Ionicons name="checkmark" size={16} color={colors.background} style={iconGlow} />}
+      <Pressable style={styles.checkboxRow} onPress={() => setConsent((v) => !v)}>
+        <View style={[styles.checkbox, consent && styles.checkboxChecked]}>
+          {consent && <Ionicons name="checkmark" size={16} color={colors.background} style={iconGlow} />}
         </View>
-        <Text style={styles.checkboxLabel}>I confirm I am not a robot</Text>
+        <Text style={styles.checkboxLabel}>I understand my data is stored only on this device</Text>
       </Pressable>
 
       <GlowButton label="CONTINUE" disabled={!canContinue} onPress={proceed} style={styles.spacer} />
@@ -84,6 +69,13 @@ const styles = StyleSheet.create({
   },
   spacer: {
     marginTop: 6,
+  },
+  note: {
+    fontFamily: typography.body.fontFamily,
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 8,
   },
   checkboxRow: {
     flexDirection: 'row',

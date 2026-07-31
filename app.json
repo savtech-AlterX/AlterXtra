@@ -38,6 +38,12 @@
           "cameraPermission": "AlterX uses your camera to record video messages to your future self.",
           "microphonePermission": "AlterX uses your microphone to record audio for your future self video messages."
         }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "AlterX uses Face ID to keep your identity data private if you enable App Lock."
+        }
       ]
     ],
     "extra": {

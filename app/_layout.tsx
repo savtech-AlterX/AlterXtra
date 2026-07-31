@@ -6,6 +6,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '../src/theme/colors';
 import { AppDataProvider } from '../src/store/AppDataContext';
+import { SettingsProvider } from '../src/store/SettingsContext';
+import { AppLockGate } from '../src/components/AppLockGate';
 import { View } from 'react-native';
 
 export default function RootLayout() {
@@ -22,16 +24,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AppDataProvider>
-          <StatusBar style="light" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.background },
-              animation: 'fade',
-            }}
-          />
-        </AppDataProvider>
+        <SettingsProvider>
+          <AppDataProvider>
+            <StatusBar style="light" />
+            <AppLockGate>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: colors.background },
+                  animation: 'fade',
+                }}
+              />
+            </AppLockGate>
+          </AppDataProvider>
+        </SettingsProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

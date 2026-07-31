@@ -45,6 +45,13 @@ export default function PrivacyPolicy() {
         all associated data from your device.
       </Section>
 
+      <Section title="If You Need Support">
+        AlterX is a self-guided personal development tool, not a substitute for professional mental health
+        support. If you're in crisis or need to talk to someone, reach out to a local emergency service or
+        crisis line — in the US and Canada, call or text 988 (Suicide & Crisis Lifeline); in the UK, call
+        116 123 (Samaritans). If you're elsewhere, search for your local crisis line — help is available.
+      </Section>
+
       <Section title="Children's Privacy">
         AlterX is not directed at children under 13, and does not knowingly collect data from children under
         13.

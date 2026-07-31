@@ -29,6 +29,10 @@ Because all data is stored locally:
 - You can delete all app data at any time via **Settings → Reset All Data**.
 - Uninstalling the app permanently deletes all associated data from your device.
 
+## If You Need Support
+
+AlterX is a self-guided personal development tool, not a substitute for professional mental health support. If you're in crisis or need to talk to someone, please reach out to a local emergency service or a crisis line in your country — for example, in the US and Canada, call or text **988** (Suicide & Crisis Lifeline); in the UK, call **116 123** (Samaritans). If you're outside these regions, search for your local crisis line — help is available.
+
 ## Children's Privacy
 
 AlterX is not directed at children under 13, and we do not knowingly collect data from children under 13 (as noted above, we do not collect personal data on any server in the first place).
