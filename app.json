@@ -30,7 +30,15 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-video"
+      "expo-video",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "AlterX uses your photo library to add photos to your identity albums.",
+          "cameraPermission": "AlterX uses your camera to record video messages to your future self.",
+          "microphonePermission": "AlterX uses your microphone to record audio for your future self video messages."
+        }
+      ]
     ],
     "extra": {
       "router": {},
