@@ -63,7 +63,7 @@ export default function HabitReprogramming() {
 
       <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
       <HudTextInput
-        placeholder="e.g. I protect my recovery."
+        placeholder="e.g. I follow through on what I commit to."
         value={identityStatement}
         onChangeText={setIdentityStatement}
       />
