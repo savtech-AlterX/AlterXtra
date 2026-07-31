@@ -5,6 +5,7 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
+import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
 import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
@@ -85,7 +86,7 @@ export default function Home() {
           end={{ x: 1, y: 0 }}
           style={styles.heroAccentLine}
         />
-        <Image source={require('../../assets/identity-mark.png')} style={styles.heroIcon} resizeMode="contain" />
+        <IdentityMarkRing size={130} style={styles.heroIcon} />
         <Text style={[typography.cardTitle, styles.heroTitle]}>LIFESTYLE{'\n'}REPROGRAMMING</Text>
         <Text style={styles.heroTagline}>build your reality</Text>
         <Pressable style={styles.heroArrow} onPress={() => router.push('/habit-reprogramming')}>
@@ -197,9 +198,7 @@ const styles = StyleSheet.create({
     height: 2,
   },
   heroIcon: {
-    width: 120,
-    height: 203,
-    marginBottom: 4,
+    marginBottom: 18,
   },
   heroTitle: {
     textAlign: 'center',

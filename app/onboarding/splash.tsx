@@ -3,6 +3,7 @@ import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
+import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 
@@ -12,11 +13,7 @@ export default function Splash() {
   return (
     <HudScreen scroll={false}>
       <View style={styles.center}>
-        <Image
-          source={require('../../assets/identity-mark.png')}
-          style={styles.mark}
-          resizeMode="contain"
-        />
+        <IdentityMarkRing size={140} />
         <Image source={require('../../assets/wordmark.png')} style={styles.wordmark} resizeMode="contain" />
         <Text style={styles.subtitle}>IDENTITY TRANSFORMATION</Text>
       </View>
@@ -32,10 +29,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 18,
-  },
-  mark: {
-    width: 130,
-    height: 220,
   },
   wordmark: {
     width: 230,

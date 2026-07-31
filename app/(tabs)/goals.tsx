@@ -5,45 +5,149 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
+import { Goal } from '../../src/store/types';
 import { colors } from '../../src/theme/colors';
 import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
+function daysLeftLabel(targetDate: string): string {
+  const target = new Date(`${targetDate}T23:59:59`);
+  if (isNaN(target.getTime())) return '—';
+  const diff = Math.ceil((target.getTime() - Date.now()) / 86400000);
+  if (diff < 0) return 'PAST';
+  return String(diff);
+}
+
+function progress(goal: Goal) {
+  const total = goal.steps.length;
+  const done = goal.steps.filter((s) => s.done).length;
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  return { total, done, pct };
+}
+
+function StepRow({
+  step,
+  onToggle,
+}: {
+  step: { text: string; done: boolean };
+  onToggle: () => void;
+}) {
+  return (
+    <Pressable style={styles.stepRow} onPress={onToggle}>
+      <Ionicons
+        name={step.done ? 'checkbox' : 'square-outline'}
+        size={18}
+        color={step.done ? colors.success : colors.glow}
+        style={iconGlow}
+      />
+      <Text style={[styles.stepText, step.done && styles.stepTextDone]}>{step.text}</Text>
+    </Pressable>
+  );
+}
+
+function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
+  const { total, done, pct } = progress(goal);
+  return (
+    <GlowCard strong style={styles.primaryCard}>
+      <Text style={styles.goalLabel}>PRIMARY OBJECTIVE</Text>
+      <Text style={styles.goalTitle}>{goal.objective}</Text>
+      <View style={styles.targetRow}>
+        <Ionicons name="calendar-outline" size={14} color={colors.glow} style={iconGlow} />
+        <Text style={styles.targetLabel}>TARGET</Text>
+        <Text style={styles.targetValue}>{goal.targetDate || '—'}</Text>
+      </View>
+
+      <View style={styles.progressRow}>
+        <View style={styles.ring}>
+          <Text style={styles.ringValue}>{daysLeftLabel(goal.targetDate)}</Text>
+          <Text style={styles.ringLabel}>DAYS LEFT</Text>
+        </View>
+        <View style={styles.progressCol}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.goalLabel}>PROGRESS</Text>
+            <Text style={styles.progressPct}>{pct}%</Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${pct}%` }]} />
+          </View>
+          <Text style={styles.stepsComplete}>
+            {done}/{total} steps complete
+          </Text>
+        </View>
+      </View>
+
+      {total > 0 && (
+        <View style={styles.steps}>
+          {goal.steps.map((step, i) => (
+            <StepRow key={i} step={step} onToggle={() => onToggleStep(i)} />
+          ))}
+        </View>
+      )}
+    </GlowCard>
+  );
+}
+
+function SecondaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
+  const { total, done, pct } = progress(goal);
+  return (
+    <GlowCard style={styles.secondaryCard}>
+      <Text style={styles.goalTitle}>{goal.objective}</Text>
+      <Text style={styles.targetValue}>TARGET: {goal.targetDate || '—'}</Text>
+      {total > 0 && (
+        <>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${pct}%` }]} />
+          </View>
+          <View style={styles.steps}>
+            {goal.steps.map((step, i) => (
+              <StepRow key={i} step={step} onToggle={() => onToggleStep(i)} />
+            ))}
+          </View>
+        </>
+      )}
+    </GlowCard>
+  );
+}
+
 export default function Goals() {
   const router = useRouter();
-  const { data } = useAppData();
+  const { data, toggleGoalStep } = useAppData();
+
+  const primary = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
+  const secondary = data.goals.length > 1 ? data.goals.slice(0, -1) : [];
 
   return (
     <HudScreen>
       <View style={styles.header}>
         <Text style={typography.screenTitle}>GOALS</Text>
         <Pressable style={styles.addButton} onPress={() => router.push('/goals/new')}>
-          <Ionicons name="add" size={22} color={colors.glow} style={iconGlow} />
+          <Ionicons name="create-outline" size={20} color={colors.glow} style={iconGlow} />
         </Pressable>
       </View>
 
-      {data.goals.length === 0 && (
+      {!primary && (
         <GlowCard style={styles.emptyCard}>
           <Ionicons name="flag-outline" size={36} color={colors.glow} style={iconGlow} />
           <Text style={styles.emptyText}>
-            No objectives yet. Tap + to set your primary objective and step plan.
+            No objectives yet. Tap the icon above to set your primary objective and step plan.
           </Text>
         </GlowCard>
       )}
 
-      {data.goals.map((goal) => (
-        <GlowCard key={goal.id} style={styles.goalCard}>
-          <Text style={styles.goalLabel}>PRIMARY OBJECTIVE</Text>
-          <Text style={styles.goalTitle}>{goal.objective}</Text>
-          <Text style={styles.goalDate}>TARGET: {goal.targetDate}</Text>
-          <View style={styles.steps}>
-            {goal.steps.map((step, i) => (
-              <View key={i} style={styles.stepRow}>
-                <Ionicons name="checkmark-circle-outline" size={16} color={colors.glow} />
-                <Text style={styles.stepText}>{step}</Text>
-              </View>
-            ))}
-          </View>
-        </GlowCard>
+      {primary && (
+        <PrimaryGoalCard goal={primary} onToggleStep={(i) => toggleGoalStep(primary.id, i)} />
+      )}
+
+      <View style={styles.header}>
+        <Text style={typography.label}>SECONDARY GOALS</Text>
+        <Pressable style={styles.addButtonSmall} onPress={() => router.push('/goals/new')}>
+          <Ionicons name="add" size={18} color={colors.glow} style={iconGlow} />
+        </Pressable>
+      </View>
+
+      {secondary.length === 0 && <Text style={styles.emptyText}>No secondary goals yet.</Text>}
+
+      {secondary.map((goal) => (
+        <SecondaryGoalCard key={goal.id} goal={goal} onToggleStep={(i) => toggleGoalStep(goal.id, i)} />
       ))}
     </HudScreen>
   );
@@ -64,6 +168,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  addButtonSmall: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyCard: {
     alignItems: 'center',
     gap: 10,
@@ -74,8 +187,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
-  goalCard: {
+  primaryCard: {
     gap: 6,
+  },
+  secondaryCard: {
+    gap: 8,
   },
   goalLabel: {
     fontFamily: typography.label.fontFamily,
@@ -89,14 +205,88 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     ...glowShadow,
   },
-  goalDate: {
+  targetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  targetLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 11,
+    color: colors.glow,
+    letterSpacing: 1,
+  },
+  targetValue: {
     fontFamily: typography.body.fontFamily,
     fontSize: 13,
     color: colors.textSecondary,
-    marginBottom: 6,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 12,
+  },
+  ring: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.glow,
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  ringValue: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 18,
+    color: colors.textPrimary,
+  },
+  ringLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 8,
+    color: colors.glow,
+    letterSpacing: 1,
+    marginTop: 2,
+  },
+  progressCol: {
+    flex: 1,
+    gap: 6,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  progressPct: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 11,
+    color: colors.glow,
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.panelSolid,
+    borderWidth: 1,
+    borderColor: colors.borderDim,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.glow,
+  },
+  stepsComplete: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    color: colors.textSecondary,
   },
   steps: {
-    gap: 6,
+    gap: 8,
+    marginTop: 10,
   },
   stepRow: {
     flexDirection: 'row',
@@ -107,5 +297,9 @@ const styles = StyleSheet.create({
     fontFamily: typography.body.fontFamily,
     color: colors.textPrimary,
     fontSize: 14,
+  },
+  stepTextDone: {
+    color: colors.textMuted,
+    textDecorationLine: 'line-through',
   },
 });

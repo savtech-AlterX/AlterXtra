@@ -11,9 +11,10 @@ type Props = {
   icon?: React.ReactNode;
   style?: ViewStyle;
   disabled?: boolean;
+  labelColor?: string;
 };
 
-export function GlowButton({ label, onPress, variant = 'solid', icon, style, disabled }: Props) {
+export function GlowButton({ label, onPress, variant = 'solid', icon, style, disabled, labelColor }: Props) {
   if (variant === 'outline') {
     return (
       <Pressable
@@ -25,7 +26,7 @@ export function GlowButton({ label, onPress, variant = 'solid', icon, style, dis
           (pressed || disabled) && styles.pressed,
         ]}
       >
-        <Text style={styles.outlineLabel}>{label}</Text>
+        <Text style={[styles.outlineLabel, labelColor ? { color: labelColor } : null]}>{label}</Text>
         {icon}
       </Pressable>
     );

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
@@ -9,33 +10,63 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export default function Journal() {
+  const router = useRouter();
   const { data, addJournalEntry } = useAppData();
+  const [date, setDate] = useState(today());
+  const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
 
   function save() {
     if (!body.trim()) return;
-    addJournalEntry(body.trim());
+    addJournalEntry(date.trim() || today(), title.trim(), body.trim());
+    setDate(today());
+    setTitle('');
     setBody('');
+  }
+
+  function discard() {
+    setDate(today());
+    setTitle('');
+    setBody('');
+    router.back();
   }
 
   return (
     <HudScreen>
-      <StackHeader title="JOURNAL" />
-      <Text style={styles.subtitle}>PERSONAL REFLECTIONS</Text>
+      <StackHeader title="PERSONAL JOURNAL" />
 
+      <Text style={typography.label}>DATE</Text>
+      <HudTextInput value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
+
+      <Text style={[typography.label, styles.spacer]}>TITLE (OPTIONAL)</Text>
+      <HudTextInput placeholder="Give your entry a title..." value={title} onChangeText={setTitle} />
+
+      <Text style={[typography.label, styles.spacer]}>YOUR ENTRY</Text>
       <HudTextInput
-        placeholder="What's on your mind?"
+        placeholder="Write your thoughts..."
         value={body}
         onChangeText={setBody}
         multiline
       />
-      <GlowButton label="SAVE ENTRY" onPress={save} disabled={!body.trim()} />
+
+      <GlowButton label="SAVE ENTRY" onPress={save} disabled={!body.trim()} style={styles.spacer} />
+      <GlowButton
+        label="DISCARD"
+        variant="outline"
+        style={styles.discardButton}
+        labelColor={colors.danger}
+        onPress={discard}
+      />
 
       <View style={styles.list}>
         {data.journalEntries.length === 0 && (
@@ -43,7 +74,10 @@ export default function Journal() {
         )}
         {data.journalEntries.map((entry) => (
           <GlowCard key={entry.id} style={styles.entry}>
-            <Text style={styles.entryDate}>{formatDate(entry.createdAt)}</Text>
+            <Text style={styles.entryDate}>
+              {entry.date} · SAVED {formatDate(entry.createdAt)}
+            </Text>
+            {!!entry.title && <Text style={styles.entryTitle}>{entry.title}</Text>}
             <Text style={styles.entryBody}>{entry.body}</Text>
           </GlowCard>
         ))}
@@ -53,13 +87,11 @@ export default function Journal() {
 }
 
 const styles = StyleSheet.create({
-  subtitle: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 11,
-    color: colors.glow,
-    letterSpacing: 3,
-    marginTop: -8,
-    textAlign: 'center',
+  spacer: {
+    marginTop: 6,
+  },
+  discardButton: {
+    borderColor: colors.danger,
   },
   list: {
     gap: 12,
@@ -79,6 +111,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.glow,
     letterSpacing: 1,
+  },
+  entryTitle: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
   entryBody: {
     fontFamily: typography.body.fontFamily,

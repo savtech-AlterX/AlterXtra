@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../../src/components/HudScreen';
+import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 
@@ -26,11 +27,7 @@ export default function Loading() {
   return (
     <HudScreen scroll={false}>
       <View style={styles.center}>
-        <Image
-          source={require('../../assets/identity-mark.png')}
-          style={styles.mark}
-          resizeMode="contain"
-        />
+        <IdentityMarkRing size={110} style={styles.mark} />
         <View style={styles.barTrack}>
           <Animated.View style={[styles.barFill, { width }]} />
         </View>
@@ -48,9 +45,7 @@ const styles = StyleSheet.create({
     gap: 28,
   },
   mark: {
-    width: 100,
-    height: 170,
-    opacity: 0.6,
+    opacity: 0.7,
   },
   barTrack: {
     width: '70%',

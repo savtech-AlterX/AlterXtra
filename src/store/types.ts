@@ -35,14 +35,21 @@ export type QuickNote = {
 export type JournalEntry = {
   id: string;
   createdAt: string;
+  date: string;
+  title?: string;
   body: string;
 };
 
 export type FutureSelfLetter = {
   id: string;
   createdAt: string;
-  deliverOn: string;
+  title?: string;
   body: string;
+};
+
+export type GoalStep = {
+  text: string;
+  done: boolean;
 };
 
 export type Goal = {
@@ -50,7 +57,7 @@ export type Goal = {
   createdAt: string;
   objective: string;
   targetDate: string;
-  steps: string[];
+  steps: GoalStep[];
 };
 
 export type LogEntry = {

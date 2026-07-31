@@ -6,6 +6,7 @@ import {
   emptyAppData,
   FutureSelfLetter,
   Goal,
+  GoalStep,
   HabitReprogram,
   Identity,
   JournalEntry,
@@ -24,9 +25,10 @@ type AppDataContextValue = {
   data: AppData;
   isLoaded: boolean;
   setIdentity: (identity: Identity) => void;
-  addJournalEntry: (body: string) => void;
-  addFutureSelfLetter: (body: string, deliverOn: string) => void;
+  addJournalEntry: (date: string, title: string, body: string) => void;
+  addFutureSelfLetter: (title: string, body: string) => void;
   addGoal: (objective: string, targetDate: string, steps: string[]) => void;
+  toggleGoalStep: (goalId: string, stepIndex: number) => void;
   addLogEntry: (aligned: boolean, proof: string, correction: string) => void;
   deleteLogEntry: (id: string) => void;
   addAlbum: (title: string) => Album;
@@ -68,24 +70,51 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, identity }));
   }, []);
 
-  const addJournalEntry = useCallback((body: string) => {
-    const entry: JournalEntry = { id: makeId(), createdAt: new Date().toISOString(), body };
+  const addJournalEntry = useCallback((date: string, title: string, body: string) => {
+    const entry: JournalEntry = {
+      id: makeId(),
+      createdAt: new Date().toISOString(),
+      date,
+      title: title || undefined,
+      body,
+    };
     setData((prev) => ({ ...prev, journalEntries: [entry, ...prev.journalEntries] }));
   }, []);
 
-  const addFutureSelfLetter = useCallback((body: string, deliverOn: string) => {
+  const addFutureSelfLetter = useCallback((title: string, body: string) => {
     const letter: FutureSelfLetter = {
       id: makeId(),
       createdAt: new Date().toISOString(),
-      deliverOn,
+      title: title || undefined,
       body,
     };
     setData((prev) => ({ ...prev, futureSelfLetters: [letter, ...prev.futureSelfLetters] }));
   }, []);
 
   const addGoal = useCallback((objective: string, targetDate: string, steps: string[]) => {
-    const goal: Goal = { id: makeId(), createdAt: new Date().toISOString(), objective, targetDate, steps };
+    const goalSteps: GoalStep[] = steps.map((text) => ({ text, done: false }));
+    const goal: Goal = {
+      id: makeId(),
+      createdAt: new Date().toISOString(),
+      objective,
+      targetDate,
+      steps: goalSteps,
+    };
     setData((prev) => ({ ...prev, goals: [goal, ...prev.goals] }));
+  }, []);
+
+  const toggleGoalStep = useCallback((goalId: string, stepIndex: number) => {
+    setData((prev) => ({
+      ...prev,
+      goals: prev.goals.map((g) =>
+        g.id === goalId
+          ? {
+              ...g,
+              steps: g.steps.map((s, i) => (i === stepIndex ? { ...s, done: !s.done } : s)),
+            }
+          : g
+      ),
+    }));
   }, []);
 
   const addLogEntry = useCallback((aligned: boolean, proof: string, correction: string) => {
@@ -174,6 +203,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addJournalEntry,
       addFutureSelfLetter,
       addGoal,
+      toggleGoalStep,
       addLogEntry,
       deleteLogEntry,
       addAlbum,
@@ -192,6 +222,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addJournalEntry,
       addFutureSelfLetter,
       addGoal,
+      toggleGoalStep,
       addLogEntry,
       deleteLogEntry,
       addAlbum,

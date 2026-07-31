@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
@@ -7,7 +9,7 @@ import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { iconGlow, typography } from '../../src/theme/typography';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -15,33 +17,53 @@ function formatDate(iso: string) {
 }
 
 export default function FutureSelf() {
+  const router = useRouter();
   const { data, addFutureSelfLetter } = useAppData();
+  const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [deliverOn, setDeliverOn] = useState('');
 
   function save() {
-    if (!body.trim() || !deliverOn.trim()) return;
-    addFutureSelfLetter(body.trim(), deliverOn.trim());
+    if (!body.trim()) return;
+    addFutureSelfLetter(title.trim(), body.trim());
+    setTitle('');
     setBody('');
-    setDeliverOn('');
+  }
+
+  function discard() {
+    setTitle('');
+    setBody('');
+    router.back();
   }
 
   return (
     <HudScreen>
-      <StackHeader title="FUTURE SELF" />
-      <Text style={styles.subtitle}>LETTERS FORWARD IN TIME</Text>
+      <StackHeader title="WRITE TO FUTURE SELF" />
 
-      <Text style={typography.label}>DELIVER ON (YYYY-MM-DD)</Text>
-      <HudTextInput placeholder="2027-01-01" value={deliverOn} onChangeText={setDeliverOn} />
+      <Text style={typography.label}>LETTER TITLE (OPTIONAL)</Text>
+      <HudTextInput placeholder="e.g. One year from now..." value={title} onChangeText={setTitle} />
 
-      <Text style={typography.label}>LETTER</Text>
+      <Text style={[typography.label, styles.spacer]}>YOUR LETTER</Text>
       <HudTextInput
-        placeholder="Dear future me..."
+        placeholder="Write your letter to your future self..."
         value={body}
         onChangeText={setBody}
         multiline
       />
-      <GlowButton label="SEAL LETTER" onPress={save} disabled={!body.trim() || !deliverOn.trim()} />
+
+      <GlowButton
+        label="SEAL LETTER"
+        onPress={save}
+        disabled={!body.trim()}
+        style={styles.spacer}
+        icon={<Ionicons name="lock-closed" size={14} color="#02141f" style={iconGlow} />}
+      />
+      <GlowButton
+        label="DISCARD"
+        variant="outline"
+        labelColor={colors.danger}
+        style={styles.discardButton}
+        onPress={discard}
+      />
 
       <View style={styles.list}>
         {data.futureSelfLetters.length === 0 && (
@@ -49,9 +71,8 @@ export default function FutureSelf() {
         )}
         {data.futureSelfLetters.map((letter) => (
           <GlowCard key={letter.id} style={styles.entry}>
-            <Text style={styles.entryDate}>
-              WRITTEN {formatDate(letter.createdAt)} · DELIVERS {letter.deliverOn}
-            </Text>
+            <Text style={styles.entryDate}>SEALED {formatDate(letter.createdAt)}</Text>
+            {!!letter.title && <Text style={styles.entryTitle}>{letter.title}</Text>}
             <Text style={styles.entryBody}>{letter.body}</Text>
           </GlowCard>
         ))}
@@ -61,13 +82,11 @@ export default function FutureSelf() {
 }
 
 const styles = StyleSheet.create({
-  subtitle: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 11,
-    color: colors.glow,
-    letterSpacing: 3,
-    marginTop: -8,
-    textAlign: 'center',
+  spacer: {
+    marginTop: 6,
+  },
+  discardButton: {
+    borderColor: colors.danger,
   },
   list: {
     gap: 12,
@@ -87,6 +106,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.glow,
     letterSpacing: 1,
+  },
+  entryTitle: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
   entryBody: {
     fontFamily: typography.body.fontFamily,
