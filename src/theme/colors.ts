@@ -15,7 +15,9 @@ export const colors = {
 
   textPrimary: '#eaf4ff',
   textSecondary: '#7fa8c9',
-  textMuted: '#4d6b85',
+  // Lightened from the original #4d6b85 (3.6:1) to clear WCAG AA's 4.5:1
+  // body-text contrast minimum against the navy background, same hue.
+  textMuted: '#5a7d9b',
 
   // Sampled from the "build your reality" tagline in the reference.
   accentTeal: '#72ddf2',

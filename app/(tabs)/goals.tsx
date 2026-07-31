@@ -32,7 +32,13 @@ function StepRow({
   onToggle: () => void;
 }) {
   return (
-    <Pressable style={styles.stepRow} onPress={onToggle}>
+    <Pressable
+      style={styles.stepRow}
+      onPress={onToggle}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: step.done }}
+      accessibilityLabel={step.text}
+    >
       <Ionicons
         name={step.done ? 'checkbox' : 'square-outline'}
         size={18}
@@ -119,7 +125,12 @@ export default function Goals() {
     <HudScreen>
       <View style={styles.header}>
         <Text style={typography.screenTitle}>GOALS</Text>
-        <Pressable style={styles.addButton} onPress={() => router.push('/goals/new')}>
+        <Pressable
+          style={styles.addButton}
+          onPress={() => router.push('/goals/new')}
+          accessibilityRole="button"
+          accessibilityLabel="Add new goal"
+        >
           <Ionicons name="create-outline" size={20} color={colors.glow} style={iconGlow} />
         </Pressable>
       </View>
@@ -139,7 +150,12 @@ export default function Goals() {
 
       <View style={styles.header}>
         <Text style={typography.label}>SECONDARY GOALS</Text>
-        <Pressable style={styles.addButtonSmall} onPress={() => router.push('/goals/new')}>
+        <Pressable
+          style={styles.addButtonSmall}
+          onPress={() => router.push('/goals/new')}
+          accessibilityRole="button"
+          accessibilityLabel="Add secondary goal"
+        >
           <Ionicons name="add" size={18} color={colors.glow} style={iconGlow} />
         </Pressable>
       </View>

@@ -68,7 +68,12 @@ export default function FutureSelfCall() {
     return (
       <SafeAreaView style={styles.missing}>
         <Text style={styles.missingText}>This call isn't ready yet.</Text>
-        <Pressable style={styles.endButton} onPress={() => router.back()}>
+        <Pressable
+          style={styles.endButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        >
           <Ionicons name="close" size={26} color="#fff" />
         </Pressable>
       </SafeAreaView>
@@ -106,16 +111,31 @@ export default function FutureSelfCall() {
         <View style={styles.bottomBar}>
           {stage === 'ended' ? (
             <>
-              <Pressable style={styles.replayButton} onPress={replay}>
+              <Pressable
+                style={styles.replayButton}
+                onPress={replay}
+                accessibilityRole="button"
+                accessibilityLabel="Replay"
+              >
                 <Ionicons name="refresh" size={22} color={colors.background} />
                 <Text style={styles.replayLabel}>REPLAY</Text>
               </Pressable>
-              <Pressable style={styles.endButton} onPress={() => router.back()}>
+              <Pressable
+                style={styles.endButton}
+                onPress={() => router.back()}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+              >
                 <Ionicons name="close" size={26} color="#fff" />
               </Pressable>
             </>
           ) : (
-            <Pressable style={styles.endButton} onPress={() => router.back()}>
+            <Pressable
+              style={styles.endButton}
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel="Hang up"
+            >
               <Ionicons name="call" size={24} color="#fff" style={styles.hangupIcon} />
             </Pressable>
           )}

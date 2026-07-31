@@ -20,7 +20,7 @@ function IconBox({
   onPress?: () => void;
 }) {
   return (
-    <Pressable style={styles.iconBox} onPress={onPress}>
+    <Pressable style={styles.iconBox} onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
       <Ionicons name={icon} size={20} color={colors.glow} style={iconGlow} />
       <Text style={styles.iconBoxLabel}>{label}</Text>
     </Pressable>
@@ -61,11 +61,21 @@ export default function Home() {
           <Text style={styles.wordmarkSubtitle}>IDENTITY TRANSFORMATION</Text>
         </View>
         <View style={styles.rightIcons}>
-          <Pressable style={styles.iconBoxSmall} onPress={() => router.push('/limited-beliefs')}>
+          <Pressable
+            style={styles.iconBoxSmall}
+            onPress={() => router.push('/limited-beliefs')}
+            accessibilityRole="button"
+            accessibilityLabel="Limited Beliefs"
+          >
             <Ionicons name="bulb-outline" size={18} color={colors.glow} style={iconGlow} />
             <Text style={styles.iconBoxLabel}>LB</Text>
           </Pressable>
-          <Pressable style={styles.iconBoxSmall} onPress={() => router.push('/alter-xtra')}>
+          <Pressable
+            style={styles.iconBoxSmall}
+            onPress={() => router.push('/alter-xtra')}
+            accessibilityRole="button"
+            accessibilityLabel="Alter-Xtra"
+          >
             <MaterialCommunityIcons name="crown-outline" size={18} color={colors.glow} style={iconGlow} />
             <Text style={styles.iconBoxLabel}>XTRA</Text>
           </Pressable>
@@ -89,7 +99,12 @@ export default function Home() {
         <IdentityMarkRing size={130} style={styles.heroIcon} />
         <Text style={[typography.cardTitle, styles.heroTitle]}>LIFESTYLE{'\n'}REPROGRAMMING</Text>
         <Text style={styles.heroTagline}>build your reality</Text>
-        <Pressable style={styles.heroArrow} onPress={() => router.push('/habit-reprogramming')}>
+        <Pressable
+          style={styles.heroArrow}
+          onPress={() => router.push('/habit-reprogramming')}
+          accessibilityRole="button"
+          accessibilityLabel="Open Habit Reprogramming"
+        >
           <Ionicons name="arrow-forward" size={20} color={colors.glow} style={iconGlow} />
         </Pressable>
       </GlowCard>

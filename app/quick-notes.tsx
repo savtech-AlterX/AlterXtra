@@ -40,14 +40,29 @@ export default function QuickNotes() {
   return (
     <HudScreen scroll={false}>
       <View style={styles.header}>
-        <Pressable style={styles.iconButton} onPress={() => router.back()}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="chevron-back" size={22} color={colors.glow} style={iconGlow} />
         </Pressable>
         <Text style={[typography.screenTitle, styles.title]}>QUICK NOTES</Text>
-        <Pressable style={styles.iconButton} onPress={createNew}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={createNew}
+          accessibilityRole="button"
+          accessibilityLabel="New note"
+        >
           <Ionicons name="document-outline" size={20} color={colors.glow} style={iconGlow} />
         </Pressable>
-        <Pressable style={styles.iconButton} onPress={() => router.back()}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        >
           <Ionicons name="close" size={22} color={colors.glow} style={iconGlow} />
         </Pressable>
       </View>
@@ -76,7 +91,7 @@ export default function QuickNotes() {
       )}
 
       <View style={styles.footer}>
-        <Pressable onPress={remove} hitSlop={8}>
+        <Pressable onPress={remove} hitSlop={8} accessibilityRole="button" accessibilityLabel="Delete note">
           <Ionicons name="trash-outline" size={22} color={colors.danger} />
         </Pressable>
         <View style={styles.pager}>
@@ -84,6 +99,8 @@ export default function QuickNotes() {
             onPress={() => setIndex((i) => Math.max(0, i - 1))}
             disabled={index === 0}
             hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Previous note"
           >
             <Ionicons name="chevron-back" size={20} color={index === 0 ? colors.textMuted : colors.glow} />
           </Pressable>
@@ -92,6 +109,8 @@ export default function QuickNotes() {
             onPress={() => setIndex((i) => Math.min(data.quickNotes.length - 1, i + 1))}
             disabled={index >= data.quickNotes.length - 1}
             hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Next note"
           >
             <Ionicons
               name="chevron-forward"

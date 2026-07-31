@@ -29,7 +29,17 @@ export default function PhotoAlbums() {
     <HudScreen>
       <StackHeader
         title="PHOTO ALBUM"
-        right={<Ionicons name="add" size={22} color={colors.glow} style={iconGlow} onPress={() => setCreating(true)} />}
+        right={
+          <Ionicons
+            name="add"
+            size={22}
+            color={colors.glow}
+            style={iconGlow}
+            onPress={() => setCreating(true)}
+            accessibilityRole="button"
+            accessibilityLabel="New album"
+          />
+        }
       />
 
       {data.albums.length === 0 && !creating && (

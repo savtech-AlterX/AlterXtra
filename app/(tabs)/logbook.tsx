@@ -77,7 +77,12 @@ export default function LogBook() {
               </Text>
               <Text style={styles.entryProof}>{entry.proof}</Text>
             </View>
-            <Pressable onPress={() => deleteLogEntry(entry.id)} hitSlop={8}>
+            <Pressable
+              onPress={() => deleteLogEntry(entry.id)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Delete log entry"
+            >
               <Ionicons name="trash-outline" size={18} color={colors.danger} />
             </Pressable>
           </GlowCard>

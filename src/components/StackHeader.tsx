@@ -9,7 +9,12 @@ export function StackHeader({ title, right }: { title: string; right?: React.Rea
   const router = useRouter();
   return (
     <View style={styles.row}>
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
+      <Pressable
+        style={styles.backButton}
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
         <Ionicons name="chevron-back" size={22} color={colors.glow} style={iconGlow} />
       </Pressable>
       <Text style={[typography.screenTitle, styles.title]} numberOfLines={1}>

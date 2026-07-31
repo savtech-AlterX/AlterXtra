@@ -31,6 +31,8 @@ export default function NewLogEntry() {
         <Pressable
           style={[styles.toggle, aligned === true && styles.toggleAligned]}
           onPress={() => setAligned(true)}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: aligned === true }}
         >
           <Text style={[styles.toggleLabel, aligned === true && styles.toggleLabelActive]}>
             ALIGNED
@@ -39,6 +41,8 @@ export default function NewLogEntry() {
         <Pressable
           style={[styles.toggle, aligned === false && styles.toggleMisaligned]}
           onPress={() => setAligned(false)}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: aligned === false }}
         >
           <Text style={[styles.toggleLabel, aligned === false && styles.toggleLabelActive]}>
             MISALIGNED

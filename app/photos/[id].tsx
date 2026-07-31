@@ -42,7 +42,17 @@ export default function AlbumDetail() {
     <HudScreen>
       <StackHeader
         title={album.title.toUpperCase()}
-        right={<Ionicons name="add" size={22} color={colors.glow} style={iconGlow} onPress={pickImages} />}
+        right={
+          <Ionicons
+            name="add"
+            size={22}
+            color={colors.glow}
+            style={iconGlow}
+            onPress={pickImages}
+            accessibilityRole="button"
+            accessibilityLabel="Add photos"
+          />
+        }
       />
 
       {album.photoUris.length === 0 ? (
