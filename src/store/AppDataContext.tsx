@@ -86,7 +86,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [data, isLoaded]);
 
   const setIdentity = useCallback((identity: Identity) => {
-    setData((prev) => ({ ...prev, identity }));
+    setData((prev) => ({
+      ...prev,
+      identity: { ...identity, createdAt: prev.identity?.createdAt ?? identity.createdAt ?? new Date().toISOString() },
+    }));
   }, []);
 
   const addJournalEntry = useCallback((date: string, title: string, body: string) => {

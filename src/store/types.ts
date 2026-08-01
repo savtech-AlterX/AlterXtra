@@ -5,6 +5,7 @@ export type Identity = {
   icon: AppIconChoice;
   name: string;
   email?: string;
+  createdAt?: string;
 };
 
 export type LimitedBelief = {

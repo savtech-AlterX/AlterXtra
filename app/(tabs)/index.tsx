@@ -134,6 +134,12 @@ export default function Home() {
           subtitle="Training log"
           onPress={() => router.push('/(tabs)/logbook')}
         />
+        <GridCard
+          icon="trending-up"
+          title="Growth"
+          subtitle="See how far you've come"
+          onPress={() => router.push('/growth')}
+        />
       </View>
     </HudScreen>
   );

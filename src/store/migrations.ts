@@ -7,14 +7,23 @@ import { AppData, emptyAppData } from './types';
  * upgrades FROM, so existing users' data is upgraded instead of crashing or
  * silently losing content on their next app open.
  */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 type Migration = (data: any) => any;
 
 // migrations[v] transforms data from schemaVersion v to v + 1.
-// Empty for now — schemaVersion 1 is the first versioned shape, matching
-// everything that shipped before this migration system existed.
-const migrations: Record<number, Migration> = {};
+const migrations: Record<number, Migration> = {
+  // v1 -> v2: added Identity.createdAt (powers the Growth screen's "days
+  // since you began" stat). Existing identities predate that field — backfill
+  // rather than leaving it undefined so the stat doesn't just disappear for
+  // anyone who onboarded before this update.
+  1: (data) => {
+    if (data && typeof data === 'object' && data.identity && !data.identity.createdAt) {
+      return { ...data, identity: { ...data.identity, createdAt: new Date().toISOString() } };
+    }
+    return data;
+  },
+};
 
 export type StoredEnvelope = {
   schemaVersion: number;

@@ -32,6 +32,24 @@ describe('migrate', () => {
     const result = migrate(legacy, 1);
     expect(result.goals).toHaveLength(1);
   });
+
+  it('backfills identity.createdAt for v1 data that predates it, without touching other fields', () => {
+    const v1Data = { identity: { archetype: 'Warrior', icon: 'male', name: 'Sav' } };
+    const result = migrate(v1Data, 1);
+    expect(result.identity?.createdAt).toBeDefined();
+    expect(result.identity?.archetype).toBe('Warrior');
+  });
+
+  it('does not overwrite an existing identity.createdAt on migration', () => {
+    const v1Data = { identity: { archetype: 'Warrior', icon: 'male', name: 'Sav', createdAt: '2026-01-01T00:00:00.000Z' } };
+    const result = migrate(v1Data, 1);
+    expect(result.identity?.createdAt).toBe('2026-01-01T00:00:00.000Z');
+  });
+
+  it('is a no-op when there is no identity to backfill', () => {
+    const result = migrate({ identity: null }, 1);
+    expect(result.identity).toBeNull();
+  });
 });
 
 describe('isEnvelope', () => {
