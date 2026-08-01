@@ -34,6 +34,13 @@ export default function LimitedBeliefsOnboarding() {
     });
   }
 
+  function skip() {
+    router.push({
+      pathname: '/onboarding/identity',
+      params: { icon: icon ?? 'mystery', name, email },
+    });
+  }
+
   return (
     <HudScreen>
       <StackHeader title="LIMITED BELIEFS" />
@@ -51,6 +58,7 @@ export default function LimitedBeliefsOnboarding() {
       />
 
       <GlowButton label="CONTINUE" disabled={!canContinue} onPress={proceed} style={styles.spacer} />
+      <GlowButton label="SKIP FOR NOW — I'LL ADD THIS LATER" variant="outline" onPress={skip} />
     </HudScreen>
   );
 }
