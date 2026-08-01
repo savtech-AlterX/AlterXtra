@@ -22,9 +22,9 @@ export default function DiaryHub() {
       </GlowCard>
 
       <GlowCard style={styles.card} onPress={() => router.push('/diary/future-self')}>
-        <Ionicons name="sparkles" size={40} color={colors.glow} style={iconGlow} />
+        <Ionicons name="videocam" size={40} color={colors.glow} style={iconGlow} />
         <Text style={[typography.cardTitle, styles.cardTitle]}>FUTURE SELF</Text>
-        <Text style={styles.cardSubtitle}>LETTERS FORWARD IN TIME</Text>
+        <Text style={styles.cardSubtitle}>LETTERS & VIDEO MESSAGES</Text>
       </GlowCard>
     </HudScreen>
   );
