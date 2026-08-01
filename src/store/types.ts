@@ -26,6 +26,15 @@ export type HabitReprogram = {
   identityStatement: string;
 };
 
+// A check-in logged against a specific HabitReprogram — closes the loop
+// between "I intend to replace X with Y" and "did that actually happen today."
+export type HabitCheckIn = {
+  id: string;
+  habitId: string;
+  createdAt: string;
+  followedThrough: boolean;
+};
+
 export type QuickNote = {
   id: string;
   createdAt: string;
@@ -96,6 +105,7 @@ export type AppData = {
   albums: Album[];
   limitedBeliefs: LimitedBelief[];
   habitReprograms: HabitReprogram[];
+  habitCheckIns: HabitCheckIn[];
   quickNotes: QuickNote[];
 };
 
@@ -109,5 +119,6 @@ export const emptyAppData: AppData = {
   albums: [],
   limitedBeliefs: [],
   habitReprograms: [],
+  habitCheckIns: [],
   quickNotes: [],
 };

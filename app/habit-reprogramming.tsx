@@ -1,21 +1,75 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { HudTextInput } from '../src/components/HudTextInput';
 import { StackHeader } from '../src/components/StackHeader';
+import { hasCheckedInToday, successRate } from '../src/lib/habitCheckIns';
 import { useAppData } from '../src/store/AppDataContext';
+import { HabitCheckIn, HabitReprogram } from '../src/store/types';
 import { colors } from '../src/theme/colors';
-import { glowShadow, typography } from '../src/theme/typography';
+import { glowShadow, iconGlow, typography } from '../src/theme/typography';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function CheckInRow({
+  habit,
+  checkIns,
+  onCheckIn,
+}: {
+  habit: HabitReprogram;
+  checkIns: HabitCheckIn[];
+  onCheckIn: (followedThrough: boolean) => void;
+}) {
+  const checkedInToday = hasCheckedInToday(checkIns, habit.id);
+  const { followed, total } = successRate(checkIns, habit.id);
+
+  return (
+    <View style={styles.checkInBlock}>
+      {checkedInToday ? (
+        <View style={styles.checkedInRow}>
+          <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+          <Text style={styles.checkedInText}>Checked in today</Text>
+        </View>
+      ) : (
+        <View style={styles.checkInPrompt}>
+          <Text style={styles.checkInQuestion}>Did you follow through today?</Text>
+          <View style={styles.checkInButtons}>
+            <Pressable
+              style={[styles.checkInButton, styles.checkInYes]}
+              onPress={() => onCheckIn(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Yes, I followed through today"
+            >
+              <Text style={styles.checkInYesText}>YES</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.checkInButton, styles.checkInNo]}
+              onPress={() => onCheckIn(false)}
+              accessibilityRole="button"
+              accessibilityLabel="No, I did not follow through today"
+            >
+              <Text style={styles.checkInNoText}>NO</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+      {total > 0 && (
+        <Text style={styles.successRate}>
+          {followed}/{total} days followed through
+        </Text>
+      )}
+    </View>
+  );
+}
+
 export default function HabitReprogramming() {
-  const { data, addHabitReprogram } = useAppData();
+  const { data, addHabitReprogram, addHabitCheckIn } = useAppData();
   const [trigger, setTrigger] = useState('');
   const [oldHabit, setOldHabit] = useState('');
   const [replacement, setReplacement] = useState('');
@@ -79,6 +133,11 @@ export default function HabitReprogramming() {
               <Text style={styles.entryTitle}>{h.trigger}</Text>
               <Text style={styles.entryBody}>→ {h.replacement}</Text>
               {!!h.identityStatement && <Text style={styles.entryIdentity}>"{h.identityStatement}"</Text>}
+              <CheckInRow
+                habit={h}
+                checkIns={data.habitCheckIns}
+                onCheckIn={(followedThrough) => addHabitCheckIn(h.id, followedThrough)}
+              />
             </GlowCard>
           ))}
         </>
@@ -122,5 +181,69 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: colors.accentTeal,
     fontSize: 14,
+  },
+  checkInBlock: {
+    marginTop: 8,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderDim,
+    gap: 6,
+  },
+  checkInPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  checkInQuestion: {
+    flex: 1,
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  checkInButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  checkInButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  checkInYes: {
+    borderColor: colors.success,
+    backgroundColor: 'rgba(63, 224, 138, 0.1)',
+  },
+  checkInYesText: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 11,
+    letterSpacing: 1,
+    color: colors.success,
+  },
+  checkInNo: {
+    borderColor: colors.danger,
+    backgroundColor: 'rgba(255, 77, 94, 0.1)',
+  },
+  checkInNoText: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 11,
+    letterSpacing: 1,
+    color: colors.danger,
+  },
+  checkedInRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  checkedInText: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 13,
+    color: colors.success,
+  },
+  successRate: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 11,
+    color: colors.textMuted,
   },
 });

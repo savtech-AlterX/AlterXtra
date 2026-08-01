@@ -8,6 +8,7 @@ import {
   FutureSelfVideo,
   Goal,
   GoalStep,
+  HabitCheckIn,
   HabitReprogram,
   Identity,
   JournalEntry,
@@ -48,6 +49,7 @@ type AppDataContextValue = {
   addQuickNote: () => QuickNote;
   updateQuickNote: (id: string, title: string, body: string) => void;
   deleteQuickNote: (id: string) => void;
+  addHabitCheckIn: (habitId: string, followedThrough: boolean) => void;
   resetAll: () => void;
   restoreAll: (incoming: unknown, fromVersion: number) => void;
 };
@@ -233,6 +235,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, quickNotes: prev.quickNotes.filter((n) => n.id !== id) }));
   }, []);
 
+  const addHabitCheckIn = useCallback((habitId: string, followedThrough: boolean) => {
+    const entry: HabitCheckIn = { id: makeId(), habitId, createdAt: new Date().toISOString(), followedThrough };
+    setData((prev) => ({ ...prev, habitCheckIns: [entry, ...prev.habitCheckIns] }));
+  }, []);
+
   const resetAll = useCallback(() => {
     setData(emptyAppData);
   }, []);
@@ -261,6 +268,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addQuickNote,
       updateQuickNote,
       deleteQuickNote,
+      addHabitCheckIn,
       resetAll,
       restoreAll,
     }),
@@ -283,6 +291,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addQuickNote,
       updateQuickNote,
       deleteQuickNote,
+      addHabitCheckIn,
       resetAll,
       restoreAll,
     ]

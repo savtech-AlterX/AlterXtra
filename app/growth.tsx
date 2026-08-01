@@ -19,7 +19,17 @@ function StatCard({ icon, value, label }: { icon: keyof typeof Ionicons.glyphMap
   );
 }
 
-function AlignmentBar({ label, aligned, total }: { label: string; aligned: number; total: number }) {
+function AlignmentBar({
+  label,
+  aligned,
+  total,
+  unit = 'aligned',
+}: {
+  label: string;
+  aligned: number;
+  total: number;
+  unit?: string;
+}) {
   const pct = total === 0 ? 0 : Math.round((aligned / total) * 100);
   return (
     <View style={styles.alignmentRow}>
@@ -28,7 +38,7 @@ function AlignmentBar({ label, aligned, total }: { label: string; aligned: numbe
         <View style={[styles.progressFill, { width: `${pct}%` }]} />
       </View>
       <Text style={styles.alignmentValue}>
-        {total === 0 ? 'No entries' : `${aligned}/${total} aligned`}
+        {total === 0 ? 'No entries' : `${aligned}/${total} ${unit}`}
       </Text>
     </View>
   );
@@ -45,7 +55,8 @@ export default function Growth() {
     stats.alignment.thisWeek.total > 0 ||
     stats.alignment.lastWeek.total > 0 ||
     stats.futureSelf.letters > 0 ||
-    stats.futureSelf.videosSealed > 0;
+    stats.futureSelf.videosSealed > 0 ||
+    stats.habitFollowThrough.total > 0;
 
   return (
     <HudScreen>
@@ -76,6 +87,18 @@ export default function Growth() {
               label="Future Self Unlocked"
             />
           </View>
+
+          {stats.habitFollowThrough.total > 0 && (
+            <GlowCard style={styles.card}>
+              <Text style={typography.label}>HABIT FOLLOW-THROUGH</Text>
+              <AlignmentBar
+                label="ALL CHECK-INS"
+                aligned={stats.habitFollowThrough.followed}
+                total={stats.habitFollowThrough.total}
+                unit="followed through"
+              />
+            </GlowCard>
+          )}
 
           <GlowCard style={styles.card}>
             <Text style={typography.label}>ALIGNMENT</Text>

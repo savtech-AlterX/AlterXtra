@@ -31,6 +31,7 @@ export type GrowthStats = {
     videosSealed: number;
     videosUnlocked: number;
   };
+  habitFollowThrough: { followed: number; total: number };
 };
 
 export function computeGrowthStats(data: AppData, now: Date = new Date()): GrowthStats {
@@ -64,6 +65,10 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
       letters: data.futureSelfLetters.length,
       videosSealed: data.futureSelfVideos.length,
       videosUnlocked: data.futureSelfVideos.filter((v) => new Date(v.answerDate).getTime() <= now.getTime()).length,
+    },
+    habitFollowThrough: {
+      followed: data.habitCheckIns.filter((c) => c.followedThrough).length,
+      total: data.habitCheckIns.length,
     },
   };
 }

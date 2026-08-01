@@ -66,6 +66,18 @@ describe('computeGrowthStats', () => {
     expect(two.journalThenNow?.now.body).toBe('newest');
   });
 
+  it('aggregates habit check-ins across all habits into a single follow-through rate', () => {
+    const data = {
+      ...emptyAppData,
+      habitCheckIns: [
+        { id: '1', habitId: 'h1', createdAt: 'x', followedThrough: true },
+        { id: '2', habitId: 'h1', createdAt: 'x', followedThrough: false },
+        { id: '3', habitId: 'h2', createdAt: 'x', followedThrough: true },
+      ],
+    };
+    expect(computeGrowthStats(data, NOW).habitFollowThrough).toEqual({ followed: 2, total: 3 });
+  });
+
   it('counts unlocked future-self videos as those whose answerDate has passed', () => {
     const data = {
       ...emptyAppData,
