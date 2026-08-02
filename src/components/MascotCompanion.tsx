@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../store/AppDataContext';
 import { MascotColor, useSettings } from '../store/SettingsContext';
 import { computeGrowthStats } from '../lib/growth';
@@ -8,7 +9,6 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 
 const SIZE = 56;
-const MOVE_INTERVAL_MS = 6000;
 const BLINK_INTERVAL_MS = 3200;
 const MESSAGE_VISIBLE_MS = 4000;
 
@@ -21,37 +21,13 @@ const COLOR_MAP: Record<MascotColor, string> = {
 export function MascotCompanion() {
   const { data } = useAppData();
   const { settings, isLoaded } = useSettings();
-  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
-  const position = useRef(new Animated.ValueXY({ x: width / 2 - SIZE / 2, y: height / 2 - SIZE / 2 })).current;
   const blink = useRef(new Animated.Value(1)).current;
   const [message, setMessage] = useState<string | null>(null);
   const messageTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const visible = isLoaded && settings.mascotEnabled && !!data.identity;
-
-  // Wander to a new random point within a safe zone every MOVE_INTERVAL_MS.
-  useEffect(() => {
-    if (!visible) return;
-    const topMargin = 90;
-    const bottomMargin = 180;
-    const sideMargin = 16;
-
-    function wander() {
-      const targetX = sideMargin + Math.random() * Math.max(1, width - SIZE - sideMargin * 2);
-      const targetY = topMargin + Math.random() * Math.max(1, height - SIZE - topMargin - bottomMargin);
-      Animated.timing(position, {
-        toValue: { x: targetX, y: targetY },
-        duration: 3200,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: false,
-      }).start();
-    }
-
-    wander();
-    const interval = setInterval(wander, MOVE_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [visible, width, height, position]);
 
   // Idle blink.
   useEffect(() => {
@@ -84,10 +60,7 @@ export function MascotCompanion() {
   const tint = COLOR_MAP[settings.mascotColor];
 
   return (
-    <Animated.View
-      pointerEvents="box-none"
-      style={[styles.wrapper, { transform: position.getTranslateTransform() }]}
-    >
+    <View pointerEvents="box-none" style={[styles.wrapper, { left: 16, bottom: insets.bottom + 100 }]}>
       {message && (
         <View style={styles.bubble}>
           <Text style={styles.bubbleText}>{message}</Text>
@@ -104,17 +77,14 @@ export function MascotCompanion() {
           <Animated.View style={[styles.eye, { backgroundColor: tint, transform: [{ scaleY: blink }] }]} />
         </View>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    top: 0,
-    left: 0,
     width: SIZE,
-    alignItems: 'center',
     zIndex: 50,
   },
   face: {
@@ -141,6 +111,7 @@ const styles = StyleSheet.create({
   },
   bubble: {
     position: 'absolute',
+    left: 0,
     bottom: SIZE + 10,
     width: 180,
     padding: 10,
