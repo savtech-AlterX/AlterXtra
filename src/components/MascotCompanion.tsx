@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useAppData } from '../store/AppDataContext';
 import { MascotColor, useSettings } from '../store/SettingsContext';
 import { computeGrowthStats } from '../lib/growth';
@@ -8,8 +7,10 @@ import { buildMascotMessagePool, pickMascotMessage } from '../lib/mascotMessages
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 
-const SIZE = 56;
-const BLINK_INTERVAL_MS = 3200;
+const FIGURE_WIDTH = 64;
+const FIGURE_HEIGHT = FIGURE_WIDTH * 1.67;
+const MOVE_INTERVAL_MS = 5500;
+const MOVE_DURATION_MS = 3600;
 const MESSAGE_VISIBLE_MS = 4000;
 
 const COLOR_MAP: Record<MascotColor, string> = {
@@ -21,25 +22,56 @@ const COLOR_MAP: Record<MascotColor, string> = {
 export function MascotCompanion() {
   const { data } = useAppData();
   const { settings, isLoaded } = useSettings();
-  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
 
-  const blink = useRef(new Animated.Value(1)).current;
+  const startX = width / 2 - FIGURE_WIDTH / 2;
+  const startY = height * 0.62;
+  const position = useRef(new Animated.ValueXY({ x: startX, y: startY })).current;
+  const bob = useRef(new Animated.Value(0)).current;
+  const [facingLeft, setFacingLeft] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const messageTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastX = useRef(startX);
 
   const visible = isLoaded && settings.mascotEnabled && !!data.identity;
 
-  // Idle blink.
+  // Wander within the lower two-thirds of the screen so it stays mostly clear of headers/hero cards.
   useEffect(() => {
     if (!visible) return;
-    const interval = setInterval(() => {
-      Animated.sequence([
-        Animated.timing(blink, { toValue: 0.15, duration: 90, useNativeDriver: false }),
-        Animated.timing(blink, { toValue: 1, duration: 90, useNativeDriver: false }),
-      ]).start();
-    }, BLINK_INTERVAL_MS);
+    const sideMargin = 16;
+    const topMargin = height * 0.4;
+    const bottomMargin = 170;
+
+    function wander() {
+      const targetX = sideMargin + Math.random() * Math.max(1, width - FIGURE_WIDTH - sideMargin * 2);
+      const targetY = topMargin + Math.random() * Math.max(1, height - FIGURE_HEIGHT - topMargin - bottomMargin);
+      setFacingLeft(targetX < lastX.current);
+      lastX.current = targetX;
+      Animated.timing(position, {
+        toValue: { x: targetX, y: targetY },
+        duration: MOVE_DURATION_MS,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    }
+
+    wander();
+    const interval = setInterval(wander, MOVE_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [visible, blink]);
+  }, [visible, width, height, position]);
+
+  // Continuous walking bob.
+  useEffect(() => {
+    if (!visible) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bob, { toValue: -6, duration: 260, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(bob, { toValue: 0, duration: 260, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [visible, bob]);
 
   useEffect(() => {
     return () => {
@@ -58,9 +90,18 @@ export function MascotCompanion() {
   }
 
   const tint = COLOR_MAP[settings.mascotColor];
+  const source = data.identity?.icon === 'female' ? require('../../assets/identity-mark-female.png') : require('../../assets/identity-mark.png');
 
   return (
-    <View pointerEvents="box-none" style={[styles.wrapper, { left: 16, bottom: insets.bottom + 100 }]}>
+    <Animated.View
+      pointerEvents="box-none"
+      style={[
+        styles.wrapper,
+        {
+          transform: [...position.getTranslateTransform(), { translateY: bob }],
+        },
+      ]}
+    >
       {message && (
         <View style={styles.bubble}>
           <Text style={styles.bubbleText}>{message}</Text>
@@ -70,49 +111,48 @@ export function MascotCompanion() {
         onPress={handlePress}
         accessibilityRole="button"
         accessibilityLabel="AlterX companion — tap for a message"
-        style={[styles.face, { borderColor: tint, shadowColor: tint }]}
+        style={styles.figureButton}
       >
-        <View style={styles.eyesRow}>
-          <Animated.View style={[styles.eye, { backgroundColor: tint, transform: [{ scaleY: blink }] }]} />
-          <Animated.View style={[styles.eye, { backgroundColor: tint, transform: [{ scaleY: blink }] }]} />
-        </View>
+        <Image
+          source={source}
+          style={[
+            styles.figure,
+            { tintColor: tint, transform: [{ scaleX: facingLeft ? -1 : 1 }] },
+          ]}
+          resizeMode="contain"
+        />
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    width: SIZE,
+    top: 0,
+    left: 0,
+    width: FIGURE_WIDTH,
+    alignItems: 'center',
     zIndex: 50,
   },
-  face: {
-    width: SIZE,
-    height: SIZE,
-    borderRadius: SIZE / 2,
-    borderWidth: 1.5,
-    backgroundColor: colors.panelSolid,
+  figureButton: {
+    width: FIGURE_WIDTH,
+    height: FIGURE_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
+  },
+  figure: {
+    width: FIGURE_WIDTH,
+    height: FIGURE_HEIGHT,
+    shadowColor: colors.glow,
+    shadowOpacity: 0.7,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 6,
-  },
-  eyesRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  eye: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
   },
   bubble: {
     position: 'absolute',
     left: 0,
-    bottom: SIZE + 10,
+    bottom: FIGURE_HEIGHT + 10,
     width: 180,
     padding: 10,
     borderRadius: 12,

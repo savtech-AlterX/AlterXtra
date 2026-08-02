@@ -195,7 +195,7 @@ export default function Settings() {
           <View style={styles.lockText}>
             <Text style={typography.label}>COMPANION</Text>
             <Text style={styles.lockDesc}>
-              A small companion in the corner. Tap it for a stat or a nudge.
+              A figurine that walks around the screen. Tap it for a stat or a nudge.
             </Text>
           </View>
           <Switch
