@@ -1,18 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
 import { colors } from '../../src/theme/colors';
-import { iconGlow, typography } from '../../src/theme/typography';
+import { glowShadow, typography } from '../../src/theme/typography';
 import { AppIconChoice } from '../../src/store/types';
 
-const OPTIONS: { key: AppIconChoice; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'male', icon: 'man' },
-  { key: 'mystery', icon: 'help' },
-  { key: 'female', icon: 'woman' },
-];
+const OPTIONS: AppIconChoice[] = ['male', 'mystery', 'female'];
+
+function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
+  if (option === 'male') {
+    return <Image source={require('../../assets/identity-mark.png')} style={styles.glyphImage} resizeMode="contain" />;
+  }
+  if (option === 'female') {
+    return (
+      <Image source={require('../../assets/identity-mark-female.png')} style={styles.glyphImage} resizeMode="contain" />
+    );
+  }
+  return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
+}
 
 export default function ChooseIcon() {
   const router = useRouter();
@@ -28,20 +36,21 @@ export default function ChooseIcon() {
 
       <View style={styles.row}>
         {OPTIONS.map((opt) => {
-          const isSelected = selected === opt.key;
+          const isSelected = selected === opt;
+          const tint = isSelected ? colors.glowStrong : colors.glow;
           return (
-            <Pressable
-              key={opt.key}
-              onPress={() => setSelected(opt.key)}
-              style={[styles.box, isSelected && styles.boxSelected]}
-            >
-              <Ionicons
-                name={opt.icon}
-                size={44}
-                color={isSelected ? colors.glowStrong : colors.glow}
-                style={iconGlow}
-              />
-            </Pressable>
+            <View key={opt} style={styles.cardWrap}>
+              <Pressable
+                onPress={() => setSelected(opt)}
+                style={[styles.box, isSelected && styles.boxSelected]}
+                accessibilityRole="button"
+                accessibilityLabel={`${opt} icon`}
+                accessibilityState={{ selected: isSelected }}
+              >
+                <IconGlyph option={opt} tint={tint} />
+              </Pressable>
+              <View style={[styles.reflection, { backgroundColor: tint, opacity: isSelected ? 0.9 : 0.45 }]} />
+            </View>
           );
         })}
       </View>
@@ -72,23 +81,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 14,
-    marginTop: 32,
+    marginTop: 40,
+  },
+  cardWrap: {
+    alignItems: 'center',
   },
   box: {
-    width: 96,
-    height: 128,
-    borderRadius: 14,
+    width: 104,
+    height: 176,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.borderDim,
     backgroundColor: colors.panelSolid,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   boxSelected: {
     borderColor: colors.glowStrong,
     shadowColor: colors.glow,
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  },
+  glyphImage: {
+    width: 66,
+    height: 66 * 1.67,
+  },
+  mysteryGlyph: {
+    fontFamily: typography.screenTitle.fontFamily,
+    fontSize: 64,
+    ...glowShadow,
+    textShadowRadius: 16,
+  },
+  reflection: {
+    width: 56,
+    height: 5,
+    borderRadius: 3,
+    marginTop: 10,
+    shadowColor: colors.glow,
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
   },
   footer: {
