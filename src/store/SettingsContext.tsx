@@ -3,11 +3,15 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 
 const SETTINGS_KEY = 'alterx:settings:v1';
 
+export type MascotColor = 'blue' | 'teal' | 'amber';
+
 type Settings = {
   appLockEnabled: boolean;
   dailyReminderEnabled: boolean;
   dailyReminderHour: number;
   dailyReminderMinute: number;
+  mascotEnabled: boolean;
+  mascotColor: MascotColor;
 };
 
 const defaultSettings: Settings = {
@@ -15,6 +19,8 @@ const defaultSettings: Settings = {
   dailyReminderEnabled: false,
   dailyReminderHour: 19,
   dailyReminderMinute: 0,
+  mascotEnabled: true,
+  mascotColor: 'blue',
 };
 
 type SettingsContextValue = {
@@ -22,6 +28,8 @@ type SettingsContextValue = {
   isLoaded: boolean;
   setAppLockEnabled: (enabled: boolean) => void;
   setDailyReminder: (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => void;
+  setMascotEnabled: (enabled: boolean) => void;
+  setMascotColor: (color: MascotColor) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -55,9 +63,17 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const setMascotEnabled = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, mascotEnabled: enabled }));
+  }, []);
+
+  const setMascotColor = useCallback((color: MascotColor) => {
+    setSettings((prev) => ({ ...prev, mascotColor: color }));
+  }, []);
+
   const value = useMemo(
-    () => ({ settings, isLoaded, setAppLockEnabled, setDailyReminder }),
-    [settings, isLoaded, setAppLockEnabled, setDailyReminder]
+    () => ({ settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled, setMascotColor }),
+    [settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled, setMascotColor]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

@@ -8,6 +8,7 @@ import { colors } from '../src/theme/colors';
 import { AppDataProvider } from '../src/store/AppDataContext';
 import { SettingsProvider } from '../src/store/SettingsContext';
 import { AppLockGate } from '../src/components/AppLockGate';
+import { MascotCompanion } from '../src/components/MascotCompanion';
 import { Platform, View } from 'react-native';
 
 export default function RootLayout() {
@@ -49,6 +50,7 @@ export default function RootLayout() {
                   animation: 'fade',
                 }}
               />
+              <MascotCompanion />
             </AppLockGate>
           </AppDataProvider>
         </SettingsProvider>
