@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Workup",
+    "slug": "workup",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "workup",
+    "backgroundColor": "#0b0d12",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.workup.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Workup uses your camera to take consistently framed progress photos of your muscle groups."
+      }
+    },
+    "android": {
+      "package": "com.workup.app",
+      "permissions": ["CAMERA"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Workup uses your camera to take consistently framed progress photos of your muscle groups."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {}
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}
