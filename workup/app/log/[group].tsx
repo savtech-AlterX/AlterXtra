@@ -161,9 +161,11 @@ const styles = StyleSheet.create({
   },
   measurementLabelInput: {
     flex: 2,
+    minWidth: 0,
   },
   measurementValueInput: {
     flex: 1,
+    minWidth: 0,
   },
   addRow: {
     marginTop: 10,

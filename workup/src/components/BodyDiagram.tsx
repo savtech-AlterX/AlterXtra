@@ -62,8 +62,8 @@ export function BodyDiagram({ view, selectedGroup, onSelectGroup }: Props) {
       {zones.map((zone, index) => {
         const isSelected = zone.group === selectedGroup;
         const fill = isSelected ? colors.accent : colors.surfaceAlt;
+        const key = `${zone.group}-${index}`;
         const commonProps = {
-          key: `${zone.group}-${index}`,
           fill,
           stroke: colors.border,
           strokeWidth: 1,
@@ -71,10 +71,11 @@ export function BodyDiagram({ view, selectedGroup, onSelectGroup }: Props) {
         };
 
         if (zone.shape === 'circle') {
-          return <Circle {...commonProps} cx={zone.x} cy={zone.y} r={zone.r} />;
+          return <Circle key={key} {...commonProps} cx={zone.x} cy={zone.y} r={zone.r} />;
         }
         return (
           <Rect
+            key={key}
             {...commonProps}
             x={zone.x}
             y={zone.y}
