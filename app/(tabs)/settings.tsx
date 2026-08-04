@@ -1,22 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Switch, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { exportBackup, importBackup } from '../../src/lib/backup';
 import { disableDailyReminder, enableDailyReminder } from '../../src/lib/notifications';
 import { useAppData } from '../../src/store/AppDataContext';
-import { MascotColor, useSettings } from '../../src/store/SettingsContext';
+import { useSettings } from '../../src/store/SettingsContext';
 import { colors } from '../../src/theme/colors';
 import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
-
-const MASCOT_COLORS: { key: MascotColor; label: string; swatch: string }[] = [
-  { key: 'blue', label: 'BLUE', swatch: colors.glow },
-  { key: 'teal', label: 'TEAL', swatch: colors.accentTeal },
-  { key: 'amber', label: 'AMBER', swatch: colors.warning },
-];
 
 function formatTime(hour: number, minute: number) {
   const period = hour >= 12 ? 'PM' : 'AM';
@@ -27,7 +21,7 @@ function formatTime(hour: number, minute: number) {
 export default function Settings() {
   const router = useRouter();
   const { data, resetAll, restoreAll } = useAppData();
-  const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled, setMascotColor } = useSettings();
+  const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled } = useSettings();
   const [backupBusy, setBackupBusy] = useState(false);
   const [reminderBusy, setReminderBusy] = useState(false);
 
@@ -205,28 +199,6 @@ export default function Settings() {
             thumbColor={colors.textPrimary}
           />
         </View>
-        {settings.mascotEnabled && (
-          <View style={styles.swatchRow}>
-            {MASCOT_COLORS.map((c) => (
-              <Pressable
-                key={c.key}
-                onPress={() => setMascotColor(c.key)}
-                accessibilityRole="button"
-                accessibilityLabel={`${c.label} companion color`}
-                style={styles.swatchWrap}
-              >
-                <View
-                  style={[
-                    styles.swatch,
-                    { backgroundColor: c.swatch },
-                    settings.mascotColor === c.key && styles.swatchSelected,
-                  ]}
-                />
-                <Text style={styles.swatchLabel}>{c.label}</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
       </GlowCard>
 
       <GlowCard style={styles.card}>
@@ -308,34 +280,6 @@ const styles = StyleSheet.create({
   timeSteppers: {
     flexDirection: 'row',
     gap: 18,
-  },
-  swatchRow: {
-    flexDirection: 'row',
-    gap: 20,
-    marginTop: 4,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderDim,
-  },
-  swatchWrap: {
-    alignItems: 'center',
-    gap: 6,
-  },
-  swatch: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  swatchSelected: {
-    borderColor: colors.textPrimary,
-  },
-  swatchLabel: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 9,
-    color: colors.textSecondary,
-    letterSpacing: 1,
   },
   value: {
     fontFamily: typography.cardTitle.fontFamily,

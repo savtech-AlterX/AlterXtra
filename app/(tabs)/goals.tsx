@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
+import { GoalCelebration } from '../../src/components/GoalCelebration';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { Goal } from '../../src/store/types';
@@ -117,9 +118,19 @@ function SecondaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (
 export default function Goals() {
   const router = useRouter();
   const { data, toggleGoalStep } = useAppData();
+  const [celebrating, setCelebrating] = useState<string | null>(null);
 
   const primary = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
   const secondary = data.goals.length > 1 ? data.goals.slice(0, -1) : [];
+
+  // Toggle the step, and if that action is what finished the goal, celebrate it.
+  function handleToggleStep(goal: Goal, stepIndex: number) {
+    const wasComplete = goal.steps.length > 0 && goal.steps.every((s) => s.done);
+    toggleGoalStep(goal.id, stepIndex);
+    const next = goal.steps.map((s, i) => (i === stepIndex ? { ...s, done: !s.done } : s));
+    const nowComplete = next.length > 0 && next.every((s) => s.done);
+    if (!wasComplete && nowComplete) setCelebrating(goal.objective);
+  }
 
   return (
     <HudScreen>
@@ -145,7 +156,7 @@ export default function Goals() {
       )}
 
       {primary && (
-        <PrimaryGoalCard goal={primary} onToggleStep={(i) => toggleGoalStep(primary.id, i)} />
+        <PrimaryGoalCard goal={primary} onToggleStep={(i) => handleToggleStep(primary, i)} />
       )}
 
       <View style={styles.header}>
@@ -163,8 +174,12 @@ export default function Goals() {
       {secondary.length === 0 && <Text style={styles.emptyText}>No secondary goals yet.</Text>}
 
       {secondary.map((goal) => (
-        <SecondaryGoalCard key={goal.id} goal={goal} onToggleStep={(i) => toggleGoalStep(goal.id, i)} />
+        <SecondaryGoalCard key={goal.id} goal={goal} onToggleStep={(i) => handleToggleStep(goal, i)} />
       ))}
+
+      {celebrating && (
+        <GoalCelebration objective={celebrating} onDismiss={() => setCelebrating(null)} />
+      )}
     </HudScreen>
   );
 }
