@@ -1,7 +1,27 @@
+export type Palette = {
+  background: string;
+  backgroundElevated: string;
+  panel: string;
+  panelSolid: string;
+  glow: string;
+  glowStrong: string;
+  glowDim: string;
+  border: string;
+  borderDim: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  accentTeal: string;
+  danger: string;
+  success: string;
+  warning: string;
+  overlay: string;
+};
+
 // Colors sampled directly from the reference design (pixel-picked from the
 // provided screenshots), then deepened to navy per explicit request rather
 // than staying pure black.
-export const colors = {
+const navy: Palette = {
   background: '#03050f',
   backgroundElevated: '#060a1a',
   panel: 'rgba(6, 12, 28, 0.7)',
@@ -26,4 +46,39 @@ export const colors = {
   warning: '#ffb648',
 
   overlay: 'rgba(0, 0, 0, 0.65)',
-} as const;
+};
+
+// Sampled pixel-for-pixel from the vintage reference: a neutral near-black
+// ground (#131313) with warm cream ink (#d5cec4). There is no neon here, so
+// the "glow" role is carried by the cream itself and the halos are dialled
+// right down rather than tinted.
+const vintage: Palette = {
+  background: '#131313',
+  backgroundElevated: '#1b1a18',
+  panel: 'rgba(30, 28, 25, 0.72)',
+  panelSolid: '#191817',
+
+  glow: '#d5cec4',
+  glowStrong: '#ece5da',
+  glowDim: 'rgba(213, 206, 196, 0.18)',
+  border: 'rgba(213, 206, 196, 0.42)',
+  borderDim: 'rgba(213, 206, 196, 0.18)',
+
+  textPrimary: '#ece7dd',
+  textSecondary: '#a89f93',
+  // Raised from the literal sample so body text clears WCAG AA on #131313.
+  textMuted: '#8a8175',
+
+  accentTeal: '#c8bda8',
+  danger: '#c2564b',
+  success: '#8a9a6b',
+  warning: '#c99a4e',
+
+  overlay: 'rgba(0, 0, 0, 0.7)',
+};
+
+export const palettes = { navy, vintage } as const;
+export type ThemeName = keyof typeof palettes;
+
+// Default palette. Existing imports of `colors` keep working unchanged.
+export const colors = navy;
