@@ -9,6 +9,7 @@ type Settings = {
   dailyReminderHour: number;
   dailyReminderMinute: number;
   mascotEnabled: boolean;
+  showGoalBarOnHome: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -17,6 +18,7 @@ const defaultSettings: Settings = {
   dailyReminderHour: 19,
   dailyReminderMinute: 0,
   mascotEnabled: true,
+  showGoalBarOnHome: true,
 };
 
 type SettingsContextValue = {
@@ -25,6 +27,7 @@ type SettingsContextValue = {
   setAppLockEnabled: (enabled: boolean) => void;
   setDailyReminder: (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => void;
   setMascotEnabled: (enabled: boolean) => void;
+  setShowGoalBarOnHome: (enabled: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -62,9 +65,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, mascotEnabled: enabled }));
   }, []);
 
+  const setShowGoalBarOnHome = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, showGoalBarOnHome: enabled }));
+  }, []);
+
   const value = useMemo(
-    () => ({ settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled }),
-    [settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled]
+    () => ({ settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome }),
+    [settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

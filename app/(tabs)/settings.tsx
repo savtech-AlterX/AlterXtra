@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Alert, Platform, StyleSheet, Switch, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
+import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { exportBackup, importBackup } from '../../src/lib/backup';
 import { disableDailyReminder, enableDailyReminder } from '../../src/lib/notifications';
@@ -21,7 +22,7 @@ function formatTime(hour: number, minute: number) {
 export default function Settings() {
   const router = useRouter();
   const { data, resetAll, restoreAll } = useAppData();
-  const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled } = useSettings();
+  const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome } = useSettings();
   const [backupBusy, setBackupBusy] = useState(false);
   const [reminderBusy, setReminderBusy] = useState(false);
 
@@ -102,16 +103,14 @@ export default function Settings() {
 
   return (
     <HudScreen>
-      <Text style={typography.screenTitle}>SETTINGS</Text>
+      <View style={styles.titleRow}>
+        <CloseToHome />
+        <Text style={typography.screenTitle}>SETTINGS</Text>
+      </View>
 
       <GlowCard style={styles.card}>
         <Text style={typography.label}>CURRENT IDENTITY</Text>
         <Text style={styles.value}>{data.identity?.archetype ?? '—'}</Text>
-      </GlowCard>
-
-      <GlowCard style={styles.card}>
-        <Text style={typography.label}>APP ICON MARK</Text>
-        <Text style={styles.value}>{data.identity?.icon ?? '—'}</Text>
       </GlowCard>
 
       <GlowButton
@@ -201,6 +200,21 @@ export default function Settings() {
         </View>
       </GlowCard>
 
+      <GlowCard style={styles.lockCard}>
+        <View style={styles.lockText}>
+          <Text style={typography.label}>GOAL BAR ON HOME</Text>
+          <Text style={styles.lockDesc}>
+            Show your primary objective's live countdown bar on the home screen.
+          </Text>
+        </View>
+        <Switch
+          value={settings.showGoalBarOnHome}
+          onValueChange={setShowGoalBarOnHome}
+          trackColor={{ false: colors.borderDim, true: colors.glow }}
+          thumbColor={colors.textPrimary}
+        />
+      </GlowCard>
+
       <GlowCard style={styles.card}>
         <Text style={typography.label}>BACKUP</Text>
         <Text style={styles.lockDesc}>
@@ -244,6 +258,11 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   card: {
     gap: 6,
   },

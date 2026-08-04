@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
+import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { colors } from '../../src/theme/colors';
@@ -37,7 +38,10 @@ export default function LogBook() {
 
   return (
     <HudScreen>
-      <Text style={typography.screenTitle}>LOG BOOK</Text>
+      <View style={styles.titleRow}>
+        <CloseToHome />
+        <Text style={typography.screenTitle}>LOG BOOK</Text>
+      </View>
 
       <GlowCard style={styles.logToday} onPress={() => router.push('/logbook/new')}>
         <View style={styles.logTodayIcon}>
@@ -93,6 +97,11 @@ export default function LogBook() {
 }
 
 const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   logToday: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -9,15 +9,12 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        // Navigation is hub-and-spoke: everything is reached from Home and
+        // every section closes back to it, so the tab bar is hidden rather
+        // than removed (keeps all existing /(tabs)/* routes working).
+        tabBarStyle: { display: 'none' },
         tabBarActiveTintColor: colors.glowStrong,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.backgroundElevated,
-          borderTopColor: colors.borderDim,
-          borderTopWidth: 1,
-          height: 84,
-          paddingTop: 8,
-        },
         tabBarLabelStyle: {
           fontFamily: fonts.titleRegular,
           fontSize: 10,

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
-import { StackHeader } from '../src/components/StackHeader';
+import { CloseToHome } from '../src/components/CloseToHome';
 import { computeGrowthStats } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
 import { colors } from '../src/theme/colors';
@@ -60,7 +60,10 @@ export default function Growth() {
 
   return (
     <HudScreen>
-      <StackHeader title="GROWTH" />
+      <View style={styles.titleRow}>
+        <CloseToHome />
+        <Text style={typography.screenTitle}>GROWTH</Text>
+      </View>
 
       <GlowCard strong style={styles.hero}>
         <Text style={styles.heroValue}>{stats.daysSinceStart ?? '—'}</Text>
@@ -142,6 +145,11 @@ export default function Growth() {
 }
 
 const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   hero: {
     alignItems: 'center',
     paddingVertical: 28,

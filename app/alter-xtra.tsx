@@ -60,8 +60,7 @@ export default function AlterXtra() {
         </GlowCard>
       ))}
 
-      <GlowButton label="COMING SOON" disabled style={styles.spacer} />
-      <Text style={styles.disclaimer}>Alter-Xtra isn't available to subscribe to yet — check back soon.</Text>
+      <GlowButton label="UNLOCK ALTER-XTRA" style={styles.spacer} onPress={() => {}} />
     </HudScreen>
   );
 }

@@ -4,19 +4,13 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
 import { GoalCelebration } from '../../src/components/GoalCelebration';
+import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
+import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { Goal } from '../../src/store/types';
 import { colors } from '../../src/theme/colors';
 import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
-
-function daysLeftLabel(targetDate: string): string {
-  const target = new Date(`${targetDate}T23:59:59`);
-  if (isNaN(target.getTime())) return '—';
-  const diff = Math.ceil((target.getTime() - Date.now()) / 86400000);
-  if (diff < 0) return 'PAST';
-  return String(diff);
-}
 
 function progress(goal: Goal) {
   const total = goal.steps.length;
@@ -56,7 +50,7 @@ function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i:
   return (
     <GlowCard strong style={styles.primaryCard}>
       <Text style={styles.goalLabel}>PRIMARY OBJECTIVE</Text>
-      <Text style={styles.goalTitle}>{goal.objective}</Text>
+      <GoalCountdownBar goal={goal} />
       <View style={styles.targetRow}>
         <Ionicons name="calendar-outline" size={14} color={colors.glow} style={iconGlow} />
         <Text style={styles.targetLabel}>TARGET</Text>
@@ -65,14 +59,11 @@ function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i:
 
       <View style={styles.progressRow}>
         <View style={styles.ring}>
-          <Text style={styles.ringValue}>{daysLeftLabel(goal.targetDate)}</Text>
-          <Text style={styles.ringLabel}>DAYS LEFT</Text>
+          <Text style={styles.ringValue}>{pct}%</Text>
+          <Text style={styles.ringLabel}>COMPLETE</Text>
         </View>
         <View style={styles.progressCol}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.goalLabel}>PROGRESS</Text>
-            <Text style={styles.progressPct}>{pct}%</Text>
-          </View>
+          <Text style={styles.goalLabel}>PROGRESS</Text>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${pct}%` }]} />
           </View>
@@ -135,7 +126,10 @@ export default function Goals() {
   return (
     <HudScreen>
       <View style={styles.header}>
-        <Text style={typography.screenTitle}>GOALS</Text>
+        <View style={styles.titleRow}>
+          <CloseToHome />
+          <Text style={typography.screenTitle}>GOALS</Text>
+        </View>
         <Pressable
           style={styles.addButton}
           onPress={() => router.push('/goals/new')}
@@ -189,6 +183,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   addButton: {
     width: 40,

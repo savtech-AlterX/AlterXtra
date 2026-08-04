@@ -4,9 +4,11 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
+import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { useAppData } from '../../src/store/AppDataContext';
+import { useSettings } from '../../src/store/SettingsContext';
 import { colors } from '../../src/theme/colors';
 import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 
@@ -50,7 +52,10 @@ function GridCard({
 export default function Home() {
   const router = useRouter();
   const { data } = useAppData();
+  const { settings } = useSettings();
   const identity = data.identity;
+  // Same goal the Goals screen treats as primary: the oldest one.
+  const primaryGoal = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
 
   return (
     <HudScreen>
@@ -89,6 +94,8 @@ export default function Home() {
         </Text>
       </View>
 
+      {settings.showGoalBarOnHome && primaryGoal && <GoalCountdownBar goal={primaryGoal} />}
+
       <GlowCard strong style={styles.hero}>
         <LinearGradient
           colors={['transparent', colors.glowStrong, 'transparent']}
@@ -120,7 +127,13 @@ export default function Home() {
           icon="book"
           title="Diary"
           subtitle="Journey reflections"
-          onPress={() => router.push('/(tabs)/diary')}
+          onPress={() => router.push('/diary/journal')}
+        />
+        <GridCard
+          icon="videocam"
+          title="Future Self"
+          subtitle="Letters & video messages"
+          onPress={() => router.push('/diary/future-self')}
         />
         <GridCard
           icon="flag"
@@ -139,6 +152,12 @@ export default function Home() {
           title="Growth"
           subtitle="See how far you've come"
           onPress={() => router.push('/growth')}
+        />
+        <GridCard
+          icon="settings-sharp"
+          title="Settings"
+          subtitle="Lock, reminders, backup"
+          onPress={() => router.push('/(tabs)/settings')}
         />
       </View>
     </HudScreen>

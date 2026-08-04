@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../store/AppDataContext';
 import { useSettings } from '../store/SettingsContext';
 import { computeGrowthStats } from '../lib/growth';
@@ -10,58 +11,117 @@ import { typography } from '../theme/typography';
 
 const FIGURE_WIDTH = 62;
 const FIGURE_HEIGHT = FIGURE_WIDTH * AVATAR_ASPECT;
-const MOVE_INTERVAL_MS = 5500;
-const MOVE_DURATION_MS = 3600;
+
+const WALK_SPEED = 26; // px per second
+const STEP_MS = 320; // one stride
+const BOB_HEIGHT = 4;
+const IDLE_MIN_MS = 1800;
+const IDLE_MAX_MS = 5000;
+const WALK_MIN_MS = 2500;
+const WALK_MAX_MS = 6000;
 const MESSAGE_VISIBLE_MS = 4000;
 
+type Phase = 'idle' | 'walking';
+
+function randBetween(min: number, max: number) {
+  return min + Math.random() * (max - min);
+}
+
+/**
+ * A companion that actually walks the floor rather than drifting.
+ * It paces left and right along the bottom of the screen, taking strides
+ * (a small vertical bob synced to footfalls) and pausing to idle, and it
+ * flips to face whichever way it's heading.
+ */
 export function MascotCompanion() {
   const { data } = useAppData();
   const { settings, isLoaded } = useSettings();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
-  const startX = width / 2 - FIGURE_WIDTH / 2;
-  const startY = height * 0.58;
-  const position = useRef(new Animated.ValueXY({ x: startX, y: startY })).current;
+  const floor = insets.bottom + 12;
+  const maxX = Math.max(0, width - FIGURE_WIDTH);
+
+  const x = useRef(new Animated.Value(maxX / 2)).current;
   const bob = useRef(new Animated.Value(0)).current;
+  const xValue = useRef(maxX / 2);
   const [facingLeft, setFacingLeft] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const messageTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastX = useRef(startX);
+  const phaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const walkAnim = useRef<Animated.CompositeAnimation | null>(null);
 
   const visible = isLoaded && settings.mascotEnabled && !!data.identity;
 
-  // Wander the lower part of the screen so it stays clear of headers and hero cards.
+  useEffect(() => {
+    const id = x.addListener(({ value }) => {
+      xValue.current = value;
+    });
+    return () => x.removeListener(id);
+  }, [x]);
+
+  // Alternate between standing still and walking to a new spot on the floor.
   useEffect(() => {
     if (!visible) return;
-    const sideMargin = 12;
-    const topMargin = height * 0.42;
-    const bottomMargin = 150;
+    let cancelled = false;
 
-    function wander() {
-      const targetX = sideMargin + Math.random() * Math.max(1, width - FIGURE_WIDTH - sideMargin * 2);
-      const targetY = topMargin + Math.random() * Math.max(1, height - FIGURE_HEIGHT - topMargin - bottomMargin);
-      setFacingLeft(targetX < lastX.current);
-      lastX.current = targetX;
-      Animated.timing(position, {
-        toValue: { x: targetX, y: targetY },
-        duration: MOVE_DURATION_MS,
-        easing: Easing.inOut(Easing.ease),
+    function schedule(phase: Phase) {
+      if (cancelled) return;
+      if (phase === 'idle') {
+        phaseTimer.current = setTimeout(() => schedule('walking'), randBetween(IDLE_MIN_MS, IDLE_MAX_MS));
+        return;
+      }
+
+      const from = xValue.current;
+      const duration = randBetween(WALK_MIN_MS, WALK_MAX_MS);
+      const reach = (WALK_SPEED * duration) / 1000;
+      const direction = Math.random() < 0.5 ? -1 : 1;
+      // Keep it on screen: bounce the target back inside the bounds.
+      let target = from + direction * reach;
+      if (target < 0) target = Math.min(maxX, Math.abs(target));
+      if (target > maxX) target = Math.max(0, maxX - (target - maxX));
+
+      setFacingLeft(target < from);
+
+      const distance = Math.abs(target - from);
+      const realDuration = (distance / WALK_SPEED) * 1000;
+
+      walkAnim.current = Animated.timing(x, {
+        toValue: target,
+        duration: realDuration,
+        easing: Easing.linear,
         useNativeDriver: false,
-      }).start();
+      });
+      walkAnim.current.start(({ finished }) => {
+        if (finished && !cancelled) schedule('idle');
+      });
     }
 
-    wander();
-    const interval = setInterval(wander, MOVE_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [visible, width, height, position]);
+    schedule('idle');
+    return () => {
+      cancelled = true;
+      if (phaseTimer.current) clearTimeout(phaseTimer.current);
+      walkAnim.current?.stop();
+    };
+  }, [visible, maxX, x]);
 
-  // Continuous walking bob.
+  // Footfall bob, running continuously so strides read as steps.
   useEffect(() => {
     if (!visible) return;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(bob, { toValue: -5, duration: 300, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-        Animated.timing(bob, { toValue: 0, duration: 300, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(bob, {
+          toValue: -BOB_HEIGHT,
+          duration: STEP_MS / 2,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: false,
+        }),
+        Animated.timing(bob, {
+          toValue: 0,
+          duration: STEP_MS / 2,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: false,
+        }),
       ])
     );
     loop.start();
@@ -87,7 +147,7 @@ export function MascotCompanion() {
   return (
     <Animated.View
       pointerEvents="box-none"
-      style={[styles.wrapper, { transform: [...position.getTranslateTransform(), { translateY: bob }] }]}
+      style={[styles.wrapper, { bottom: floor, transform: [{ translateX: x }, { translateY: bob }] }]}
     >
       {message && (
         <View style={styles.bubble}>
@@ -113,7 +173,6 @@ export function MascotCompanion() {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    top: 0,
     left: 0,
     width: FIGURE_WIDTH,
     alignItems: 'center',

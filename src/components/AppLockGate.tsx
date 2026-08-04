@@ -7,11 +7,15 @@ import { glowShadow, typography } from '../theme/typography';
 import { GlowButton } from './GlowButton';
 import { IdentityMarkRing } from './IdentityMarkRing';
 
+// Grace period before the lock re-arms after leaving the app.
+const RELOCK_AFTER_MS = 5 * 60 * 1000;
+
 export function AppLockGate({ children }: { children: React.ReactNode }) {
   const { settings, isLoaded } = useSettings();
   const [unlocked, setUnlocked] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
   const appState = useRef(AppState.currentState);
+  const backgroundedAt = useRef<number | null>(null);
 
   const lockEnabled = settings.appLockEnabled && Platform.OS !== 'web';
 
@@ -42,10 +46,16 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, lockEnabled]);
 
+  // Re-lock only after the app has been away for a while. Flicking out to
+  // check a message and coming straight back shouldn't demand Face ID again.
   useEffect(() => {
     const sub = AppState.addEventListener('change', (next: AppStateStatus) => {
-      if (appState.current === 'active' && next.match(/inactive|background/) && lockEnabled) {
-        setUnlocked(false);
+      if (appState.current === 'active' && next.match(/inactive|background/)) {
+        backgroundedAt.current = Date.now();
+      }
+      if (next === 'active' && appState.current.match(/inactive|background/) && lockEnabled) {
+        const away = Date.now() - (backgroundedAt.current ?? 0);
+        if (away > RELOCK_AFTER_MS) setUnlocked(false);
       }
       appState.current = next;
     });

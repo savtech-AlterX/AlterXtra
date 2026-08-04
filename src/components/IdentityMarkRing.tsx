@@ -1,19 +1,32 @@
 import React from 'react';
 import { Image, StyleSheet, View, ViewStyle } from 'react-native';
+import { useAppData } from '../store/AppDataContext';
+import { AppIconChoice } from '../store/types';
 import { colors } from '../theme/colors';
 
 type Props = {
   size?: number;
   style?: ViewStyle;
+  // Override the mark shown. Defaults to whichever icon the user picked
+  // during onboarding, so the choice carries through the whole app.
+  icon?: AppIconChoice;
 };
+
+function markSource(icon: AppIconChoice | undefined) {
+  return icon === 'female'
+    ? require('../../assets/identity-mark-female.png')
+    : require('../../assets/identity-mark.png');
+}
 
 // The identity-mark icon inside a circular glowing ring, as shown
 // consistently across the reference recording (splash + home hero).
-export function IdentityMarkRing({ size = 130, style }: Props) {
+export function IdentityMarkRing({ size = 130, style, icon }: Props) {
+  const { data } = useAppData();
+  const resolved = icon ?? data.identity?.icon;
   return (
     <View style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}>
       <Image
-        source={require('../../assets/identity-mark.png')}
+        source={markSource(resolved)}
         style={{ width: size * 0.46, height: size * 0.46 * (350 / 207) }}
         resizeMode="contain"
       />
