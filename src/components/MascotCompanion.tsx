@@ -7,7 +7,7 @@ import { useThemeControls } from '../theme/ThemeContext';
 import { computeGrowthStats } from '../lib/growth';
 import { buildMascotMessagePool, pickMascotMessage } from '../lib/mascotMessages';
 import { AVATAR_ASPECT, avatarSource } from '../lib/avatar';
-import { useThemedStyles } from '../theme/useAppTheme';
+import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
 const FIGURE_WIDTH = 62;
@@ -41,6 +41,7 @@ function randBetween(min: number, max: number) {
  */
 export function MascotCompanion() {
   const styles = useThemedStyles(makeStyles);
+  const { colors } = useAppTheme();
   const { data } = useAppData();
   const { theme } = useThemeControls();
   const { settings, isLoaded } = useSettings();
@@ -185,8 +186,8 @@ export function MascotCompanion() {
             style={styles.figureButton}
           >
             <Image
-              source={avatarSource(data.identity?.icon, theme)}
-              style={[styles.figure, { transform: [{ scaleX: facingLeft ? -1 : 1 }] }]}
+              source={avatarSource(data.identity?.icon)}
+              style={[styles.figure, { tintColor: colors.glow, transform: [{ scaleX: facingLeft ? -1 : 1 }] }]}
               resizeMode="contain"
             />
           </Pressable>

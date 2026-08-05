@@ -16,11 +16,11 @@ function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
   const styles = useThemedStyles(makeStyles);
   const { theme } = useThemeControls();
   if (option === 'male') {
-    return <Image source={markSource('male', theme)} style={styles.glyphImage} resizeMode="contain" />;
+    return <Image source={markSource('male')} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />;
   }
   if (option === 'female') {
     return (
-      <Image source={markSource('female', theme)} style={styles.glyphImage} resizeMode="contain" />
+      <Image source={markSource('female')} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />
     );
   }
   return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;

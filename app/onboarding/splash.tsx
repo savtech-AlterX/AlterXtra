@@ -6,11 +6,12 @@ import { wordmarkSource } from '../../src/lib/avatar';
 import { useThemeControls } from '../../src/theme/ThemeContext';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
-import { useThemedStyles } from '../../src/theme/useAppTheme';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function Splash() {
   const styles = useThemedStyles(makeStyles);
+  const { colors } = useAppTheme();
   const { theme } = useThemeControls();
   const router = useRouter();
 
@@ -18,7 +19,7 @@ export default function Splash() {
     <HudScreen scroll={false}>
       <View style={styles.center}>
         <IdentityMarkRing size={140} />
-        <Image source={wordmarkSource(theme)} style={styles.wordmark} resizeMode="contain" />
+        <Image source={wordmarkSource()} style={[styles.wordmark, { tintColor: colors.glow }]} resizeMode="contain" />
         <Text style={styles.subtitle}>IDENTITY TRANSFORMATION</Text>
       </View>
 

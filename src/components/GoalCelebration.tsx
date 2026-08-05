@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AVATAR_ASPECT, avatarSource } from '../lib/avatar';
 import { useAppData } from '../store/AppDataContext';
 import { useThemeControls } from '../theme/ThemeContext';
-import { useThemedStyles } from '../theme/useAppTheme';
+import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
 const RAY_COUNT = 16;
@@ -22,6 +22,7 @@ type Props = {
  */
 export function GoalCelebration({ objective, onDismiss }: Props) {
   const styles = useThemedStyles(makeStyles);
+  const { colors } = useAppTheme();
   const { data } = useAppData();
   const { theme } = useThemeControls();
   const { width, height } = useWindowDimensions();
@@ -95,8 +96,8 @@ export function GoalCelebration({ objective, onDismiss }: Props) {
             </Text>
 
             <Image
-              source={avatarSource(data.identity?.icon, theme)}
-              style={styles.avatar}
+              source={avatarSource(data.identity?.icon)}
+              style={[styles.avatar, { tintColor: colors.glow }]}
               resizeMode="contain"
             />
 
@@ -115,7 +116,8 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(3, 5, 15, 0.97)',
+    // Solid ground; the fade-in is driven by the animated opacity above.
+    backgroundColor: colors.background,
     zIndex: 200,
   },
   rayLayer: {

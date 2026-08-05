@@ -18,40 +18,56 @@ export type Palette = {
   overlay: string;
 };
 
-// Colors sampled directly from the reference design (pixel-picked from the
-// provided screenshots), then deepened to navy per explicit request rather
-// than staying pure black.
-const navy: Palette = {
-  background: '#03050f',
-  backgroundElevated: '#060a1a',
-  panel: 'rgba(6, 12, 28, 0.7)',
-  panelSolid: '#050912',
+function rgba(hex: string, alpha: number) {
+  const h = hex.replace('#', '');
+  const n = parseInt(h, 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
 
-  glow: '#3fa9ff',
-  glowStrong: '#63c2ff',
-  glowDim: 'rgba(63, 169, 255, 0.35)',
-  border: 'rgba(63, 169, 255, 0.55)',
-  borderDim: 'rgba(63, 169, 255, 0.25)',
+/**
+ * The neon themes all share the same ground: pure black, as sampled from the
+ * reference screens (#000000 page, #00040c card interiors). Only the accent
+ * changes. Every accent clears WCAG AA against that ground.
+ */
+function neon(glow: string, glowStrong: string, accent: string): Palette {
+  return {
+    background: '#000000',
+    backgroundElevated: '#05070c',
+    panel: 'rgba(8, 12, 20, 0.82)',
+    panelSolid: '#04060b',
 
-  textPrimary: '#eaf4ff',
-  textSecondary: '#7fa8c9',
-  // Lightened from the original #4d6b85 (3.6:1) to clear WCAG AA's 4.5:1
-  // body-text contrast minimum against the navy background, same hue.
-  textMuted: '#5a7d9b',
+    glow,
+    glowStrong,
+    glowDim: rgba(glow, 0.35),
+    border: rgba(glow, 0.5),
+    borderDim: rgba(glow, 0.22),
 
-  // Sampled from the "build your reality" tagline in the reference.
-  accentTeal: '#72ddf2',
-  danger: '#ff4d5e',
-  success: '#3fe08a',
-  warning: '#ffb648',
+    textPrimary: '#f1f2f3',
+    textSecondary: '#8fa3b8',
+    textMuted: '#6b7a8c',
 
-  overlay: 'rgba(0, 0, 0, 0.65)',
-};
+    accentTeal: accent,
+    danger: '#ff4d5e',
+    success: '#3fe08a',
+    warning: '#ffb648',
+
+    overlay: 'rgba(0, 0, 0, 0.72)',
+  };
+}
+
+// Accent trio per theme, matching the six rings on the premium reference.
+// Blue is anchored on the real app screens (#0881d7 strokes, #4ea3f2 cores)
+// rather than the small swatch ring, which reads more indigo than the UI does.
+const blue = neon('#3da8f5', '#88cbfc', '#26cced');
+const purple = neon('#a164f7', '#c49cfc', '#c74cf0');
+const pink = neon('#f65aae', '#fc9ccf', '#f0426e');
+const green = neon('#3eea86', '#7efcb2', '#1dedb9');
+const amber = neon('#f7b23b', '#fcd188', '#ed6f26');
+const white = neon('#c7cfdb', '#f2f5fa', '#99a6ba');
 
 // Sampled pixel-for-pixel from the vintage reference: a neutral near-black
-// ground (#131313) with warm cream ink (#d5cec4). There is no neon here, so
-// the "glow" role is carried by the cream itself and the halos are dialled
-// right down rather than tinted.
+// ground (#131313) with warm cream ink (#d5cec4). No neon here, so the halos
+// are dialled right down rather than tinted.
 const vintage: Palette = {
   background: '#131313',
   backgroundElevated: '#1b1a18',
@@ -77,34 +93,11 @@ const vintage: Palette = {
   overlay: 'rgba(0, 0, 0, 0.7)',
 };
 
-// Sampled from the black-and-white reference: near-black card (#0e0e0f) with
-// pure white ink (#fcfbfc). Stark and flat by design — no glow at all.
-const mono: Palette = {
-  background: '#0e0e0f',
-  backgroundElevated: '#161617',
-  panel: 'rgba(24, 24, 26, 0.72)',
-  panelSolid: '#141415',
-
-  glow: '#fcfbfc',
-  glowStrong: '#ffffff',
-  glowDim: 'rgba(252, 251, 252, 0.14)',
-  border: 'rgba(252, 251, 252, 0.38)',
-  borderDim: 'rgba(252, 251, 252, 0.16)',
-
-  textPrimary: '#fcfbfc',
-  textSecondary: '#a8a8aa',
-  textMuted: '#7e7e81',
-
-  accentTeal: '#d4d4d6',
-  danger: '#e0574f',
-  success: '#9fb89f',
-  warning: '#d6b464',
-
-  overlay: 'rgba(0, 0, 0, 0.75)',
-};
-
-export const palettes = { navy, vintage, mono } as const;
+export const palettes = { blue, purple, pink, green, amber, white, vintage } as const;
 export type ThemeName = keyof typeof palettes;
 
-// Default palette. Existing imports of `colors` keep working unchanged.
-export const colors = navy;
+export const DEFAULT_THEME: ThemeName = 'blue';
+
+// Default palette. Static importers (there should be none outside the theme
+// module) still resolve to the shipping default.
+export const colors = blue;

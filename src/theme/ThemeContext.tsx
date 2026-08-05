@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Palette, palettes, ThemeName } from './colors';
+import { DEFAULT_THEME, Palette, palettes, ThemeName } from './colors';
 
 const THEME_KEY = 'alterx:theme:v1';
 
@@ -14,7 +14,7 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>('navy');
+  const [theme, setThemeState] = useState<ThemeName>(DEFAULT_THEME);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 /** The active palette. Components read colours through this so themes apply live. */
 export function useTheme(): Palette {
   const ctx = useContext(ThemeContext);
-  return ctx ? ctx.colors : palettes.navy;
+  return ctx ? ctx.colors : palettes[DEFAULT_THEME];
 }
 
 export function useThemeControls() {

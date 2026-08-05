@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "alterxtra",
-    "backgroundColor": "#03050f",
+    "backgroundColor": "#000000",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alterxtra.app"
@@ -15,7 +15,7 @@
     "android": {
       "package": "com.alterxtra.app",
       "adaptiveIcon": {
-        "backgroundColor": "#03050f",
+        "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -48,7 +48,7 @@
       [
         "expo-notifications",
         {
-          "color": "#03050f"
+          "color": "#3da8f5"
         }
       ]
     ],

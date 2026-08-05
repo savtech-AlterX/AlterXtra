@@ -1,54 +1,33 @@
 import { AppIconChoice } from '../store/types';
-import { ThemeName } from '../theme/colors';
 
-// require() needs static paths, so every theme variant is listed explicitly.
-// The non-navy files are luminance-preserving recolours of the originals, so
-// the line detail survives instead of flattening into a silhouette.
+// The artwork's alpha channel carries the whole picture — line detail and glow
+// falloff both live there — so a tintColor recolours it to any theme without
+// losing detail. That means one asset per figure rather than one per theme.
 const AVATARS = {
-  male: {
-    navy: require('../../assets/avatar-male.png'),
-    vintage: require('../../assets/avatar-male.vintage.png'),
-    mono: require('../../assets/avatar-male.mono.png'),
-  },
-  female: {
-    navy: require('../../assets/avatar-female.png'),
-    vintage: require('../../assets/avatar-female.vintage.png'),
-    mono: require('../../assets/avatar-female.mono.png'),
-  },
+  male: require('../../assets/avatar-male.png'),
+  female: require('../../assets/avatar-female.png'),
 } as const;
 
 const MARKS = {
-  male: {
-    navy: require('../../assets/identity-mark.png'),
-    vintage: require('../../assets/identity-mark.vintage.png'),
-    mono: require('../../assets/identity-mark.mono.png'),
-  },
-  female: {
-    navy: require('../../assets/identity-mark-female.png'),
-    vintage: require('../../assets/identity-mark-female.vintage.png'),
-    mono: require('../../assets/identity-mark-female.mono.png'),
-  },
+  male: require('../../assets/identity-mark.png'),
+  female: require('../../assets/identity-mark-female.png'),
 } as const;
 
-const WORDMARKS = {
-  navy: require('../../assets/wordmark.png'),
-  vintage: require('../../assets/wordmark.vintage.png'),
-  mono: require('../../assets/wordmark.mono.png'),
-} as const;
+const WORDMARK = require('../../assets/wordmark.png');
 
 // 'mystery' has no artwork of its own yet, so it falls back to the male figure.
 const figureKey = (icon: AppIconChoice | undefined) => (icon === 'female' ? 'female' : 'male');
 
-export function avatarSource(icon: AppIconChoice | undefined, theme: ThemeName = 'navy') {
-  return AVATARS[figureKey(icon)][theme];
+export function avatarSource(icon: AppIconChoice | undefined) {
+  return AVATARS[figureKey(icon)];
 }
 
-export function markSource(icon: AppIconChoice | undefined, theme: ThemeName = 'navy') {
-  return MARKS[figureKey(icon)][theme];
+export function markSource(icon: AppIconChoice | undefined) {
+  return MARKS[figureKey(icon)];
 }
 
-export function wordmarkSource(theme: ThemeName = 'navy') {
-  return WORDMARKS[theme];
+export function wordmarkSource() {
+  return WORDMARK;
 }
 
 // Both avatar images are ~170x336, so one ratio covers each without distortion.

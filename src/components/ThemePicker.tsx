@@ -5,9 +5,13 @@ import { useThemeControls } from '../theme/ThemeContext';
 import { useAppTheme, useThemedStyles, type AppTheme } from '../theme/useAppTheme';
 
 const THEMES: { key: ThemeName; label: string }[] = [
-  { key: 'navy', label: 'NAVY' },
+  { key: 'blue', label: 'BLUE' },
+  { key: 'purple', label: 'PURPLE' },
+  { key: 'pink', label: 'PINK' },
+  { key: 'green', label: 'GREEN' },
+  { key: 'amber', label: 'AMBER' },
+  { key: 'white', label: 'WHITE' },
   { key: 'vintage', label: 'VINTAGE' },
-  { key: 'mono', label: 'MONO' },
 ];
 
 /**
@@ -55,16 +59,17 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
   StyleSheet.create({
     row: {
       flexDirection: 'row',
-      gap: 12,
+      flexWrap: 'wrap',
+      gap: 10,
     },
     item: {
-      flex: 1,
+      width: '30%',
       alignItems: 'center',
-      gap: 8,
+      gap: 6,
     },
     swatch: {
       width: '100%',
-      height: 62,
+      height: 52,
       borderRadius: 12,
       borderWidth: 1.5,
       padding: 10,
