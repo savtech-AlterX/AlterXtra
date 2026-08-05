@@ -1,13 +1,12 @@
 import { useMemo } from 'react';
 import { Palette } from './colors';
 import { useTheme } from './ThemeContext';
-import { makeGlowShadow, makeIconGlow, makeTypography } from './typography';
+import { makeCardShadow, makeTypography } from './typography';
 
 export type AppTheme = {
   colors: Palette;
   typography: ReturnType<typeof makeTypography>;
-  glowShadow: ReturnType<typeof makeGlowShadow>;
-  iconGlow: ReturnType<typeof makeIconGlow>;
+  cardShadow: ReturnType<typeof makeCardShadow>;
 };
 
 /** Every design token, resolved against the active theme. */
@@ -17,8 +16,7 @@ export function useAppTheme(): AppTheme {
     () => ({
       colors,
       typography: makeTypography(colors),
-      glowShadow: makeGlowShadow(colors),
-      iconGlow: makeIconGlow(colors),
+      cardShadow: makeCardShadow(colors),
     }),
     [colors]
   );

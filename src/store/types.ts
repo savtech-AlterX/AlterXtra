@@ -1,124 +1,71 @@
-export type AppIconChoice = 'male' | 'female' | 'mystery';
+export type PostCategory =
+  | 'cleanup'
+  | 'habitat_restoration'
+  | 'reforestation'
+  | 'wildlife'
+  | 'renewable_energy'
+  | 'community'
+  | 'other';
 
-export type Identity = {
-  archetype: string;
-  icon: AppIconChoice;
-  name: string;
-  email?: string;
-  createdAt?: string;
+export const CATEGORY_LABELS: Record<PostCategory, string> = {
+  cleanup: 'Cleanup',
+  habitat_restoration: 'Habitat restoration',
+  reforestation: 'Reforestation',
+  wildlife: 'Wildlife recovery',
+  renewable_energy: 'Renewable energy',
+  community: 'Community project',
+  other: 'Good news',
 };
 
-export type LimitedBelief = {
-  id: string;
-  createdAt: string;
-  belief: string;
-  origin: string;
-  replacement: string;
+export const CATEGORY_ICONS: Record<PostCategory, keyof typeof import('@expo/vector-icons').Ionicons.glyphMap> = {
+  cleanup: 'trash-outline',
+  habitat_restoration: 'leaf-outline',
+  reforestation: 'flower-outline',
+  wildlife: 'paw-outline',
+  renewable_energy: 'sunny-outline',
+  community: 'people-outline',
+  other: 'earth-outline',
 };
 
-export type HabitReprogram = {
+export const ALL_CATEGORIES: PostCategory[] = [
+  'cleanup',
+  'habitat_restoration',
+  'reforestation',
+  'wildlife',
+  'renewable_energy',
+  'community',
+  'other',
+];
+
+export type Profile = {
   id: string;
-  createdAt: string;
-  trigger: string;
-  oldHabit: string;
-  replacement: string;
-  reward: string;
-  identityStatement: string;
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  created_at: string;
 };
 
-// A check-in logged against a specific HabitReprogram — closes the loop
-// between "I intend to replace X with Y" and "did that actually happen today."
-export type HabitCheckIn = {
+export type Post = {
   id: string;
-  habitId: string;
-  createdAt: string;
-  followedThrough: boolean;
+  author_id: string;
+  category: PostCategory;
+  caption: string | null;
+  location_name: string | null;
+  before_photo_url: string;
+  after_photo_url: string;
+  created_at: string;
+  author: Profile | null;
+  like_count: number;
+  comment_count: number;
+  liked_by_me: boolean;
 };
 
-export type QuickNote = {
+export type Comment = {
   id: string;
-  createdAt: string;
-  title: string;
+  post_id: string;
+  author_id: string;
   body: string;
-};
-
-export type JournalEntry = {
-  id: string;
-  createdAt: string;
-  date: string;
-  title?: string;
-  body: string;
-};
-
-export type FutureSelfLetter = {
-  id: string;
-  createdAt: string;
-  title?: string;
-  body: string;
-};
-
-export type FutureSelfVideo = {
-  id: string;
-  createdAt: string;
-  question: string;
-  videoUri: string;
-  answerDate: string;
-  replyVideoUri?: string;
-  repliedAt?: string;
-};
-
-export type GoalStep = {
-  text: string;
-  done: boolean;
-};
-
-export type Goal = {
-  id: string;
-  createdAt: string;
-  objective: string;
-  targetDate: string;
-  steps: GoalStep[];
-};
-
-export type LogEntry = {
-  id: string;
-  createdAt: string;
-  aligned: boolean;
-  proof: string;
-  correction: string;
-};
-
-export type Album = {
-  id: string;
-  createdAt: string;
-  title: string;
-  photoUris: string[];
-};
-
-export type AppData = {
-  identity: Identity | null;
-  journalEntries: JournalEntry[];
-  futureSelfLetters: FutureSelfLetter[];
-  futureSelfVideos: FutureSelfVideo[];
-  goals: Goal[];
-  logEntries: LogEntry[];
-  albums: Album[];
-  limitedBeliefs: LimitedBelief[];
-  habitReprograms: HabitReprogram[];
-  habitCheckIns: HabitCheckIn[];
-  quickNotes: QuickNote[];
-};
-
-export const emptyAppData: AppData = {
-  identity: null,
-  journalEntries: [],
-  futureSelfLetters: [],
-  futureSelfVideos: [],
-  goals: [],
-  logEntries: [],
-  albums: [],
-  limitedBeliefs: [],
-  habitReprograms: [],
-  habitCheckIns: [],
-  quickNotes: [],
+  created_at: string;
+  author: Profile | null;
 };

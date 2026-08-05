@@ -1,20 +1,19 @@
 import { Redirect } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import { useAppData } from '../src/store/AppDataContext';
+import { useAuth } from '../src/store/AuthContext';
 import { useAppTheme } from '../src/theme/useAppTheme';
-import type { AppTheme } from '../src/theme/useAppTheme';
 
 export default function Index() {
   const { colors } = useAppTheme();
-  const { data, isLoaded } = useAppData();
+  const { isLoaded, session } = useAuth();
 
   if (!isLoaded) {
     return <View style={{ flex: 1, backgroundColor: colors.background }} />;
   }
 
-  if (!data.identity) {
-    return <Redirect href="/onboarding/splash" />;
+  if (!session) {
+    return <Redirect href="/(auth)/welcome" />;
   }
 
   return <Redirect href="/(tabs)" />;

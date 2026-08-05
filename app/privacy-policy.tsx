@@ -1,93 +1,69 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { GlowCard } from '../src/components/GlowCard';
-import { HudScreen } from '../src/components/HudScreen';
-import { StackHeader } from '../src/components/StackHeader';
+import { Card } from '../src/components/Card';
+import { Header } from '../src/components/Header';
+import { Screen } from '../src/components/Screen';
 import { useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   const styles = useThemedStyles(makeStyles);
   return (
-    <GlowCard style={styles.section}>
+    <Card style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <Text style={styles.sectionBody}>{children}</Text>
-    </GlowCard>
+    </Card>
   );
 }
 
 export default function PrivacyPolicy() {
   const styles = useThemedStyles(makeStyles);
   return (
-    <HudScreen>
-      <StackHeader title="PRIVACY POLICY" />
-      <Text style={styles.updated}>LAST UPDATED JULY 2026</Text>
+    <Screen>
+      <Header title="Privacy policy" />
+      <Text style={styles.updated}>Last updated August 2026</Text>
 
-      <Section title="Data Storage">
-        All of your content stays on your device. Everything you create in AlterX — your identity, diary
-        entries, future-self letters and videos, goals, habit-reprogramming entries, limited beliefs, log book
-        entries, quick notes, and photos/videos — is stored locally only. AlterX has no server or account
-        system, and never uploads, syncs, or transmits your personal content anywhere. The only network
-        activity is checking for app updates, which does not include your personal content.
+      <Section title="What we store">
+        Regrown is a social app: your account (email, username), profile (display name, bio, avatar), posts
+        (before/after photos, captions, category, location text you enter), likes, comments, and follows are
+        stored on our backend (Supabase) so other users can see them. Anything you post publicly — including
+        photos — is visible to other users of the app.
       </Section>
 
-      <Section title="Permissions">
-        Camera and Microphone are used only when you choose to record a video message; recordings stay on
-        your device. Photo Library access is used only when you choose to add a photo or video — AlterX only
-        accesses files you specifically select.
+      <Section title="Account & authentication">
+        We use Supabase Auth to manage sign-up and sign-in with your email and password. Passwords are never
+        stored in plain text by us or by Supabase.
       </Section>
 
-      <Section title="Third-Party Services">
-        AlterX does not use any third-party analytics, advertising, or tracking services, and does not sell
-        or share your data, because it is never collected on a server in the first place.
+      <Section title="Photos">
+        Photos you upload for posts and your profile picture are stored in Supabase Storage and are publicly
+        accessible via link, since posts are public in the app. Only upload photos you're comfortable sharing
+        publicly.
       </Section>
 
-      <Section title="Data Deletion">
-        Delete all app data anytime via Settings → Reset All Data. Uninstalling the app permanently deletes
-        all associated data from your device.
+      <Section title="Third-party services">
+        Regrown's backend is provided by Supabase (database, authentication, file storage). We do not use
+        third-party advertising or analytics trackers.
       </Section>
 
-      <Section title="If You Need Support">
-        AlterX is a self-guided personal development tool, not a substitute for professional mental health
-        support. If you're in crisis or need to talk to someone, reach out to a local emergency service or
-        crisis line — in the US and Canada, call or text 988 (Suicide & Crisis Lifeline); in the UK, call
-        116 123 (Samaritans). If you're elsewhere, search for your local crisis line — help is available.
+      <Section title="Data deletion">
+        You can delete individual posts and comments you've created from within the app. To delete your
+        account and all associated data, contact the app's support so we can remove your data from the
+        backend.
       </Section>
 
-      <Section title="Children's Privacy">
-        AlterX is not directed at children under 13, and does not knowingly collect data from children under
+      <Section title="Children's privacy">
+        Regrown is not directed at children under 13, and does not knowingly collect data from children under
         13.
       </Section>
-
-      <Section title="Future Changes">
-        If AlterX later introduces optional subscriptions, payment processing will be handled directly by
-        Apple's App Store or Google Play billing — AlterX never collects payment card information.
-      </Section>
-    </HudScreen>
+    </Screen>
   );
 }
 
-const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+const makeStyles = ({ colors, typography }: AppTheme) =>
   StyleSheet.create({
-  updated: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 11,
-    color: colors.textMuted,
-    letterSpacing: 1,
-    marginTop: -8,
-  },
-  section: {
-    gap: 8,
-  },
-  sectionTitle: {
-    fontFamily: typography.cardTitle.fontFamily,
-    fontSize: 15,
-    color: colors.glow,
-  },
-  sectionBody: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.textSecondary,
-  },
-});
+    updated: { ...typography.caption, marginTop: -8 },
+    section: { gap: 8 },
+    sectionTitle: { ...typography.cardTitle },
+    sectionBody: { ...typography.bodyMuted },
+  });

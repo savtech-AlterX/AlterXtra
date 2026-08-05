@@ -1,21 +1,25 @@
 export type Palette = {
+  mode: 'light' | 'dark';
   background: string;
   backgroundElevated: string;
-  panel: string;
-  panelSolid: string;
-  glow: string;
-  glowStrong: string;
-  glowDim: string;
+  card: string;
+  cardBorder: string;
   border: string;
   borderDim: string;
   textPrimary: string;
   textSecondary: string;
   textMuted: string;
-  accentTeal: string;
+  onPrimary: string;
+  primary: string;
+  primaryStrong: string;
+  primaryDim: string;
+  secondary: string;
+  accent: string;
   danger: string;
   success: string;
   warning: string;
   overlay: string;
+  shadow: string;
 };
 
 function rgba(hex: string, alpha: number) {
@@ -24,80 +28,67 @@ function rgba(hex: string, alpha: number) {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
-/**
- * The neon themes all share the same ground: pure black, as sampled from the
- * reference screens (#000000 page, #00040c card interiors). Only the accent
- * changes. Every accent clears WCAG AA against that ground.
- */
-function neon(glow: string, glowStrong: string, accent: string): Palette {
-  return {
-    background: '#000000',
-    backgroundElevated: '#05070c',
-    panel: 'rgba(8, 12, 20, 0.82)',
-    panelSolid: '#04060b',
+// A living, growing-things palette: leaf green as the primary action colour,
+// warm earth as a secondary accent, and sky blue as a tertiary highlight —
+// meant to read as "outdoors" rather than "app chrome."
+const leaf = '#2f9e5c';
+const leafStrong = '#1f7a44';
+const earth = '#c98a4b';
+const sky = '#3aa0c9';
 
-    glow,
-    glowStrong,
-    glowDim: rgba(glow, 0.35),
-    border: rgba(glow, 0.5),
-    borderDim: rgba(glow, 0.22),
-
-    textPrimary: '#f1f2f3',
-    textSecondary: '#8fa3b8',
-    textMuted: '#6b7a8c',
-
-    accentTeal: accent,
-    danger: '#ff4d5e',
-    success: '#3fe08a',
-    warning: '#ffb648',
-
-    overlay: 'rgba(0, 0, 0, 0.72)',
-  };
-}
-
-// Accent trio per theme, matching the six rings on the premium reference.
-// Blue is anchored on the real app screens (#0881d7 strokes, #4ea3f2 cores)
-// rather than the small swatch ring, which reads more indigo than the UI does.
-const blue = neon('#3da8f5', '#88cbfc', '#26cced');
-const purple = neon('#a164f7', '#c49cfc', '#c74cf0');
-const pink = neon('#f65aae', '#fc9ccf', '#f0426e');
-const green = neon('#3eea86', '#7efcb2', '#1dedb9');
-const amber = neon('#f7b23b', '#fcd188', '#ed6f26');
-const white = neon('#c7cfdb', '#f2f5fa', '#99a6ba');
-
-// Sampled pixel-for-pixel from the vintage reference: a neutral near-black
-// ground (#131313) with warm cream ink (#d5cec4). No neon here, so the halos
-// are dialled right down rather than tinted.
-const vintage: Palette = {
-  background: '#131313',
-  backgroundElevated: '#1b1a18',
-  panel: 'rgba(30, 28, 25, 0.72)',
-  panelSolid: '#191817',
-
-  glow: '#d5cec4',
-  glowStrong: '#ece5da',
-  glowDim: 'rgba(213, 206, 196, 0.18)',
-  border: 'rgba(213, 206, 196, 0.42)',
-  borderDim: 'rgba(213, 206, 196, 0.18)',
-
-  textPrimary: '#ece7dd',
-  textSecondary: '#a89f93',
-  // Raised from the literal sample so body text clears WCAG AA on #131313.
-  textMuted: '#8a8175',
-
-  accentTeal: '#c8bda8',
-  danger: '#c2564b',
-  success: '#8a9a6b',
-  warning: '#c99a4e',
-
-  overlay: 'rgba(0, 0, 0, 0.7)',
+export const light: Palette = {
+  mode: 'light',
+  background: '#f6f8f4',
+  backgroundElevated: '#ffffff',
+  card: '#ffffff',
+  cardBorder: '#e4e9df',
+  border: '#dfe6d9',
+  borderDim: '#eceef0',
+  textPrimary: '#16261a',
+  textSecondary: '#4c5c4f',
+  textMuted: '#83907f',
+  onPrimary: '#ffffff',
+  primary: leaf,
+  primaryStrong: leafStrong,
+  primaryDim: rgba(leaf, 0.12),
+  secondary: earth,
+  accent: sky,
+  danger: '#d84f4f',
+  success: leaf,
+  warning: '#c98a2c',
+  overlay: 'rgba(15, 25, 17, 0.5)',
+  shadow: 'rgba(20, 35, 22, 0.12)',
 };
 
-export const palettes = { blue, purple, pink, green, amber, white, vintage } as const;
+export const dark: Palette = {
+  mode: 'dark',
+  background: '#0d1410',
+  backgroundElevated: '#131c15',
+  card: '#182219',
+  cardBorder: '#26362a',
+  border: '#2c3e30',
+  borderDim: '#1c2820',
+  textPrimary: '#eef3ea',
+  textSecondary: '#aebbaa',
+  textMuted: '#78876f',
+  onPrimary: '#08150c',
+  primary: '#4cc180',
+  primaryStrong: '#6fd69a',
+  primaryDim: 'rgba(76, 193, 128, 0.16)',
+  secondary: '#e3a262',
+  accent: '#5fbcdf',
+  danger: '#e77373',
+  success: '#4cc180',
+  warning: '#e0ab5a',
+  overlay: 'rgba(0, 0, 0, 0.6)',
+  shadow: 'rgba(0, 0, 0, 0.4)',
+};
+
+export const palettes = { light, dark } as const;
 export type ThemeName = keyof typeof palettes;
 
-export const DEFAULT_THEME: ThemeName = 'blue';
+export const DEFAULT_THEME: ThemeName = 'light';
 
 // Default palette. Static importers (there should be none outside the theme
 // module) still resolve to the shipping default.
-export const colors = blue;
+export const colors = light;

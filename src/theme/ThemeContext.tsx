@@ -1,39 +1,46 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { DEFAULT_THEME, Palette, palettes, ThemeName } from './colors';
 
-const THEME_KEY = 'alterx:theme:v1';
+const THEME_KEY = 'regrown:theme:v1';
+type ThemePreference = ThemeName | 'system';
 
 type ThemeContextValue = {
+  preference: ThemePreference;
   theme: ThemeName;
   colors: Palette;
-  setTheme: (name: ThemeName) => void;
+  setPreference: (pref: ThemePreference) => void;
   isLoaded: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>(DEFAULT_THEME);
+  const systemScheme = useColorScheme();
+  const [preference, setPreferenceState] = useState<ThemePreference>('system');
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(THEME_KEY)
       .then((raw) => {
-        if (raw && raw in palettes) setThemeState(raw as ThemeName);
+        if (raw === 'light' || raw === 'dark' || raw === 'system') setPreferenceState(raw);
       })
       .catch(() => {})
       .finally(() => setIsLoaded(true));
   }, []);
 
-  const setTheme = useCallback((name: ThemeName) => {
-    setThemeState(name);
-    AsyncStorage.setItem(THEME_KEY, name).catch(() => {});
+  const setPreference = useCallback((pref: ThemePreference) => {
+    setPreferenceState(pref);
+    AsyncStorage.setItem(THEME_KEY, pref).catch(() => {});
   }, []);
 
+  const theme: ThemeName =
+    preference === 'system' ? (systemScheme === 'dark' ? 'dark' : DEFAULT_THEME) : preference;
+
   const value = useMemo(
-    () => ({ theme, colors: palettes[theme], setTheme, isLoaded }),
-    [theme, setTheme, isLoaded]
+    () => ({ preference, theme, colors: palettes[theme], setPreference, isLoaded }),
+    [preference, theme, setPreference, isLoaded]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
