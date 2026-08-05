@@ -50,7 +50,11 @@ function GridCard({
     <GlowCard containerStyle={styles.gridCardContainer} style={styles.gridCard} onPress={onPress}>
       <Ionicons name={icon} size={26} color={colors.glow} style={iconGlow} />
       <Text style={styles.gridTitle}>{title}</Text>
-      <Text style={styles.gridSubtitle}>{subtitle}</Text>
+      {/* Two lines are reserved whether or not they're used, so cards sitting
+          side by side in the wrapped grid always line up. */}
+      <Text style={styles.gridSubtitle} numberOfLines={2}>
+        {subtitle}
+      </Text>
     </GlowCard>
   );
 }
@@ -97,10 +101,15 @@ export default function Home() {
       </View>
 
       <View>
-        <Text style={styles.welcome}>Welcome back, {identity?.name ?? 'there'}</Text>
-        <Text style={[typography.cardTitle, styles.archetype]}>
-          {(identity?.archetype ?? 'UNDEFINED').toUpperCase()}
+        <Text style={styles.welcome}>
+          {identity?.name ? `Welcome back, ${identity.name}` : 'Welcome back'}
         </Text>
+        {/* No archetype yet is a normal state, not a value to print. */}
+        {!!identity?.archetype && (
+          <Text style={[typography.cardTitle, styles.archetype]}>
+            {identity.archetype.toUpperCase()}
+          </Text>
+        )}
       </View>
 
       {settings.showGoalBarOnHome && primaryGoal && <GoalCountdownBar goal={primaryGoal} />}
@@ -229,6 +238,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   welcome: {
     fontFamily: typography.body.fontFamily,
     fontSize: 15,
+    lineHeight: 22,
     color: colors.glow,
   },
   archetype: {
@@ -292,6 +302,8 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   gridSubtitle: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 12,
+    lineHeight: 17,
+    height: 34, // exactly two lines — the grid's alignment depends on it
     color: colors.textSecondary,
   },
 });

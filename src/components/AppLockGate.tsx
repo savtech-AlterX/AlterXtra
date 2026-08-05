@@ -102,6 +102,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   subtitle: {
     fontFamily: typography.body.fontFamily,
     fontSize: 14,
+    lineHeight: 20,
     color: colors.textSecondary,
   },
   button: {

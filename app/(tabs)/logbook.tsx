@@ -135,6 +135,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   logTodaySubtitle: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 13,
+    lineHeight: 19,
     color: colors.textSecondary,
   },
   statsRow: {
@@ -201,5 +202,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     color: colors.textPrimary,
     fontSize: 14,
+    lineHeight: 20,
   },
 });

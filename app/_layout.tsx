@@ -38,7 +38,9 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'LCD-Bold': require('../assets/fonts/LCD-Bold.ttf'),
     'LCD2-Bold': require('../assets/fonts/LCD2-Bold.ttf'),
-    'Spaceline-Regular': require('../assets/fonts/Spaceline-Regular.ttf'),
+    'ChakraPetch-Regular': require('../assets/fonts/ChakraPetch-Regular.ttf'),
+    'ChakraPetch-Medium': require('../assets/fonts/ChakraPetch-Medium.ttf'),
+    'ChakraPetch-SemiBold': require('../assets/fonts/ChakraPetch-SemiBold.ttf'),
   });
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function RootLayout() {
     });
   }, []);
 
-  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#03050f' }} />;
+  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#000000' }} />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

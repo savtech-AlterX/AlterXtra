@@ -99,12 +99,14 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   priceUnit: {
     fontFamily: typography.body.fontFamily,
     fontSize: 14,
+    lineHeight: 20,
     color: colors.textSecondary,
   },
   tagline: {
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,
     fontSize: 14,
+    lineHeight: 20,
     marginTop: 6,
   },
   benefitCard: {
@@ -140,6 +142,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   benefitBody: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 13,
+    lineHeight: 19,
     color: colors.textSecondary,
   },
   themeHint: {
@@ -155,6 +158,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   disclaimer: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 11,
+    lineHeight: 16,
     color: colors.textMuted,
     textAlign: 'center',
   },

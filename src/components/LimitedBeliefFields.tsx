@@ -100,5 +100,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     color: colors.textPrimary,
     fontSize: 15,
+    lineHeight: 22,
   },
 });

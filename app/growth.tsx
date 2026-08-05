@@ -205,6 +205,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   statLabel: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 12,
+    lineHeight: 17,
     color: colors.textSecondary,
   },
   card: {
@@ -216,11 +217,13 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   alignmentLabel: {
     fontFamily: typography.body.fontFamily,
     fontSize: 13,
+    lineHeight: 19,
     color: colors.textPrimary,
   },
   alignmentValue: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 12,
+    lineHeight: 17,
     color: colors.textSecondary,
   },
   progressTrack: {

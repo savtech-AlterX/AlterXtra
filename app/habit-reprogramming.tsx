@@ -156,6 +156,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,
     fontSize: 14,
+    lineHeight: 20,
     marginTop: -8,
   },
   spacer: {
@@ -180,12 +181,14 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     color: colors.textPrimary,
     fontSize: 14,
+    lineHeight: 20,
   },
   entryIdentity: {
     fontFamily: typography.body.fontFamily,
     fontStyle: 'italic',
     color: colors.accentTeal,
     fontSize: 14,
+    lineHeight: 20,
   },
   checkInBlock: {
     marginTop: 8,
@@ -204,6 +207,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     flex: 1,
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 13,
+    lineHeight: 19,
     color: colors.textSecondary,
   },
   checkInButtons: {
@@ -244,11 +248,13 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   checkedInText: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 13,
+    lineHeight: 19,
     color: colors.success,
   },
   successRate: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 11,
+    lineHeight: 16,
     color: colors.textMuted,
   },
 });

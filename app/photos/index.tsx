@@ -138,6 +138,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   albumCount: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 12,
+    lineHeight: 17,
     color: colors.textSecondary,
   },
 });

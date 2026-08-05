@@ -159,6 +159,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   objective: {
     fontFamily: typography.body.fontFamily,
     fontSize: 16,
+    lineHeight: 23,
     color: colors.textPrimary,
     textAlign: 'center',
     marginTop: 2,

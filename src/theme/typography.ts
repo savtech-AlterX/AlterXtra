@@ -1,17 +1,27 @@
 import { colors, Palette } from './colors';
 
-// Titles -> the actual "LCD" font (Samuel Reynolds, freeware, segmented
-// display face). LCD2 has wider gaps between segments, more legible at
-// smaller sizes; plain LCD reads better large. Both are uppercase-only.
-// Body text -> the actual "Spaceline" font (Din Studio, free for personal
-// use — a commercial license is needed if this app is published/sold).
+// Two voices, deliberately different jobs.
+//
+// TITLES + LABELS -> "LCD" (Samuel Reynolds, 1997/99). A segmented-display
+// face: all-caps in feel, wide letterspacing, unmistakably HUD. This is the
+// brand. Its licence grants use "for typesetting, screen presentation, and
+// other normal typographic purposes with no restriction."
+//
+// BODY -> Chakra Petch (SIL Open Font License, free for commercial use). It
+// replaced Spaceline, which was licensed for personal use only — unusable in
+// an app that's being sold — and whose lowercase letters are drawn as
+// capitals, so every sentence read as a block of shouting with no word-shape.
+// Chakra Petch keeps the squared-off technical flavour but has real lowercase
+// with proper ascenders and descenders, so paragraphs are actually readable.
+//
+// The rule: if you READ it, it's Chakra Petch. If you SCAN it, it's LCD.
 export const fonts = {
   title: 'LCD-Bold',
   titleMedium: 'LCD2-Bold',
   titleRegular: 'LCD2-Bold',
-  body: 'Spaceline-Regular',
-  bodyBold: 'Spaceline-Regular',
-  bodyLight: 'Spaceline-Regular',
+  body: 'ChakraPetch-Regular',
+  bodyMedium: 'ChakraPetch-Medium',
+  bodyBold: 'ChakraPetch-SemiBold',
 };
 
 // Shared neon-glow halo, reused on titles and icons throughout the app.
@@ -28,52 +38,87 @@ export const iconGlow = {
   textShadowOffset: { width: 0, height: 0 },
 } as const;
 
-export const typography = {
-  wordmark: {
-    fontFamily: fonts.title,
-    color: colors.textPrimary,
-    letterSpacing: 6,
-    ...glowShadow,
-  },
-  screenTitle: {
-    fontFamily: fonts.title,
-    fontSize: 22,
-    color: colors.textPrimary,
-    letterSpacing: 3,
-    ...glowShadow,
-  },
-  cardTitle: {
-    fontFamily: fonts.titleMedium,
-    fontSize: 18,
-    color: colors.textPrimary,
-    letterSpacing: 2,
-    ...glowShadow,
-  },
-  label: {
-    fontFamily: fonts.titleRegular,
-    fontSize: 12,
-    color: colors.glow,
-    letterSpacing: 2,
-  },
-  body: {
-    fontFamily: fonts.body,
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-  bodyMuted: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  buttonLabel: {
-    fontFamily: fonts.titleMedium,
-    fontSize: 14,
-    letterSpacing: 2,
-    color: colors.textPrimary,
-  },
-} as const;
+/**
+ * The one place the type scale lives. Sizes and line heights are paired
+ * deliberately — body copy without a line height set is the other half of why
+ * the old text was hard to read.
+ *
+ * Note the glow is applied ONLY to the scanning voice. Glow on running text
+ * smears the letterforms and costs legibility for no benefit.
+ */
+function buildTypography(c: Palette) {
+  const glow = {
+    textShadowColor: c.glowDim,
+    textShadowRadius: 12,
+    textShadowOffset: { width: 0, height: 0 },
+  } as const;
 
-// Theme-aware variants. The static exports above stay for the default palette;
+  return {
+    // --- scanning voice: LCD, spaced, glowing ---
+    wordmark: {
+      fontFamily: fonts.title,
+      color: c.textPrimary,
+      letterSpacing: 6,
+      ...glow,
+    },
+    screenTitle: {
+      fontFamily: fonts.title,
+      fontSize: 22,
+      color: c.textPrimary,
+      letterSpacing: 3,
+      ...glow,
+    },
+    cardTitle: {
+      fontFamily: fonts.titleMedium,
+      fontSize: 18,
+      color: c.textPrimary,
+      letterSpacing: 2,
+      ...glow,
+    },
+    label: {
+      fontFamily: fonts.titleRegular,
+      fontSize: 12,
+      color: c.glow,
+      letterSpacing: 2,
+    },
+    buttonLabel: {
+      fontFamily: fonts.titleMedium,
+      fontSize: 14,
+      letterSpacing: 2,
+      color: c.textPrimary,
+    },
+
+    // --- reading voice: Chakra Petch, no glow, real line height ---
+    body: {
+      fontFamily: fonts.body,
+      fontSize: 15,
+      lineHeight: 22,
+      color: c.textPrimary,
+    },
+    bodyStrong: {
+      fontFamily: fonts.bodyBold,
+      fontSize: 15,
+      lineHeight: 22,
+      color: c.textPrimary,
+    },
+    bodyMuted: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      lineHeight: 20,
+      color: c.textSecondary,
+    },
+    caption: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      lineHeight: 17,
+      color: c.textMuted,
+    },
+  } as const;
+}
+
+export const typography = buildTypography(colors);
+
+// Theme-aware variants. The static export above stays for the default palette;
 // these let components rebuild the same tokens against the active theme.
 export const makeGlowShadow = (c: Palette) =>
   ({
@@ -89,15 +134,4 @@ export const makeIconGlow = (c: Palette) =>
     textShadowOffset: { width: 0, height: 0 },
   }) as const;
 
-export const makeTypography = (c: Palette) => {
-  const glow = makeGlowShadow(c);
-  return {
-    wordmark: { fontFamily: fonts.title, color: c.textPrimary, letterSpacing: 6, ...glow },
-    screenTitle: { fontFamily: fonts.title, fontSize: 22, color: c.textPrimary, letterSpacing: 3, ...glow },
-    cardTitle: { fontFamily: fonts.titleMedium, fontSize: 18, color: c.textPrimary, letterSpacing: 2, ...glow },
-    label: { fontFamily: fonts.titleRegular, fontSize: 12, color: c.glow, letterSpacing: 2 },
-    body: { fontFamily: fonts.body, fontSize: 16, color: c.textPrimary },
-    bodyMuted: { fontFamily: fonts.body, fontSize: 14, color: c.textSecondary },
-    buttonLabel: { fontFamily: fonts.titleMedium, fontSize: 14, letterSpacing: 2, color: c.textPrimary },
-  } as const;
-};
+export const makeTypography = (c: Palette) => buildTypography(c);

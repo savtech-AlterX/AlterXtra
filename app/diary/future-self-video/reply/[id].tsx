@@ -96,6 +96,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,
     fontSize: 14,
+    lineHeight: 20,
     marginTop: -8,
   },
   spacer: {
@@ -108,6 +109,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     color: colors.textPrimary,
     fontSize: 15,
+    lineHeight: 22,
   },
   preview: {
     width: '100%',
@@ -128,6 +130,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.bodyMuted.fontFamily,
     color: colors.textSecondary,
     fontSize: 13,
+    lineHeight: 19,
   },
   empty: {
     fontFamily: typography.bodyMuted.fontFamily,

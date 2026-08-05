@@ -70,6 +70,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,
     fontSize: 14,
+    lineHeight: 20,
     marginTop: -8,
   },
   spacer: {
