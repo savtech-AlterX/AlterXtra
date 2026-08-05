@@ -16,7 +16,11 @@
     },
     "android": {
       "package": "com.workup.app",
-      "permissions": ["CAMERA"]
+      "permissions": [
+        "CAMERA",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -32,10 +36,17 @@
       ]
     ],
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "3110c6e9-3c15-4501-b2b4-31adc8282168"
+      }
     },
+    "owner": "techsav",
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3110c6e9-3c15-4501-b2b4-31adc8282168"
     }
   }
 }
