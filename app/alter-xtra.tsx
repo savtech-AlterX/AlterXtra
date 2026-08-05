@@ -42,10 +42,13 @@ export default function AlterXtra() {
       <GlowCard strong style={styles.priceCard}>
         <Text style={styles.eyebrow}>ALTER X</Text>
         <Text style={styles.title}>Alter-Xtra</Text>
-        <Text style={styles.price}>
-          $3.99 <Text style={styles.priceUnit}>/ month</Text>
+        {/* No price shown until there's a real purchase behind it. Naming a
+            figure next to a button that does nothing is an App Store
+            rejection, and the price hasn't been decided yet. */}
+        <Text style={styles.price}>One-time unlock</Text>
+        <Text style={styles.tagline}>
+          Buy it once and keep it. No subscription, and nothing you've written ever expires.
         </Text>
-        <Text style={styles.tagline}>More freedom. More customization. More growth.</Text>
       </GlowCard>
 
       <Text style={typography.label}>XTRA.BENEFITS</Text>
@@ -67,7 +70,12 @@ export default function AlterXtra() {
       <Text style={styles.themeHint}>Tap a theme to try it on. Your choice applies across the whole app.</Text>
       <ThemePicker />
 
-      <GlowButton label="UNLOCK ALTER-XTRA" style={styles.spacer} onPress={() => {}} />
+      {/* Deliberately not a button. A live-looking purchase control with no
+          purchase behind it is the single thing that would fail App Store
+          review, so there is nothing to tap until in-app purchases are wired. */}
+      <Text style={[styles.disclaimer, styles.spacer]}>
+        Alter-Xtra isn't on sale yet. Every theme above is free to use in the meantime.
+      </Text>
     </HudScreen>
   );
 }

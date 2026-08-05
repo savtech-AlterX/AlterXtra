@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../src/components/GlowCard';
+import { EmptyState } from '../src/components/EmptyState';
 import { HudScreen } from '../src/components/HudScreen';
 import { CloseToHome } from '../src/components/CloseToHome';
 import { computeGrowthStats } from '../src/lib/growth';
@@ -76,13 +77,11 @@ export default function Growth() {
       </GlowCard>
 
       {!hasAnyProgress ? (
-        <GlowCard style={styles.emptyCard}>
-          <Ionicons name="trending-up-outline" size={36} color={colors.glow} style={iconGlow} />
-          <Text style={styles.emptyText}>
-            Nothing to show yet. Rewire a limited belief, reprogram a habit, or log a day — this screen fills in
-            as you use AlterX, so you can see how far you've come.
-          </Text>
-        </GlowCard>
+        <EmptyState
+          icon="trending-up-outline"
+          title="NO PROGRESS TO SHOW YET"
+          body="Rewire a belief, reprogram a habit, or log a day. This screen fills in as you go, so you can see how far you've come."
+        />
       ) : (
         <>
           <View style={styles.grid}>

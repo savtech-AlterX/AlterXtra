@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
@@ -67,7 +68,13 @@ export default function LogBook() {
 
       <Text style={typography.label}>RECENT ENTRIES</Text>
       {data.logEntries.length === 0 && (
-        <Text style={styles.empty}>No entries yet. Log today to start tracking.</Text>
+        <EmptyState
+          icon="clipboard-outline"
+          title="NOTHING LOGGED YET"
+          body="Log a day and it appears here. The weekly counts above fill in as you go."
+          actionLabel="LOG TODAY"
+          onAction={() => router.push('/logbook/new')}
+        />
       )}
       {data.logEntries.slice(0, 20).map((entry) => {
         const d = new Date(entry.createdAt);

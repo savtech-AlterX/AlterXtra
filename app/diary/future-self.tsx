@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { EmptyState } from '../../src/components/EmptyState';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
@@ -93,7 +94,12 @@ function LettersPanel() {
 
       <View style={styles.list}>
         {data.futureSelfLetters.length === 0 && (
-          <Text style={styles.empty}>No letters sealed yet.</Text>
+          <EmptyState
+            compact
+            icon="mail-outline"
+            title="NO LETTERS SEALED"
+            body="Write to the person you're becoming. Sealed letters stay here waiting for you."
+          />
         )}
         {data.futureSelfLetters.map((letter) => (
           <GlowCard key={letter.id} style={styles.entry}>
@@ -123,7 +129,14 @@ function VideoPanel() {
 
       <View style={styles.list}>
         {data.futureSelfVideos.length === 0 && (
-          <Text style={styles.empty}>No video messages yet.</Text>
+          <EmptyState
+            compact
+            icon="videocam-outline"
+            title="NO VIDEO MESSAGES"
+            body="Record yourself a message and set the date it unlocks. Your future self answers back."
+            actionLabel="RECORD ONE"
+            onAction={() => router.push('/diary/future-self-video/new')}
+          />
         )}
         {data.futureSelfVideos.map((v) => {
           const unlocked = isUnlocked(v.answerDate);

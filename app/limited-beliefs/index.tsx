@@ -4,6 +4,7 @@ import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
+import { EmptyState } from '../../src/components/EmptyState';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
@@ -27,7 +28,13 @@ export default function LimitedBeliefsHub() {
       <Text style={typography.label}>REWIRING LOG</Text>
       <Text style={styles.subtitle}>Review the beliefs you are rewiring, and add new ones over time.</Text>
 
-      {data.limitedBeliefs.length === 0 && <Text style={styles.empty}>No beliefs logged yet.</Text>}
+      {data.limitedBeliefs.length === 0 && (
+        <EmptyState
+          icon="bulb-outline"
+          title="NOTHING LOGGED YET"
+          body="Name a belief that holds you back and write what replaces it. Each one you rewire stays here."
+        />
+      )}
 
       <GlowButton
         label="ADD NEW LIMITED BELIEF"

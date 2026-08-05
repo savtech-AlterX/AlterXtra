@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { GoalCelebration } from '../../src/components/GoalCelebration';
 import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
@@ -148,12 +149,13 @@ export default function Goals() {
       </View>
 
       {!primary && (
-        <GlowCard style={styles.emptyCard}>
-          <Ionicons name="flag-outline" size={36} color={colors.glow} style={iconGlow} />
-          <Text style={styles.emptyText}>
-            No objectives yet. Tap the icon above to set your primary objective and step plan.
-          </Text>
-        </GlowCard>
+        <EmptyState
+          icon="flag-outline"
+          title="NO OBJECTIVE SET"
+          body="Your primary objective sits at the top of this screen with a live countdown. Set one and every step you tick off moves the bar."
+          actionLabel="SET YOUR OBJECTIVE"
+          onAction={() => router.push('/goals/new')}
+        />
       )}
 
       {primary && (
@@ -172,7 +174,16 @@ export default function Goals() {
         </Pressable>
       </View>
 
-      {secondary.length === 0 && <Text style={styles.emptyText}>No secondary goals yet.</Text>}
+      {secondary.length === 0 && (
+        <EmptyState
+          compact
+          icon="add-circle-outline"
+          title="NO SECONDARY GOALS"
+          body="Smaller objectives that run alongside your main one."
+          actionLabel="ADD ONE"
+          onAction={() => router.push('/goals/new')}
+        />
+      )}
 
       {secondary.map((goal) => (
         <SecondaryGoalCard key={goal.id} goal={goal} onToggleStep={(i) => handleToggleStep(goal, i)} />
@@ -214,16 +225,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emptyCard: {
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 32,
-  },
-  emptyText: {
-    fontFamily: typography.bodyMuted.fontFamily,
-    color: colors.textSecondary,
-    textAlign: 'center',
   },
   primaryCard: {
     gap: 6,

@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { EmptyState } from '../../src/components/EmptyState';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
@@ -58,10 +59,13 @@ export default function AlbumDetail() {
       />
 
       {album.photoUris.length === 0 ? (
-        <View style={styles.empty}>
-          <Ionicons name="images-outline" size={48} color={colors.glow} style={iconGlow} />
-          <Text style={styles.emptyText}>No photos yet. Tap + to add from your library.</Text>
-        </View>
+        <EmptyState
+          icon="images-outline"
+          title="NO PHOTOS IN THIS ALBUM"
+          body="Add photos from your library and they stay on this device — nothing is uploaded anywhere."
+          actionLabel="ADD PHOTOS"
+          onAction={pickImages}
+        />
       ) : (
         <View style={styles.grid}>
           {album.photoUris.map((uri, i) => (
