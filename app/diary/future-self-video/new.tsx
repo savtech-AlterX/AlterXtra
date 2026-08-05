@@ -9,8 +9,8 @@ import { HudScreen } from '../../../src/components/HudScreen';
 import { HudTextInput } from '../../../src/components/HudTextInput';
 import { StackHeader } from '../../../src/components/StackHeader';
 import { useAppData } from '../../../src/store/AppDataContext';
-import { colors } from '../../../src/theme/colors';
-import { iconGlow, typography } from '../../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../../src/theme/useAppTheme';
+import type { AppTheme } from '../../../src/theme/useAppTheme';
 
 function tomorrow() {
   const d = new Date();
@@ -19,6 +19,7 @@ function tomorrow() {
 }
 
 function VideoPreview({ uri }: { uri: string }) {
+  const styles = useThemedStyles(makeStyles);
   const player = useVideoPlayer(uri, (p) => {
     p.loop = false;
   });
@@ -26,6 +27,8 @@ function VideoPreview({ uri }: { uri: string }) {
 }
 
 export default function RecordFutureSelfVideo() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { addFutureSelfVideo } = useAppData();
   const [question, setQuestion] = useState('');
@@ -120,7 +123,8 @@ export default function RecordFutureSelfVideo() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   subtitle: {
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,

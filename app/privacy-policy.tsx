@@ -3,10 +3,11 @@ import { StyleSheet, Text } from 'react-native';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { StackHeader } from '../src/components/StackHeader';
-import { colors } from '../src/theme/colors';
-import { typography } from '../src/theme/typography';
+import { useThemedStyles } from '../src/theme/useAppTheme';
+import type { AppTheme } from '../src/theme/useAppTheme';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <GlowCard style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -16,6 +17,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function PrivacyPolicy() {
+  const styles = useThemedStyles(makeStyles);
   return (
     <HudScreen>
       <StackHeader title="PRIVACY POLICY" />
@@ -65,7 +67,8 @@ export default function PrivacyPolicy() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   updated: {
     fontFamily: typography.label.fontFamily,
     fontSize: 11,

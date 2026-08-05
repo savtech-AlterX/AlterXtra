@@ -6,12 +6,14 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { fonts, glowShadow, iconGlow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
+import { fonts } from '../../src/theme/typography';
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 function StatBox({ value, label }: { value: string | number; label: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.statBox}>
       <Text style={styles.statValue}>{value}</Text>
@@ -21,6 +23,8 @@ function StatBox({ value, label }: { value: string | number; label: string }) {
 }
 
 export default function LogBook() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, deleteLogEntry } = useAppData();
 
@@ -96,7 +100,8 @@ export default function LogBook() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',

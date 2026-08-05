@@ -9,8 +9,10 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
-import { colors } from '../../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
+import { wordmarkSource } from '../../src/lib/avatar';
+import { useThemeControls } from '../../src/theme/ThemeContext';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 function IconBox({
   icon,
@@ -21,6 +23,8 @@ function IconBox({
   label: string;
   onPress?: () => void;
 }) {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable style={styles.iconBox} onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
       <Ionicons name={icon} size={20} color={colors.glow} style={iconGlow} />
@@ -40,6 +44,8 @@ function GridCard({
   subtitle: string;
   onPress: () => void;
 }) {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <GlowCard containerStyle={styles.gridCardContainer} style={styles.gridCard} onPress={onPress}>
       <Ionicons name={icon} size={26} color={colors.glow} style={iconGlow} />
@@ -50,9 +56,12 @@ function GridCard({
 }
 
 export default function Home() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data } = useAppData();
   const { settings } = useSettings();
+  const { theme } = useThemeControls();
   const identity = data.identity;
   // Same goal the Goals screen treats as primary: the oldest one.
   const primaryGoal = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
@@ -62,7 +71,7 @@ export default function Home() {
       <View style={styles.topRow}>
         <IconBox icon="create-outline" label="QUICK NOTES" onPress={() => router.push('/quick-notes')} />
         <View style={styles.wordmarkBlock}>
-          <Image source={require('../../assets/wordmark.png')} style={styles.wordmarkImage} resizeMode="contain" />
+          <Image source={wordmarkSource(theme)} style={styles.wordmarkImage} resizeMode="contain" />
           <Text style={styles.wordmarkSubtitle}>IDENTITY TRANSFORMATION</Text>
         </View>
         <View style={styles.rightIcons}>
@@ -164,7 +173,8 @@ export default function Home() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',

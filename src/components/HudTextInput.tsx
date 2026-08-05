@@ -1,9 +1,12 @@
 import React from 'react';
 import { StyleSheet, TextInput, TextInputProps } from 'react-native';
-import { colors } from '../theme/colors';
+import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 import { fonts } from '../theme/typography';
 
 export function HudTextInput(props: TextInputProps & { multiline?: boolean }) {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <TextInput
       placeholderTextColor={colors.textMuted}
@@ -13,7 +16,8 @@ export function HudTextInput(props: TextInputProps & { multiline?: boolean }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: colors.border,

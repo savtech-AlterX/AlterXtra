@@ -77,7 +77,33 @@ const vintage: Palette = {
   overlay: 'rgba(0, 0, 0, 0.7)',
 };
 
-export const palettes = { navy, vintage } as const;
+// Sampled from the black-and-white reference: near-black card (#0e0e0f) with
+// pure white ink (#fcfbfc). Stark and flat by design — no glow at all.
+const mono: Palette = {
+  background: '#0e0e0f',
+  backgroundElevated: '#161617',
+  panel: 'rgba(24, 24, 26, 0.72)',
+  panelSolid: '#141415',
+
+  glow: '#fcfbfc',
+  glowStrong: '#ffffff',
+  glowDim: 'rgba(252, 251, 252, 0.14)',
+  border: 'rgba(252, 251, 252, 0.38)',
+  borderDim: 'rgba(252, 251, 252, 0.16)',
+
+  textPrimary: '#fcfbfc',
+  textSecondary: '#a8a8aa',
+  textMuted: '#7e7e81',
+
+  accentTeal: '#d4d4d6',
+  danger: '#e0574f',
+  success: '#9fb89f',
+  warning: '#d6b464',
+
+  overlay: 'rgba(0, 0, 0, 0.75)',
+};
+
+export const palettes = { navy, vintage, mono } as const;
 export type ThemeName = keyof typeof palettes;
 
 // Default palette. Existing imports of `colors` keep working unchanged.

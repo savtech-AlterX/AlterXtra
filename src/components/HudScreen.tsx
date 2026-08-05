@@ -1,7 +1,8 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
+import { useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 type Props = {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export function HudScreen({ children, scroll = true, style }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       {scroll ? (
@@ -26,7 +28,8 @@ export function HudScreen({ children, scroll = true, style }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

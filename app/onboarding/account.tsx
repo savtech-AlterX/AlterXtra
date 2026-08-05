@@ -6,11 +6,13 @@ import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
-import { colors } from '../../src/theme/colors';
-import { iconGlow, typography } from '../../src/theme/typography';
 import { AppIconChoice } from '../../src/store/types';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function CreateAccount() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { icon } = useLocalSearchParams<{ icon: AppIconChoice }>();
   const [fullName, setFullName] = useState('');
@@ -60,7 +62,8 @@ export default function CreateAccount() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   subtitle: {
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,

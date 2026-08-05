@@ -3,8 +3,9 @@ import { Animated, Easing, Image, Modal, Pressable, StyleSheet, Text, useWindowD
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AVATAR_ASPECT, avatarSource } from '../lib/avatar';
 import { useAppData } from '../store/AppDataContext';
-import { colors } from '../theme/colors';
-import { glowShadow, typography } from '../theme/typography';
+import { useThemeControls } from '../theme/ThemeContext';
+import { useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 const RAY_COUNT = 16;
 const AVATAR_WIDTH = 150;
@@ -20,7 +21,9 @@ type Props = {
  * stage. Fires once when the final step of a goal is checked off.
  */
 export function GoalCelebration({ objective, onDismiss }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const { data } = useAppData();
+  const { theme } = useThemeControls();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -92,7 +95,7 @@ export function GoalCelebration({ objective, onDismiss }: Props) {
             </Text>
 
             <Image
-              source={avatarSource(data.identity?.icon)}
+              source={avatarSource(data.identity?.icon, theme)}
               style={styles.avatar}
               resizeMode="contain"
             />
@@ -108,7 +111,8 @@ export function GoalCelebration({ objective, onDismiss }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(3, 5, 15, 0.97)',

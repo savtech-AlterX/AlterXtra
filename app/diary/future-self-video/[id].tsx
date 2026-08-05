@@ -6,8 +6,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IdentityMarkRing } from '../../../src/components/IdentityMarkRing';
 import { useAppData } from '../../../src/store/AppDataContext';
-import { colors } from '../../../src/theme/colors';
-import { typography } from '../../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../../src/theme/useAppTheme';
+import type { AppTheme } from '../../../src/theme/useAppTheme';
 
 type Stage = 'original' | 'reply' | 'ended';
 
@@ -18,6 +18,8 @@ function formatTimer(seconds: number) {
 }
 
 export default function FutureSelfCall() {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data } = useAppData();
@@ -145,7 +147,8 @@ export default function FutureSelfCall() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',

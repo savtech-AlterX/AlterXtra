@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
-import { colors } from '../theme/colors';
+import { useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 type Props = {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function GlowCard({ children, style, containerStyle, onPress, strong }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const card = <View style={[styles.card, strong && styles.strong, style]}>{children}</View>;
 
   if (!onPress) {
@@ -30,7 +32,8 @@ export function GlowCard({ children, style, containerStyle, onPress, strong }: P
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: colors.border,

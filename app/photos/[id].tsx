@@ -6,10 +6,12 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { iconGlow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function AlbumDetail() {
+  const { colors, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, addPhotosToAlbum } = useAppData();
   const album = data.albums.find((a) => a.id === id);
@@ -71,7 +73,8 @@ export default function AlbumDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   empty: {
     alignItems: 'center',
     gap: 12,

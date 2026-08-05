@@ -8,10 +8,12 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function PhotoAlbums() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, addAlbum } = useAppData();
   const [creating, setCreating] = useState(false);
@@ -88,7 +90,8 @@ export default function PhotoAlbums() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   empty: {
     alignItems: 'center',
     gap: 16,

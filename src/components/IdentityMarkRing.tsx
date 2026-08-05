@@ -1,8 +1,11 @@
 import React from 'react';
 import { Image, StyleSheet, View, ViewStyle } from 'react-native';
 import { useAppData } from '../store/AppDataContext';
+import { markSource } from '../lib/avatar';
 import { AppIconChoice } from '../store/types';
-import { colors } from '../theme/colors';
+import { useThemeControls } from '../theme/ThemeContext';
+import { useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 type Props = {
   size?: number;
@@ -12,21 +15,17 @@ type Props = {
   icon?: AppIconChoice;
 };
 
-function markSource(icon: AppIconChoice | undefined) {
-  return icon === 'female'
-    ? require('../../assets/identity-mark-female.png')
-    : require('../../assets/identity-mark.png');
-}
-
 // The identity-mark icon inside a circular glowing ring, as shown
 // consistently across the reference recording (splash + home hero).
 export function IdentityMarkRing({ size = 130, style, icon }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const { data } = useAppData();
+  const { theme } = useThemeControls();
   const resolved = icon ?? data.identity?.icon;
   return (
     <View style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}>
       <Image
-        source={markSource(resolved)}
+        source={markSource(resolved, theme)}
         style={{ width: size * 0.46, height: size * 0.46 * (350 / 207) }}
         resizeMode="contain"
       />
@@ -34,7 +33,8 @@ export function IdentityMarkRing({ size = 130, style, icon }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   ring: {
     borderWidth: 1,
     borderColor: colors.border,

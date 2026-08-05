@@ -9,8 +9,8 @@ import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { Goal } from '../../src/store/types';
-import { colors } from '../../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 function progress(goal: Goal) {
   const total = goal.steps.length;
@@ -26,6 +26,8 @@ function StepRow({
   step: { text: string; done: boolean };
   onToggle: () => void;
 }) {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       style={styles.stepRow}
@@ -46,6 +48,8 @@ function StepRow({
 }
 
 function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const { total, done, pct } = progress(goal);
   return (
     <GlowCard strong style={styles.primaryCard}>
@@ -85,6 +89,7 @@ function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i:
 }
 
 function SecondaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
+  const styles = useThemedStyles(makeStyles);
   const { total, done, pct } = progress(goal);
   return (
     <GlowCard style={styles.secondaryCard}>
@@ -107,6 +112,8 @@ function SecondaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (
 }
 
 export default function Goals() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, toggleGoalStep } = useAppData();
   const [celebrating, setCelebrating] = useState<string | null>(null);
@@ -178,7 +185,8 @@ export default function Goals() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -9,8 +9,8 @@ import { StackHeader } from '../src/components/StackHeader';
 import { hasCheckedInToday, successRate } from '../src/lib/habitCheckIns';
 import { useAppData } from '../src/store/AppDataContext';
 import { HabitCheckIn, HabitReprogram } from '../src/store/types';
-import { colors } from '../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
+import type { AppTheme } from '../src/theme/useAppTheme';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -26,6 +26,8 @@ function CheckInRow({
   checkIns: HabitCheckIn[];
   onCheckIn: (followedThrough: boolean) => void;
 }) {
+  const { colors, typography } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const checkedInToday = hasCheckedInToday(checkIns, habit.id);
   const { followed, total } = successRate(checkIns, habit.id);
 
@@ -69,6 +71,8 @@ function CheckInRow({
 }
 
 export default function HabitReprogramming() {
+  const { colors, typography } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const { data, addHabitReprogram, addHabitCheckIn } = useAppData();
   const [trigger, setTrigger] = useState('');
   const [oldHabit, setOldHabit] = useState('');
@@ -146,7 +150,8 @@ export default function HabitReprogramming() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   subtitle: {
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,

@@ -4,25 +4,31 @@ import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
-import { colors } from '../../src/theme/colors';
-import { glowShadow, typography } from '../../src/theme/typography';
+import { markSource } from '../../src/lib/avatar';
 import { AppIconChoice } from '../../src/store/types';
+import { useThemeControls } from '../../src/theme/ThemeContext';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 const OPTIONS: AppIconChoice[] = ['male', 'mystery', 'female'];
 
 function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
+  const styles = useThemedStyles(makeStyles);
+  const { theme } = useThemeControls();
   if (option === 'male') {
-    return <Image source={require('../../assets/identity-mark.png')} style={styles.glyphImage} resizeMode="contain" />;
+    return <Image source={markSource('male', theme)} style={styles.glyphImage} resizeMode="contain" />;
   }
   if (option === 'female') {
     return (
-      <Image source={require('../../assets/identity-mark-female.png')} style={styles.glyphImage} resizeMode="contain" />
+      <Image source={markSource('female', theme)} style={styles.glyphImage} resizeMode="contain" />
     );
   }
   return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
 }
 
 export default function ChooseIcon() {
+  const { colors, typography } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [selected, setSelected] = useState<AppIconChoice>('mystery');
 
@@ -69,7 +75,8 @@ export default function ChooseIcon() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   header: {
     marginTop: 24,
     alignItems: 'center',

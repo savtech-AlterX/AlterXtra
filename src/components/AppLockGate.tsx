@@ -2,15 +2,16 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSettings } from '../store/SettingsContext';
-import { colors } from '../theme/colors';
-import { glowShadow, typography } from '../theme/typography';
 import { GlowButton } from './GlowButton';
 import { IdentityMarkRing } from './IdentityMarkRing';
+import { useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 // Grace period before the lock re-arms after leaving the app.
 const RELOCK_AFTER_MS = 5 * 60 * 1000;
 
 export function AppLockGate({ children }: { children: React.ReactNode }) {
+  const styles = useThemedStyles(makeStyles);
   const { settings, isLoaded } = useSettings();
   const [unlocked, setUnlocked] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
@@ -80,7 +81,8 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

@@ -4,10 +4,12 @@ import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
-import { colors } from '../../src/theme/colors';
-import { iconGlow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function DiaryHub() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
 
   return (
@@ -30,7 +32,8 @@ export default function DiaryHub() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   subtitle: {
     fontFamily: typography.label.fontFamily,
     fontSize: 12,

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../theme/colors';
+import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 import { fonts } from '../theme/typography';
 
 type Props = {
@@ -15,6 +16,8 @@ type Props = {
 };
 
 export function GlowButton({ label, onPress, variant = 'solid', icon, style, disabled, labelColor }: Props) {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   if (variant === 'outline') {
     return (
       <Pressable
@@ -51,7 +54,8 @@ export function GlowButton({ label, onPress, variant = 'solid', icon, style, dis
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   solid: {
     borderRadius: 999,
     paddingVertical: 16,

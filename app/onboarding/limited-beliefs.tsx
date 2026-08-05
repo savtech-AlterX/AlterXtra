@@ -6,11 +6,12 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { LimitedBeliefFields } from '../../src/components/LimitedBeliefFields';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { AppIconChoice } from '../../src/store/types';
+import { useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function LimitedBeliefsOnboarding() {
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { icon, name, email } = useLocalSearchParams<{
     icon: AppIconChoice;
@@ -63,7 +64,8 @@ export default function LimitedBeliefsOnboarding() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   subtitle: {
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,

@@ -8,8 +8,8 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { iconGlow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -23,6 +23,7 @@ function isUnlocked(answerDate: string) {
 type Mode = 'letters' | 'video';
 
 function ModeToggle({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.toggleRow}>
       <Pressable
@@ -42,6 +43,8 @@ function ModeToggle({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
 }
 
 function LettersPanel() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, addFutureSelfLetter } = useAppData();
   const [title, setTitle] = useState('');
@@ -105,6 +108,8 @@ function LettersPanel() {
 }
 
 function VideoPanel() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data } = useAppData();
 
@@ -181,7 +186,8 @@ export default function FutureSelf() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   toggleRow: {
     flexDirection: 'row',
     gap: 10,

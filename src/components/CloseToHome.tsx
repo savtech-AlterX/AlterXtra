@@ -2,14 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { colors } from '../theme/colors';
-import { iconGlow } from '../theme/typography';
+import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 /**
  * The single way out of any section: an X in the corner that returns to the
  * home screen. Used instead of a bottom tab bar.
  */
 export function CloseToHome() {
+  const { colors, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   return (
     <Pressable
@@ -24,7 +26,8 @@ export function CloseToHome() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   button: {
     width: 40,
     height: 40,

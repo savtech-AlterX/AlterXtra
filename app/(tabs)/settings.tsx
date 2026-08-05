@@ -10,8 +10,8 @@ import { exportBackup, importBackup } from '../../src/lib/backup';
 import { disableDailyReminder, enableDailyReminder } from '../../src/lib/notifications';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
-import { colors } from '../../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 function formatTime(hour: number, minute: number) {
   const period = hour >= 12 ? 'PM' : 'AM';
@@ -20,6 +20,8 @@ function formatTime(hour: number, minute: number) {
 }
 
 export default function Settings() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, resetAll, restoreAll } = useAppData();
   const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome } = useSettings();
@@ -257,7 +259,8 @@ export default function Settings() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',

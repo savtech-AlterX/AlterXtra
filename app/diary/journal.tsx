@@ -7,8 +7,8 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -20,6 +20,8 @@ function formatDate(iso: string) {
 }
 
 export default function Journal() {
+  const { colors, typography } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, addJournalEntry } = useAppData();
   const [date, setDate] = useState(today());
@@ -86,7 +88,8 @@ export default function Journal() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   spacer: {
     marginTop: 6,
   },

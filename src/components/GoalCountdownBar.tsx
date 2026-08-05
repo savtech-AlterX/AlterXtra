@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { goalCountdown } from '../lib/countdown';
 import { Goal } from '../store/types';
-import { colors } from '../theme/colors';
-import { glowShadow, typography } from '../theme/typography';
+import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 const BAR_HEIGHT = 62;
 const TICK_MS = 60 * 1000;
@@ -14,6 +14,8 @@ const TICK_MS = 60 * 1000;
  * as a separate widget.
  */
 export function GoalCountdownBar({ goal }: { goal: Goal }) {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const [now, setNow] = useState(() => new Date());
   const fill = useRef(new Animated.Value(0)).current;
 
@@ -56,7 +58,8 @@ export function GoalCountdownBar({ goal }: { goal: Goal }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   track: {
     height: BAR_HEIGHT,
     borderRadius: 14,

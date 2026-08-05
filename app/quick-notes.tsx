@@ -5,10 +5,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../src/components/HudScreen';
 import { HudTextInput } from '../src/components/HudTextInput';
 import { useAppData } from '../src/store/AppDataContext';
-import { colors } from '../src/theme/colors';
-import { iconGlow, typography } from '../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
+import type { AppTheme } from '../src/theme/useAppTheme';
 
 export default function QuickNotes() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, addQuickNote, updateQuickNote, deleteQuickNote } = useAppData();
   const [index, setIndex] = useState(0);
@@ -124,7 +126,8 @@ export default function QuickNotes() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',

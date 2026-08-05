@@ -2,8 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from './GlowCard';
 import { HudTextInput } from './HudTextInput';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
+import { useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 type Props = {
   belief: string;
@@ -25,6 +25,7 @@ function Question({
   value: string;
   onChangeText: (v: string) => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <GlowCard style={styles.card}>
       <View style={styles.header}>
@@ -70,7 +71,8 @@ export function LimitedBeliefFields({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   card: {
     gap: 14,
   },

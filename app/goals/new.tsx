@@ -6,10 +6,12 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function NewGoal() {
+  const { typography } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { addGoal } = useAppData();
   const [objective, setObjective] = useState('');
@@ -59,7 +61,8 @@ export default function NewGoal() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   spacer: {
     marginTop: 6,
   },

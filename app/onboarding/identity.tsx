@@ -7,11 +7,13 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { archetypes } from '../../src/data/archetypes';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../../src/theme/typography';
 import { AppIconChoice } from '../../src/store/types';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function ChooseIdentity() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { icon, name, email } = useLocalSearchParams<{
     icon: AppIconChoice;
@@ -76,7 +78,8 @@ export default function ChooseIdentity() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   title: {
     marginTop: 16,
   },

@@ -2,10 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
-import { iconGlow, typography } from '../theme/typography';
+import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 export function StackHeader({ title, right }: { title: string; right?: React.ReactNode }) {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   return (
     <View style={styles.row}>
@@ -25,7 +27,8 @@ export function StackHeader({ title, right }: { title: string; right?: React.Rea
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',

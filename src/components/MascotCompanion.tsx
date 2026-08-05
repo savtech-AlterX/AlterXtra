@@ -3,11 +3,12 @@ import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensio
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../store/AppDataContext';
 import { useSettings } from '../store/SettingsContext';
+import { useThemeControls } from '../theme/ThemeContext';
 import { computeGrowthStats } from '../lib/growth';
 import { buildMascotMessagePool, pickMascotMessage } from '../lib/mascotMessages';
 import { AVATAR_ASPECT, avatarSource } from '../lib/avatar';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
+import { useThemedStyles } from '../theme/useAppTheme';
+import type { AppTheme } from '../theme/useAppTheme';
 
 const FIGURE_WIDTH = 62;
 const FIGURE_HEIGHT = FIGURE_WIDTH * AVATAR_ASPECT;
@@ -34,7 +35,9 @@ function randBetween(min: number, max: number) {
  * flips to face whichever way it's heading.
  */
 export function MascotCompanion() {
+  const styles = useThemedStyles(makeStyles);
   const { data } = useAppData();
+  const { theme } = useThemeControls();
   const { settings, isLoaded } = useSettings();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -161,7 +164,7 @@ export function MascotCompanion() {
         style={styles.figureButton}
       >
         <Image
-          source={avatarSource(data.identity?.icon)}
+          source={avatarSource(data.identity?.icon, theme)}
           style={[styles.figure, { transform: [{ scaleX: facingLeft ? -1 : 1 }] }]}
           resizeMode="contain"
         />
@@ -170,7 +173,8 @@ export function MascotCompanion() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   wrapper: {
     position: 'absolute',
     left: 0,

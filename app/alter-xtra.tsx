@@ -5,8 +5,9 @@ import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { StackHeader } from '../src/components/StackHeader';
-import { colors } from '../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../src/theme/typography';
+import { ThemePicker } from '../src/components/ThemePicker';
+import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
+import type { AppTheme } from '../src/theme/useAppTheme';
 
 const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: string }[] = [
   {
@@ -32,6 +33,8 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
 ];
 
 export default function AlterXtra() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <HudScreen>
       <StackHeader title="ALTER-XTRA" />
@@ -60,12 +63,17 @@ export default function AlterXtra() {
         </GlowCard>
       ))}
 
+      <Text style={[typography.label, styles.spacer]}>XTRA.THEMES</Text>
+      <Text style={styles.themeHint}>Tap a theme to try it on. Your choice applies across the whole app.</Text>
+      <ThemePicker />
+
       <GlowButton label="UNLOCK ALTER-XTRA" style={styles.spacer} onPress={() => {}} />
     </HudScreen>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   priceCard: {
     gap: 4,
   },
@@ -133,6 +141,13 @@ const styles = StyleSheet.create({
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 13,
     color: colors.textSecondary,
+  },
+  themeHint: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
+    marginTop: -6,
   },
   spacer: {
     marginTop: 6,

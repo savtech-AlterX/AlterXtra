@@ -6,10 +6,12 @@ import { HudScreen } from '../src/components/HudScreen';
 import { CloseToHome } from '../src/components/CloseToHome';
 import { computeGrowthStats } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
-import { colors } from '../src/theme/colors';
-import { glowShadow, iconGlow, typography } from '../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
+import type { AppTheme } from '../src/theme/useAppTheme';
 
 function StatCard({ icon, value, label }: { icon: keyof typeof Ionicons.glyphMap; value: string; label: string }) {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <GlowCard containerStyle={styles.statCardContainer} style={styles.statCard}>
       <Ionicons name={icon} size={20} color={colors.glow} style={iconGlow} />
@@ -30,6 +32,7 @@ function AlignmentBar({
   total: number;
   unit?: string;
 }) {
+  const styles = useThemedStyles(makeStyles);
   const pct = total === 0 ? 0 : Math.round((aligned / total) * 100);
   return (
     <View style={styles.alignmentRow}>
@@ -45,6 +48,8 @@ function AlignmentBar({
 }
 
 export default function Growth() {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const { data } = useAppData();
   const stats = useMemo(() => computeGrowthStats(data), [data]);
 
@@ -144,7 +149,8 @@ export default function Growth() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',

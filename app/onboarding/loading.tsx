@@ -3,10 +3,11 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function Loading() {
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const progress = useRef(new Animated.Value(0)).current;
 
@@ -37,7 +38,8 @@ export default function Loading() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   center: {
     flex: 1,
     alignItems: 'center',

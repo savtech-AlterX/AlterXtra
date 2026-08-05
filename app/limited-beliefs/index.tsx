@@ -7,8 +7,8 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { colors } from '../../src/theme/colors';
-import { glowShadow, typography } from '../../src/theme/typography';
+import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -16,6 +16,8 @@ function formatDate(iso: string) {
 }
 
 export default function LimitedBeliefsHub() {
+  const { typography } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data } = useAppData();
 
@@ -52,7 +54,8 @@ export default function LimitedBeliefsHub() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   subtitle: {
     fontFamily: typography.body.fontFamily,
     color: colors.textSecondary,

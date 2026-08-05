@@ -1,10 +1,12 @@
 import { Redirect } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import { colors } from '../src/theme/colors';
 import { useAppData } from '../src/store/AppDataContext';
+import { useAppTheme } from '../src/theme/useAppTheme';
+import type { AppTheme } from '../src/theme/useAppTheme';
 
 export default function Index() {
+  const { colors } = useAppTheme();
   const { data, isLoaded } = useAppData();
 
   if (!isLoaded) {

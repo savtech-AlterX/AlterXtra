@@ -4,12 +4,35 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { colors } from '../src/theme/colors';
 import { AppDataProvider } from '../src/store/AppDataContext';
 import { SettingsProvider } from '../src/store/SettingsContext';
 import { AppLockGate } from '../src/components/AppLockGate';
 import { MascotCompanion } from '../src/components/MascotCompanion';
 import { Platform, View } from 'react-native';
+import { ThemeProvider } from '../src/theme/ThemeContext';
+import { useAppTheme } from '../src/theme/useAppTheme';
+
+// Everything below the ThemeProvider, so `useAppTheme` resolves the live theme.
+function ThemedApp() {
+  const { colors } = useAppTheme();
+  return (
+    <SettingsProvider>
+      <AppDataProvider>
+        <StatusBar style="light" />
+        <AppLockGate>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.background },
+              animation: 'fade',
+            }}
+          />
+          <MascotCompanion />
+        </AppLockGate>
+      </AppDataProvider>
+    </SettingsProvider>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -32,28 +55,14 @@ export default function RootLayout() {
     });
   }, []);
 
-  if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
-  }
+  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#03050f' }} />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <SettingsProvider>
-          <AppDataProvider>
-            <StatusBar style="light" />
-            <AppLockGate>
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: colors.background },
-                  animation: 'fade',
-                }}
-              />
-              <MascotCompanion />
-            </AppLockGate>
-          </AppDataProvider>
-        </SettingsProvider>
+        <ThemeProvider>
+          <ThemedApp />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

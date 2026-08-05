@@ -2,19 +2,23 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
+import { wordmarkSource } from '../../src/lib/avatar';
+import { useThemeControls } from '../../src/theme/ThemeContext';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { useThemedStyles } from '../../src/theme/useAppTheme';
+import type { AppTheme } from '../../src/theme/useAppTheme';
 
 export default function Splash() {
+  const styles = useThemedStyles(makeStyles);
+  const { theme } = useThemeControls();
   const router = useRouter();
 
   return (
     <HudScreen scroll={false}>
       <View style={styles.center}>
         <IdentityMarkRing size={140} />
-        <Image source={require('../../assets/wordmark.png')} style={styles.wordmark} resizeMode="contain" />
+        <Image source={wordmarkSource(theme)} style={styles.wordmark} resizeMode="contain" />
         <Text style={styles.subtitle}>IDENTITY TRANSFORMATION</Text>
       </View>
 
@@ -23,7 +27,8 @@ export default function Splash() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+  StyleSheet.create({
   center: {
     flex: 1,
     alignItems: 'center',
