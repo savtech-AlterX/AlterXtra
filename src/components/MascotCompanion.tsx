@@ -10,7 +10,10 @@ import { AVATAR_ASPECT, avatarSource } from '../lib/avatar';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
-const FIGURE_WIDTH = 62;
+// 62px used to crush the artwork's linework into an unreadable smudge —
+// verified by rendering both sizes and comparing. 90px is the smallest width
+// where the coat, collar and face still read.
+const FIGURE_WIDTH = 90;
 const FIGURE_HEIGHT = FIGURE_WIDTH * AVATAR_ASPECT;
 
 const WALK_SPEED = 30; // px per second
