@@ -1,9 +1,12 @@
+import Slider from '@react-native-community/slider';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraFrameOverlay } from '../../src/components/CameraFrameOverlay';
+import { GhostOverlay } from '../../src/components/GhostOverlay';
 import { MUSCLE_GROUP_LABELS, isMuscleGroup } from '../../src/constants/muscleGroups';
+import { useWorkupData } from '../../src/data/WorkupDataContext';
 import { colors } from '../../src/theme/colors';
 
 export default function CameraScreen() {
@@ -12,6 +15,8 @@ export default function CameraScreen() {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isCapturing, setIsCapturing] = useState(false);
+  const [ghostOpacity, setGhostOpacity] = useState(0.5);
+  const { getEntriesForGroup } = useWorkupData();
 
   if (!group || !isMuscleGroup(group)) {
     return (
@@ -20,6 +25,8 @@ export default function CameraScreen() {
       </View>
     );
   }
+
+  const previousEntry = getEntriesForGroup(group)[0];
 
   if (!permission) {
     return <View style={styles.container} />;
@@ -54,7 +61,26 @@ export default function CameraScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ title: MUSCLE_GROUP_LABELS[group] }} />
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
-      <CameraFrameOverlay group={group} />
+      {previousEntry ? (
+        <GhostOverlay photoUri={previousEntry.photoUri} opacity={ghostOpacity} />
+      ) : (
+        <CameraFrameOverlay group={group} />
+      )}
+      {previousEntry && (
+        <View style={styles.opacityControl}>
+          <Text style={styles.opacityLabel}>Ghost opacity</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={0.1}
+            maximumValue={0.9}
+            value={ghostOpacity}
+            onValueChange={setGhostOpacity}
+            minimumTrackTintColor={colors.accent}
+            maximumTrackTintColor={colors.border}
+            thumbTintColor={colors.accent}
+          />
+        </View>
+      )}
       <View style={styles.controls}>
         <Pressable style={styles.shutterButton} onPress={handleCapture} disabled={isCapturing}>
           <View style={styles.shutterInner} />
@@ -87,6 +113,27 @@ const styles = StyleSheet.create({
   permissionButtonText: {
     color: colors.background,
     fontWeight: '700',
+  },
+  opacityControl: {
+    position: 'absolute',
+    bottom: 132,
+    left: 24,
+    right: 24,
+    alignItems: 'center',
+  },
+  opacityLabel: {
+    color: colors.text,
+    backgroundColor: 'rgba(11, 13, 18, 0.7)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+    overflow: 'hidden',
+  },
+  slider: {
+    width: '100%',
   },
   controls: {
     position: 'absolute',
