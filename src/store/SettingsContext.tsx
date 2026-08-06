@@ -10,6 +10,10 @@ type Settings = {
   dailyReminderMinute: number;
   mascotEnabled: boolean;
   showGoalBarOnHome: boolean;
+  // Limited Beliefs no longer sits in the onboarding stack — the avatar
+  // surfaces it on Home instead, once. This tracks whether that's happened
+  // yet, independent of whether the user actually filled anything in.
+  limitedBeliefsIntroShown: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -19,6 +23,7 @@ const defaultSettings: Settings = {
   dailyReminderMinute: 0,
   mascotEnabled: true,
   showGoalBarOnHome: true,
+  limitedBeliefsIntroShown: false,
 };
 
 type SettingsContextValue = {
@@ -28,6 +33,7 @@ type SettingsContextValue = {
   setDailyReminder: (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => void;
   setMascotEnabled: (enabled: boolean) => void;
   setShowGoalBarOnHome: (enabled: boolean) => void;
+  setLimitedBeliefsIntroShown: (shown: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -69,9 +75,29 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, showGoalBarOnHome: enabled }));
   }, []);
 
+  const setLimitedBeliefsIntroShown = useCallback((shown: boolean) => {
+    setSettings((prev) => ({ ...prev, limitedBeliefsIntroShown: shown }));
+  }, []);
+
   const value = useMemo(
-    () => ({ settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome }),
-    [settings, isLoaded, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome]
+    () => ({
+      settings,
+      isLoaded,
+      setAppLockEnabled,
+      setDailyReminder,
+      setMascotEnabled,
+      setShowGoalBarOnHome,
+      setLimitedBeliefsIntroShown,
+    }),
+    [
+      settings,
+      isLoaded,
+      setAppLockEnabled,
+      setDailyReminder,
+      setMascotEnabled,
+      setShowGoalBarOnHome,
+      setLimitedBeliefsIntroShown,
+    ]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

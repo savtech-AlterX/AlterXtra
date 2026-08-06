@@ -7,6 +7,7 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
+import { LimitedBeliefsIntro } from '../../src/components/LimitedBeliefsIntro';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
 import { wordmarkSource } from '../../src/lib/avatar';
@@ -178,6 +179,8 @@ export default function Home() {
           onPress={() => router.push('/(tabs)/settings')}
         />
       </View>
+
+      <LimitedBeliefsIntro />
     </HudScreen>
   );
 }

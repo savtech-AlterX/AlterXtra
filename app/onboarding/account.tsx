@@ -23,7 +23,7 @@ export default function CreateAccount() {
 
   function proceed() {
     router.push({
-      pathname: '/onboarding/limited-beliefs',
+      pathname: '/onboarding/identity',
       params: { icon: icon ?? 'mystery', name: fullName.trim(), email: email.trim() },
     });
   }
