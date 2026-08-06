@@ -11,7 +11,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.workup.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Workup uses your camera to take consistently framed progress photos of your muscle groups."
+        "NSCameraUsageDescription": "Workup uses your camera to take consistently framed progress photos of your muscle groups.",
+        "NSFaceIDUsageDescription": "Workup can lock your progress photos behind Face ID."
       }
     },
     "android": {
@@ -33,7 +34,8 @@
         {
           "cameraPermission": "Workup uses your camera to take consistently framed progress photos of your muscle groups."
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "extra": {
       "router": {},

@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BodyDiagram } from '../src/components/BodyDiagram';
@@ -16,6 +16,15 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable onPress={() => router.push('/settings')} hitSlop={12} style={styles.settingsButton}>
+              <Text style={styles.settingsLink}>Settings</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <Text style={styles.title}>Workup</Text>
       <Text style={styles.subtitle}>Tap a muscle group to log or review progress</Text>
 
@@ -67,6 +76,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
     alignSelf: 'flex-start',
     marginBottom: 20,
+  },
+  settingsButton: {
+    paddingRight: 16,
+  },
+  settingsLink: {
+    color: colors.accent,
+    fontWeight: '600',
+    fontSize: 15,
   },
   toggleRow: {
     flexDirection: 'row',

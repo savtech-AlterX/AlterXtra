@@ -3,7 +3,9 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MUSCLE_GROUP_LABELS, isMuscleGroup } from '../../src/constants/muscleGroups';
+import { useSettings } from '../../src/data/SettingsContext';
 import { useWorkupData } from '../../src/data/WorkupDataContext';
+import { scheduleGroupReminder } from '../../src/notifications/reminders';
 import { colors } from '../../src/theme/colors';
 import type { Measurement } from '../../src/types';
 
@@ -26,6 +28,7 @@ export default function LogEntryScreen() {
   const { group, photoUri } = useLocalSearchParams<{ group: string; photoUri: string }>();
   const router = useRouter();
   const { addEntry } = useWorkupData();
+  const { settings } = useSettings();
 
   const [bodyWeightKg, setBodyWeightKg] = useState('');
   const [measurements, setMeasurements] = useState<{ label: string; value: string }[]>([
@@ -69,6 +72,10 @@ export default function LogEntryScreen() {
         bodyWeightKg: bodyWeightKg.trim() ? Number(bodyWeightKg) : undefined,
         measurements: parsedMeasurements.length ? parsedMeasurements : undefined,
       });
+
+      if (settings.remindersEnabled) {
+        scheduleGroupReminder(group);
+      }
 
       router.replace(`/muscle/${group}`);
     } finally {
