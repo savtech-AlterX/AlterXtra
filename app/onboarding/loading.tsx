@@ -28,7 +28,10 @@ export default function Loading() {
   return (
     <HudScreen scroll={false}>
       <View style={styles.center}>
-        <IdentityMarkRing size={110} style={styles.mark} />
+        {/* Winks once here, per the brief — a small "trust me" beat while the
+            identity data is being written. Falls back to the neutral mark
+            until identity-mark(-female)-wink.png exist; see markSource. */}
+        <IdentityMarkRing size={110} style={styles.mark} expression="wink" />
         <View style={styles.barTrack}>
           <Animated.View style={[styles.barFill, { width }]} />
         </View>

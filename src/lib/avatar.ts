@@ -13,6 +13,16 @@ const MARKS = {
   female: require('../../assets/identity-mark-female.png'),
 } as const;
 
+// Smile plays on icon selection, wink plays on the loading screen — both
+// need real drawn art, since the current marks are pure outline with no
+// facial detail to manipulate (checked pixel-for-pixel, not assumed).
+// Metro needs require() targets to exist at bundle time, so these can't be
+// wired to real files until the art exists; every expression currently
+// resolves back to MARKS until then. Once the four images land, add them
+// here and each call site below starts working immediately with no other
+// changes.
+export type MarkExpression = 'neutral' | 'smile' | 'wink';
+
 const WORDMARK = require('../../assets/wordmark.png');
 
 // 'mystery' has no artwork of its own yet, so it falls back to the male figure.
@@ -22,7 +32,11 @@ export function avatarSource(icon: AppIconChoice | undefined) {
   return AVATARS[figureKey(icon)];
 }
 
-export function markSource(icon: AppIconChoice | undefined) {
+export function markSource(icon: AppIconChoice | undefined, expression: MarkExpression = 'neutral') {
+  // TODO: once identity-mark(-female)-smile.png and -wink.png exist, require
+  // them here and return by [figureKey(icon)][expression] instead of always
+  // falling through to the neutral mark.
+  void expression;
   return MARKS[figureKey(icon)];
 }
 

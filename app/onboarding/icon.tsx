@@ -12,15 +12,24 @@ import type { AppTheme } from '../../src/theme/useAppTheme';
 
 const OPTIONS: AppIconChoice[] = ['male', 'mystery', 'female'];
 
-function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
+function IconGlyph({ option, tint, selected }: { option: AppIconChoice; tint: string; selected: boolean }) {
   const styles = useThemedStyles(makeStyles);
   const { theme } = useThemeControls();
+  // Smiles once it's the pick, not before — a static smile on every card
+  // would read as decoration rather than the app reacting to your choice.
+  const expression = selected ? 'smile' : 'neutral';
   if (option === 'male') {
-    return <Image source={markSource('male')} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />;
+    return (
+      <Image source={markSource('male', expression)} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />
+    );
   }
   if (option === 'female') {
     return (
-      <Image source={markSource('female')} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />
+      <Image
+        source={markSource('female', expression)}
+        style={[styles.glyphImage, { tintColor: tint }]}
+        resizeMode="contain"
+      />
     );
   }
   return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
@@ -53,7 +62,7 @@ export default function ChooseIcon() {
                 accessibilityLabel={`${opt} icon`}
                 accessibilityState={{ selected: isSelected }}
               >
-                <IconGlyph option={opt} tint={tint} />
+                <IconGlyph option={opt} tint={tint} selected={isSelected} />
               </Pressable>
               <View style={[styles.reflection, { backgroundColor: tint, opacity: isSelected ? 0.9 : 0.45 }]} />
             </View>
