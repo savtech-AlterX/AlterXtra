@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../store/AppDataContext';
+import { useMascotCue } from '../store/MascotCueContext';
 import { useSettings } from '../store/SettingsContext';
 import { useThemeControls } from '../theme/ThemeContext';
 import { computeGrowthStats } from '../lib/growth';
@@ -25,6 +26,7 @@ const IDLE_MAX_MS = 5200;
 const WALK_MIN_MS = 2500;
 const WALK_MAX_MS = 6000;
 const MESSAGE_VISIBLE_MS = 4000;
+const PRESENT_GLOW_SIZE = FIGURE_WIDTH * 1.5;
 
 function randBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -50,12 +52,14 @@ export function MascotCompanion() {
   const { settings, isLoaded } = useSettings();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const { xRef, presentRef } = useMascotCue();
 
   const floor = insets.bottom + 10;
   const maxX = Math.max(0, width - FIGURE_WIDTH);
 
   const x = useRef(new Animated.Value(maxX / 2)).current;
   const bob = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(0)).current;
   const xValue = useRef(maxX / 2);
   const [facingLeft, setFacingLeft] = useState(false);
   const [walking, setWalking] = useState(false);
@@ -70,9 +74,32 @@ export function MascotCompanion() {
   useEffect(() => {
     const id = x.addListener(({ value }) => {
       xValue.current = value;
+      // Centre of the figure, not its left edge — so anything cueing off this
+      // (like the Limited Beliefs panel) points at where the figure actually
+      // is, not a spot half its width away from it.
+      xRef.current = value + FIGURE_WIDTH / 2;
     });
     return () => x.removeListener(id);
-  }, [x]);
+  }, [x, xRef]);
+
+  // Lets something elsewhere in the tree (the Limited Beliefs panel on Home)
+  // ask the mascot to visibly react, without either side knowing the other's
+  // internals — see MascotCueContext.
+  const triggerPulse = useCallback(() => {
+    pulse.setValue(0);
+    Animated.sequence([
+      Animated.timing(pulse, { toValue: 1, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: false }),
+      Animated.timing(pulse, { toValue: 0, duration: 650, easing: Easing.in(Easing.quad), useNativeDriver: false }),
+    ]).start();
+  }, [pulse]);
+
+  useEffect(() => {
+    if (!visible) return;
+    presentRef.current = triggerPulse;
+    return () => {
+      if (presentRef.current === triggerPulse) presentRef.current = null;
+    };
+  }, [visible, presentRef, triggerPulse]);
 
   // Alternate between standing still and walking to a new spot on the floor.
   useEffect(() => {
@@ -171,6 +198,14 @@ export function MascotCompanion() {
   const shadowOpacity = bob.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.26] });
   const lean = `${(facingLeft ? 1 : -1) * (walking ? LEAN_DEG : 0)}deg`;
 
+  // The "present" gesture: a scale bump on the figure plus a glow burst
+  // behind it. Placeholder motion, not the eventual choreography — there's
+  // no walk-cycle or gesture reference art yet, so this is built from pure
+  // animation on the existing figure rather than new art.
+  const pulseScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.22] });
+  const pulseGlowOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.85] });
+  const pulseGlowScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] });
+
   return (
     <View pointerEvents="box-none" style={[styles.layer, { bottom: floor }]}>
       <Animated.View pointerEvents="box-none" style={[styles.column, { transform: [{ translateX: x }] }]}>
@@ -180,21 +215,28 @@ export function MascotCompanion() {
           </View>
         )}
 
-        {/* Rises and falls with the stride. */}
-        <Animated.View style={{ transform: [{ translateY: lift }, { rotate: lean }] }}>
-          <Pressable
-            onPress={handlePress}
-            accessibilityRole="button"
-            accessibilityLabel="AlterX companion — tap for a message"
-            style={styles.figureButton}
-          >
-            <Image
-              source={avatarSource(data.identity?.icon)}
-              style={[styles.figure, { tintColor: colors.glow, transform: [{ scaleX: facingLeft ? -1 : 1 }] }]}
-              resizeMode="contain"
-            />
-          </Pressable>
-        </Animated.View>
+        <View style={styles.figureStack}>
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.presentGlow, { opacity: pulseGlowOpacity, transform: [{ scale: pulseGlowScale }] }]}
+          />
+
+          {/* Rises and falls with the stride; scales up on a present cue. */}
+          <Animated.View style={{ transform: [{ translateY: lift }, { rotate: lean }, { scale: pulseScale }] }}>
+            <Pressable
+              onPress={handlePress}
+              accessibilityRole="button"
+              accessibilityLabel="AlterX companion — tap for a message"
+              style={styles.figureButton}
+            >
+              <Image
+                source={avatarSource(data.identity?.icon)}
+                style={[styles.figure, { tintColor: colors.glow, transform: [{ scaleX: facingLeft ? -1 : 1 }] }]}
+                resizeMode="contain"
+              />
+            </Pressable>
+          </Animated.View>
+        </View>
 
         {/* Stays welded to the floor line — the cue that it isn't hovering. */}
         <Animated.View
@@ -218,6 +260,9 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
       width: FIGURE_WIDTH,
       alignItems: 'center',
     },
+    figureStack: {
+      position: 'relative',
+    },
     figureButton: {
       width: FIGURE_WIDTH,
       height: FIGURE_HEIGHT,
@@ -227,6 +272,19 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
     figure: {
       width: FIGURE_WIDTH,
       height: FIGURE_HEIGHT,
+    },
+    presentGlow: {
+      position: 'absolute',
+      bottom: -PRESENT_GLOW_SIZE * 0.12,
+      left: (FIGURE_WIDTH - PRESENT_GLOW_SIZE) / 2,
+      width: PRESENT_GLOW_SIZE,
+      height: PRESENT_GLOW_SIZE,
+      borderRadius: PRESENT_GLOW_SIZE / 2,
+      backgroundColor: colors.glowStrong,
+      shadowColor: colors.glowStrong,
+      shadowOpacity: 0.9,
+      shadowRadius: 30,
+      shadowOffset: { width: 0, height: 0 },
     },
     shadow: {
       width: FIGURE_WIDTH * 0.52,

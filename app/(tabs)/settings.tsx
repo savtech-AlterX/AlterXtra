@@ -10,6 +10,7 @@ import { exportBackup, importBackup } from '../../src/lib/backup';
 import { disableDailyReminder, enableDailyReminder } from '../../src/lib/notifications';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
+import { useThemeControls } from '../../src/theme/ThemeContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -24,7 +25,9 @@ export default function Settings() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, resetAll, restoreAll } = useAppData();
-  const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome } = useSettings();
+  const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome, resetSettings } =
+    useSettings();
+  const { resetTheme } = useThemeControls();
   const [backupBusy, setBackupBusy] = useState(false);
   const [reminderBusy, setReminderBusy] = useState(false);
 
@@ -85,7 +88,23 @@ export default function Settings() {
     );
   }
 
+  function doReset() {
+    resetAll();
+    resetSettings();
+    resetTheme();
+    router.replace('/onboarding/icon');
+  }
+
   function confirmReset() {
+    // React Native Web's Alert.alert is a documented no-op — it never calls
+    // any button's onPress, so this button silently did nothing in any web
+    // preview. window.confirm is the web equivalent of the same prompt.
+    if (Platform.OS === 'web') {
+      if (window.confirm('Reset AlterX: this clears your identity, diary, goals, and log book on this device. This cannot be undone.')) {
+        doReset();
+      }
+      return;
+    }
     Alert.alert(
       'Reset AlterX',
       'This clears your identity, diary, goals, and log book on this device. This cannot be undone.',
@@ -94,10 +113,7 @@ export default function Settings() {
         {
           text: 'Reset',
           style: 'destructive',
-          onPress: () => {
-            resetAll();
-            router.replace('/onboarding/icon');
-          },
+          onPress: doReset,
         },
       ]
     );

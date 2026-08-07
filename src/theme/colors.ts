@@ -55,6 +55,11 @@ function neon(glow: string, glowStrong: string, accent: string): Palette {
   };
 }
 
+// The free default: a calmer, desaturated steel-navy — distinct from the
+// vivid electric "blue" below, which is one of the six accent themes.
+// #5d84b8 clears WCAG AA against black at 5.46:1.
+const navy = neon('#5d84b8', '#9db8dc', '#4a7db0');
+
 // Accent trio per theme, matching the six rings on the premium reference.
 // Blue is anchored on the real app screens (#0881d7 strokes, #4ea3f2 cores)
 // rather than the small swatch ring, which reads more indigo than the UI does.
@@ -93,11 +98,11 @@ const vintage: Palette = {
   overlay: 'rgba(0, 0, 0, 0.7)',
 };
 
-export const palettes = { blue, purple, pink, green, amber, white, vintage } as const;
+export const palettes = { navy, blue, purple, pink, green, amber, white, vintage } as const;
 export type ThemeName = keyof typeof palettes;
 
-export const DEFAULT_THEME: ThemeName = 'blue';
+export const DEFAULT_THEME: ThemeName = 'navy';
 
 // Default palette. Static importers (there should be none outside the theme
 // module) still resolve to the shipping default.
-export const colors = blue;
+export const colors = navy;

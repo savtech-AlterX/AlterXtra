@@ -8,6 +8,7 @@ type ThemeContextValue = {
   theme: ThemeName;
   colors: Palette;
   setTheme: (name: ThemeName) => void;
+  resetTheme: () => void;
   isLoaded: boolean;
 };
 
@@ -31,9 +32,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(THEME_KEY, name).catch(() => {});
   }, []);
 
+  // Theme lives under its own storage key, separate from app data — "Reset
+  // All Data" needs to reach it explicitly or a previously-picked colour
+  // survives the reset and the "fresh install" experience is a lie.
+  const resetTheme = useCallback(() => {
+    setThemeState(DEFAULT_THEME);
+    AsyncStorage.setItem(THEME_KEY, DEFAULT_THEME).catch(() => {});
+  }, []);
+
   const value = useMemo(
-    () => ({ theme, colors: palettes[theme], setTheme, isLoaded }),
-    [theme, setTheme, isLoaded]
+    () => ({ theme, colors: palettes[theme], setTheme, resetTheme, isLoaded }),
+    [theme, setTheme, resetTheme, isLoaded]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

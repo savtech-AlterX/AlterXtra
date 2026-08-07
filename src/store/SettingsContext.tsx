@@ -34,6 +34,7 @@ type SettingsContextValue = {
   setMascotEnabled: (enabled: boolean) => void;
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
+  resetSettings: () => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -79,6 +80,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, limitedBeliefsIntroShown: shown }));
   }, []);
 
+  // "Reset All Data" is meant to hand back a genuine beginner's experience —
+  // that has to include the once-only onboarding flags, not just app data,
+  // or a returning tester (or a real user starting over) never sees them again.
+  const resetSettings = useCallback(() => {
+    setSettings(defaultSettings);
+  }, []);
+
   const value = useMemo(
     () => ({
       settings,
@@ -88,6 +96,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setMascotEnabled,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
+      resetSettings,
     }),
     [
       settings,
@@ -97,6 +106,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setMascotEnabled,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
+      resetSettings,
     ]
   );
 

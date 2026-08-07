@@ -9,6 +9,7 @@ import { SettingsProvider } from '../src/store/SettingsContext';
 import { AppLockGate } from '../src/components/AppLockGate';
 import { MascotCompanion } from '../src/components/MascotCompanion';
 import { Platform, View } from 'react-native';
+import { MascotCueProvider } from '../src/store/MascotCueContext';
 import { ThemeProvider } from '../src/theme/ThemeContext';
 import { useAppTheme } from '../src/theme/useAppTheme';
 
@@ -20,14 +21,16 @@ function ThemedApp() {
       <AppDataProvider>
         <StatusBar style="light" />
         <AppLockGate>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.background },
-              animation: 'fade',
-            }}
-          />
-          <MascotCompanion />
+          <MascotCueProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.background },
+                animation: 'fade',
+              }}
+            />
+            <MascotCompanion />
+          </MascotCueProvider>
         </AppLockGate>
       </AppDataProvider>
     </SettingsProvider>

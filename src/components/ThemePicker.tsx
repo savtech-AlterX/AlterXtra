@@ -5,6 +5,7 @@ import { useThemeControls } from '../theme/ThemeContext';
 import { useAppTheme, useThemedStyles, type AppTheme } from '../theme/useAppTheme';
 
 const THEMES: { key: ThemeName; label: string }[] = [
+  { key: 'navy', label: 'NAVY' },
   { key: 'blue', label: 'BLUE' },
   { key: 'purple', label: 'PURPLE' },
   { key: 'pink', label: 'PINK' },
