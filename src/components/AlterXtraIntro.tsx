@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlowButton } from './GlowButton';
 import { useAppData } from '../store/AppDataContext';
@@ -67,42 +67,55 @@ export function AlterXtraIntro() {
   const translateY = rise.interpolate({ inputRange: [0, 1], outputRange: [40, 0] });
 
   return (
-    <Animated.View
-      style={[
-        styles.card,
-        { paddingBottom: insets.bottom + 18, opacity: rise, transform: [{ translateY }] },
-      ]}
-    >
-      <Pressable onPress={dismiss} hitSlop={10} accessibilityRole="button" accessibilityLabel="Dismiss" style={styles.closeButton}>
-        <Ionicons name="close" size={16} color={colors.glow} style={iconGlow} />
-      </Pressable>
+    // A Modal, not an inline card in Home's scroll — the previous version sat
+    // after all seven grid cards, well below the fold, so it was reachable
+    // only by scrolling. This docks to the bottom of the actual viewport
+    // instead, the same way GoalCelebration and LimitedBeliefsIntro sit above
+    // whatever Home's scroll position happens to be.
+    <Modal visible transparent animationType="none" statusBarTranslucent onRequestClose={dismiss}>
+      <View style={styles.wrap} pointerEvents="box-none">
+        <Animated.View
+          style={[
+            styles.card,
+            { marginBottom: insets.bottom + 16, opacity: rise, transform: [{ translateY }] },
+          ]}
+        >
+          <Pressable onPress={dismiss} hitSlop={10} accessibilityRole="button" accessibilityLabel="Dismiss" style={styles.closeButton}>
+            <Ionicons name="close" size={16} color={colors.glow} style={iconGlow} />
+          </Pressable>
 
-      <Text style={styles.kicker}>PSST</Text>
-      <Text style={[typography.cardTitle, styles.title]}>THERE'S MORE IN ALTER-XTRA</Text>
+          <Text style={styles.kicker}>PSST</Text>
+          <Text style={[typography.cardTitle, styles.title]}>THERE'S MORE IN ALTER-XTRA</Text>
 
-      <View style={styles.list}>
-        {TEASER_POINTS.map((point) => (
-          <View key={point} style={styles.listRow}>
-            <Ionicons name="checkmark" size={14} color={colors.glow} style={iconGlow} />
-            <Text style={styles.listText}>{point}</Text>
+          <View style={styles.list}>
+            {TEASER_POINTS.map((point) => (
+              <View key={point} style={styles.listRow}>
+                <Ionicons name="checkmark" size={14} color={colors.glow} style={iconGlow} />
+                <Text style={styles.listText}>{point}</Text>
+              </View>
+            ))}
           </View>
-        ))}
-      </View>
 
-      <GlowButton label="TAKE A LOOK" onPress={viewAlterXtra} style={styles.spacer} />
-    </Animated.View>
+          <GlowButton label="TAKE A LOOK" onPress={viewAlterXtra} style={styles.spacer} />
+        </Animated.View>
+      </View>
+    </Modal>
   );
 }
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+    wrap: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      paddingHorizontal: 20,
+    },
     card: {
       borderWidth: 1,
       borderColor: colors.glowStrong,
       borderRadius: 20,
       backgroundColor: colors.panelSolid,
       padding: 20,
-      marginTop: 4,
       shadowColor: colors.glow,
       shadowOpacity: 0.4,
       shadowRadius: 20,

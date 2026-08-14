@@ -88,8 +88,20 @@ export function MascotCompanion() {
   const [mode, setMode] = useState<'idle' | 'presenting'>('idle');
   const modeRef = useRef<'idle' | 'presenting'>('idle');
   const [presentPhase, setPresentPhase] = useState<'lean' | 'walking' | 'reveal'>('lean');
+  // Swapping figureSource straight (lean art -> plain standing figure ->
+  // reveal art) is an instant pop with no motion to soften it, unlike a
+  // walk which eases frame to frame. A quick fade through black hides the
+  // cut instead of pretending the two poses connect.
+  const poseFade = useRef(new Animated.Value(1)).current;
 
   const visible = isLoaded && settings.mascotEnabled && !!data.identity;
+
+  // Fires on every pose change, including into/out of 'presenting' — each
+  // one is a different piece of art now, not a continuation of the last.
+  useEffect(() => {
+    poseFade.setValue(0);
+    Animated.timing(poseFade, { toValue: 1, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: false }).start();
+  }, [mode, presentPhase, poseFade]);
 
   useEffect(() => {
     const id = x.addListener(({ value }) => {
@@ -327,8 +339,11 @@ export function MascotCompanion() {
             style={[styles.presentGlow, { opacity: pulseGlowOpacity, transform: [{ scale: pulseGlowScale }] }]}
           />
 
-          {/* Rises and falls with the stride; scales up on a present cue. */}
-          <Animated.View style={{ transform: [{ translateY: lift }, { rotate: lean }, { scale: pulseScale }] }}>
+          {/* Rises and falls with the stride; scales up on a present cue;
+              fades through each pose change instead of popping. */}
+          <Animated.View
+            style={{ opacity: poseFade, transform: [{ translateY: lift }, { rotate: lean }, { scale: pulseScale }] }}
+          >
             <Pressable
               onPress={handlePress}
               accessibilityRole="button"
