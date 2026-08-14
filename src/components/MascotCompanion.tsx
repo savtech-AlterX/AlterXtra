@@ -60,10 +60,13 @@ export function MascotCompanion() {
   const floor = insets.bottom + 10;
   const maxX = Math.max(0, width - FIGURE_WIDTH);
 
-  const x = useRef(new Animated.Value(maxX / 2)).current;
+  // Starts pinned to the left edge, not centred, per the brief — everything
+  // downstream (the idle wander loop, the present sequence) already reads
+  // position off this ref, so nothing else needed to change.
+  const x = useRef(new Animated.Value(0)).current;
   const bob = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0)).current;
-  const xValue = useRef(maxX / 2);
+  const xValue = useRef(0);
   const [facingLeft, setFacingLeft] = useState(false);
   const [walking, setWalking] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
