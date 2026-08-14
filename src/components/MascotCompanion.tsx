@@ -162,6 +162,7 @@ export function MascotCompanion() {
       setMode('presenting');
       if (presentTimer.current) clearTimeout(presentTimer.current);
       walkAnim.current?.stop();
+      setWalking(false);
 
       const icon = data.identity?.icon;
       const hasLean = !!poseSource(icon, 'lean');
