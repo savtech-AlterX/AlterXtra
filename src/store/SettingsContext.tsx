@@ -14,6 +14,8 @@ type Settings = {
   // surfaces it on Home instead, once. This tracks whether that's happened
   // yet, independent of whether the user actually filled anything in.
   limitedBeliefsIntroShown: boolean;
+  // Same idea, for the mascot's one-time lean-walk-reveal toward Alter-Xtra.
+  alterXtraIntroShown: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -24,6 +26,7 @@ const defaultSettings: Settings = {
   mascotEnabled: true,
   showGoalBarOnHome: true,
   limitedBeliefsIntroShown: false,
+  alterXtraIntroShown: false,
 };
 
 type SettingsContextValue = {
@@ -34,6 +37,7 @@ type SettingsContextValue = {
   setMascotEnabled: (enabled: boolean) => void;
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
+  setAlterXtraIntroShown: (shown: boolean) => void;
   resetSettings: () => void;
 };
 
@@ -80,6 +84,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, limitedBeliefsIntroShown: shown }));
   }, []);
 
+  const setAlterXtraIntroShown = useCallback((shown: boolean) => {
+    setSettings((prev) => ({ ...prev, alterXtraIntroShown: shown }));
+  }, []);
+
   // "Reset All Data" is meant to hand back a genuine beginner's experience —
   // that has to include the once-only onboarding flags, not just app data,
   // or a returning tester (or a real user starting over) never sees them again.
@@ -96,6 +104,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setMascotEnabled,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
+      setAlterXtraIntroShown,
       resetSettings,
     }),
     [
@@ -106,6 +115,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setMascotEnabled,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
+      setAlterXtraIntroShown,
       resetSettings,
     ]
   );

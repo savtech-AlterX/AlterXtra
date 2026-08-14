@@ -13,6 +13,20 @@ const MARKS = {
   female: require('../../assets/identity-mark-female.png'),
 } as const;
 
+// The mascot's one-time "here's Alter-Xtra" sequence: it leans, then walks
+// over and holds this pose. Female-only for now — male versions don't exist
+// yet, so poseSource() falls back to the plain standing figure for male
+// rather than a missing pose, which is a smaller visual gap than a crash or
+// a broken image.
+export type MascotPose = 'lean' | 'reveal';
+
+const POSES: Partial<Record<AppIconChoice, Record<MascotPose, { source: number; aspect: number }>>> = {
+  female: {
+    lean: { source: require('../../assets/avatar-female-lean.png'), aspect: 1290 / 485 },
+    reveal: { source: require('../../assets/avatar-female-reveal.png'), aspect: 1405 / 555 },
+  },
+};
+
 // Smile plays on icon selection, wink plays on the loading screen — both
 // need real drawn art, since the current marks are pure outline with no
 // facial detail to manipulate (checked pixel-for-pixel, not assumed).
@@ -42,6 +56,12 @@ export function markSource(icon: AppIconChoice | undefined, expression: MarkExpr
 
 export function wordmarkSource() {
   return WORDMARK;
+}
+
+// Returns null when this icon has no art for that pose yet — callers fall
+// back to the plain standing figure rather than rendering nothing.
+export function poseSource(icon: AppIconChoice | undefined, pose: MascotPose) {
+  return POSES[figureKey(icon)]?.[pose] ?? null;
 }
 
 // Both avatar images are 370x1180 — the female figure is padded onto the same

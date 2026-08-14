@@ -14,6 +14,11 @@ import React, { createContext, useContext, useMemo, useRef } from 'react';
 type MascotCueValue = {
   xRef: React.MutableRefObject<number>;
   presentRef: React.MutableRefObject<(() => void) | null>;
+  // The one-time lean -> walk -> reveal sequence toward Alter-Xtra. The
+  // mascot registers a handler that runs the sequence and calls back once
+  // it's holding the reveal pose, so the caller knows when to raise the
+  // panel — same "ask, don't orchestrate" shape as presentRef.
+  alterXtraPresentRef: React.MutableRefObject<((onRevealed: () => void) => void) | null>;
 };
 
 const MascotCueContext = createContext<MascotCueValue | null>(null);
@@ -21,7 +26,8 @@ const MascotCueContext = createContext<MascotCueValue | null>(null);
 export function MascotCueProvider({ children }: { children: React.ReactNode }) {
   const xRef = useRef(0);
   const presentRef = useRef<(() => void) | null>(null);
-  const value = useMemo(() => ({ xRef, presentRef }), []);
+  const alterXtraPresentRef = useRef<((onRevealed: () => void) => void) | null>(null);
+  const value = useMemo(() => ({ xRef, presentRef, alterXtraPresentRef }), []);
   return <MascotCueContext.Provider value={value}>{children}</MascotCueContext.Provider>;
 }
 

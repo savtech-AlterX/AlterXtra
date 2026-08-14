@@ -3,11 +3,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AlterXtraIntro } from '../../src/components/AlterXtraIntro';
 import { GlowCard } from '../../src/components/GlowCard';
 import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { LimitedBeliefsIntro } from '../../src/components/LimitedBeliefsIntro';
+
+// Off for now — the mascot's lean-walk-reveal toward Alter-Xtra took its
+// place on Home so the two don't compete for the same moment. Flip back to
+// true to restore it; nothing else needs to change.
+const LIMITED_BELIEFS_INTRO_ENABLED = false;
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
 import { wordmarkSource } from '../../src/lib/avatar';
@@ -180,7 +186,8 @@ export default function Home() {
         />
       </View>
 
-      <LimitedBeliefsIntro />
+      <AlterXtraIntro />
+      {LIMITED_BELIEFS_INTRO_ENABLED && <LimitedBeliefsIntro />}
     </HudScreen>
   );
 }

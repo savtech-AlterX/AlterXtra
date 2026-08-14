@@ -7,7 +7,7 @@ import { useSettings } from '../store/SettingsContext';
 import { useThemeControls } from '../theme/ThemeContext';
 import { computeGrowthStats } from '../lib/growth';
 import { buildMascotMessagePool, pickMascotMessage } from '../lib/mascotMessages';
-import { AVATAR_ASPECT, avatarSource } from '../lib/avatar';
+import { AVATAR_ASPECT, avatarSource, poseSource } from '../lib/avatar';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
@@ -27,6 +27,9 @@ const WALK_MIN_MS = 2500;
 const WALK_MAX_MS = 6000;
 const MESSAGE_VISIBLE_MS = 4000;
 const PRESENT_GLOW_SIZE = FIGURE_WIDTH * 1.5;
+const LEAN_HOLD_MS = 900;
+const REVEAL_HOLD_MS = 1400;
+const RESUME_IDLE_DELAY_MS = 400;
 
 function randBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -52,7 +55,7 @@ export function MascotCompanion() {
   const { settings, isLoaded } = useSettings();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { xRef, presentRef } = useMascotCue();
+  const { xRef, presentRef, alterXtraPresentRef } = useMascotCue();
 
   const floor = insets.bottom + 10;
   const maxX = Math.max(0, width - FIGURE_WIDTH);
@@ -66,8 +69,25 @@ export function MascotCompanion() {
   const [message, setMessage] = useState<string | null>(null);
   const messageTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const phaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Separate from phaseTimer on purpose: setMode('presenting') triggers the
+  // idle-loop effect's cleanup asynchronously (after this function returns,
+  // once React re-renders), and that cleanup unconditionally clears
+  // phaseTimer.current. Sharing one ref meant the cleanup was silently
+  // cancelling the walk-transition timer this function had just scheduled —
+  // the sequence got stuck holding the lean pose forever. Caught by actually
+  // watching it run in a browser, not by reading the code.
+  const presentTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const walkAnim = useRef<Animated.CompositeAnimation | null>(null);
   const bobLoop = useRef<Animated.CompositeAnimation | null>(null);
+
+  // 'idle' is the normal random wander loop below. 'presenting' pauses it for
+  // the one-time lean -> walk -> reveal sequence toward Alter-Xtra — mode and
+  // modeRef stay in lockstep so the idle-loop effect (reads state, re-runs on
+  // change) and the imperative sequence function (reads the ref, no re-render
+  // needed) always agree on which one is currently in control.
+  const [mode, setMode] = useState<'idle' | 'presenting'>('idle');
+  const modeRef = useRef<'idle' | 'presenting'>('idle');
+  const [presentPhase, setPresentPhase] = useState<'lean' | 'walking' | 'reveal'>('lean');
 
   const visible = isLoaded && settings.mascotEnabled && !!data.identity;
 
@@ -101,9 +121,78 @@ export function MascotCompanion() {
     };
   }, [visible, presentRef, triggerPulse]);
 
-  // Alternate between standing still and walking to a new spot on the floor.
+  // The one-time sequence: lean (if this icon has that art), walk to the
+  // right edge, hold the reveal pose (or pulse, if this icon has no reveal
+  // art yet), then call back so the caller can raise its panel. Runs
+  // entirely on refs/imperative timers rather than the idle-loop's effect
+  // pattern, because it's a single run-to-completion sequence, not a
+  // repeating cycle.
+  const beginAlterXtraPresent = useCallback(
+    (onRevealed: () => void) => {
+      if (modeRef.current === 'presenting') return;
+      modeRef.current = 'presenting';
+      setMode('presenting');
+      if (presentTimer.current) clearTimeout(presentTimer.current);
+      walkAnim.current?.stop();
+
+      const icon = data.identity?.icon;
+      const hasLean = !!poseSource(icon, 'lean');
+      const hasReveal = !!poseSource(icon, 'reveal');
+
+      function toReveal() {
+        setPresentPhase('reveal');
+        setWalking(false);
+        if (!hasReveal) triggerPulse();
+        presentTimer.current = setTimeout(() => {
+          onRevealed();
+          presentTimer.current = setTimeout(() => {
+            modeRef.current = 'idle';
+            setMode('idle');
+          }, RESUME_IDLE_DELAY_MS);
+        }, REVEAL_HOLD_MS);
+      }
+
+      function toWalk() {
+        setPresentPhase('walking');
+        const from = xValue.current;
+        const target = maxX;
+        const distance = Math.abs(target - from);
+        setFacingLeft(target < from);
+        setWalking(true);
+        walkAnim.current = Animated.timing(x, {
+          toValue: target,
+          duration: Math.max(500, (distance / WALK_SPEED) * 1000),
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: false,
+        });
+        walkAnim.current.start(({ finished }) => {
+          if (finished) toReveal();
+        });
+      }
+
+      setPresentPhase('lean');
+      setWalking(false);
+      if (hasLean) {
+        presentTimer.current = setTimeout(toWalk, LEAN_HOLD_MS);
+      } else {
+        toWalk();
+      }
+    },
+    [data, maxX, x, triggerPulse]
+  );
+
   useEffect(() => {
     if (!visible) return;
+    alterXtraPresentRef.current = beginAlterXtraPresent;
+    return () => {
+      if (alterXtraPresentRef.current === beginAlterXtraPresent) alterXtraPresentRef.current = null;
+    };
+  }, [visible, alterXtraPresentRef, beginAlterXtraPresent]);
+
+  // Alternate between standing still and walking to a new spot on the floor.
+  // Paused entirely while the present sequence above has control.
+  useEffect(() => {
+    if (!visible || mode === 'presenting') return;
     let cancelled = false;
 
     function stand() {
@@ -148,7 +237,7 @@ export function MascotCompanion() {
       if (phaseTimer.current) clearTimeout(phaseTimer.current);
       walkAnim.current?.stop();
     };
-  }, [visible, maxX, x]);
+  }, [visible, maxX, x, mode]);
 
   // Footfall bob — only while actually travelling.
   useEffect(() => {
@@ -180,6 +269,7 @@ export function MascotCompanion() {
   useEffect(() => {
     return () => {
       if (messageTimeout.current) clearTimeout(messageTimeout.current);
+      if (presentTimer.current) clearTimeout(presentTimer.current);
     };
   }, []);
 
@@ -191,6 +281,22 @@ export function MascotCompanion() {
   }, [data]);
 
   if (!visible) return null;
+
+  // Which art is on screen right now: the plain standing figure normally and
+  // while walking (including walking as part of the present sequence), or a
+  // held pose during the lean/reveal phases — falling back to the standing
+  // figure for any icon that doesn't have that pose's art yet.
+  const icon = data.identity?.icon;
+  let figureSource = avatarSource(icon);
+  let figureAspect: number = AVATAR_ASPECT;
+  if (mode === 'presenting' && presentPhase !== 'walking') {
+    const pose = poseSource(icon, presentPhase);
+    if (pose) {
+      figureSource = pose.source;
+      figureAspect = pose.aspect;
+    }
+  }
+  const figureHeight = FIGURE_WIDTH * figureAspect;
 
   const lift = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -BOB_HEIGHT] });
   // Shadow tightens as the figure rises, as if pushing off the floor.
@@ -227,11 +333,14 @@ export function MascotCompanion() {
               onPress={handlePress}
               accessibilityRole="button"
               accessibilityLabel="AlterX companion — tap for a message"
-              style={styles.figureButton}
+              style={[styles.figureButton, { height: figureHeight }]}
             >
               <Image
-                source={avatarSource(data.identity?.icon)}
-                style={[styles.figure, { tintColor: colors.glow, transform: [{ scaleX: facingLeft ? -1 : 1 }] }]}
+                source={figureSource}
+                style={[
+                  styles.figure,
+                  { height: figureHeight, tintColor: colors.glow, transform: [{ scaleX: facingLeft ? -1 : 1 }] },
+                ]}
                 resizeMode="contain"
               />
             </Pressable>
