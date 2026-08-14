@@ -4,32 +4,25 @@ import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
-import { markSource } from '../../src/lib/avatar';
 import { AppIconChoice } from '../../src/store/types';
-import { useThemeControls } from '../../src/theme/ThemeContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
 const OPTIONS: AppIconChoice[] = ['male', 'mystery', 'female'];
 
-function IconGlyph({ option, tint, selected }: { option: AppIconChoice; tint: string; selected: boolean }) {
+// The original icon-choice glyphs: the head silhouette merges into a
+// question mark (same linework as the real app icon), not the plain suit
+// outline used for the identity mark elsewhere in the app.
+const ICON_CHOICE_MARKS = {
+  male: require('../../assets/icon-choice-male.png'),
+  female: require('../../assets/icon-choice-female.png'),
+} as const;
+
+function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
   const styles = useThemedStyles(makeStyles);
-  const { theme } = useThemeControls();
-  // Smiles once it's the pick, not before — a static smile on every card
-  // would read as decoration rather than the app reacting to your choice.
-  const expression = selected ? 'smile' : 'neutral';
-  if (option === 'male') {
+  if (option === 'male' || option === 'female') {
     return (
-      <Image source={markSource('male', expression)} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />
-    );
-  }
-  if (option === 'female') {
-    return (
-      <Image
-        source={markSource('female', expression)}
-        style={[styles.glyphImage, { tintColor: tint }]}
-        resizeMode="contain"
-      />
+      <Image source={ICON_CHOICE_MARKS[option]} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />
     );
   }
   return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
@@ -62,7 +55,7 @@ export default function ChooseIcon() {
                 accessibilityLabel={`${opt} icon`}
                 accessibilityState={{ selected: isSelected }}
               >
-                <IconGlyph option={opt} tint={tint} selected={isSelected} />
+                <IconGlyph option={opt} tint={tint} />
               </Pressable>
               <View style={[styles.reflection, { backgroundColor: tint, opacity: isSelected ? 0.9 : 0.45 }]} />
             </View>

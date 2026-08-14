@@ -1,3 +1,4 @@
+import { usePathname } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -68,6 +69,7 @@ export function MascotCompanion() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { xRef, presentRef, alterXtraPresentRef } = useMascotCue();
+  const pathname = usePathname();
 
   const floor = insets.bottom + 10;
   const maxX = Math.max(0, width - SLOT_WIDTH);
@@ -110,7 +112,10 @@ export function MascotCompanion() {
   const poseFade = useRef(new Animated.Value(1)).current;
   const [walkFrame, setWalkFrame] = useState(0);
 
-  const visible = isLoaded && settings.mascotEnabled && !!data.identity;
+  // The reprogramming-identity screen sets data.identity moments before
+  // navigating here — without this the companion would already be visible
+  // and pacing behind that screen's own progress bar.
+  const visible = isLoaded && settings.mascotEnabled && !!data.identity && pathname !== '/onboarding/loading';
 
   // Fires on every pose change, including into/out of 'presenting' — each
   // one is a different piece of art now, not a continuation of the last.
