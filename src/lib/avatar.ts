@@ -27,6 +27,28 @@ const POSES: Partial<Record<AppIconChoice, Record<MascotPose, { source: number; 
   },
 };
 
+// A real 4-frame side-profile walk cycle (stride / pass / stride / pass),
+// plus the matching side-profile standing pose. All five share one canvas —
+// extracted from a single generated sheet and normalised so the feet land on
+// the same baseline and the hips sit at the same x, which is what stops the
+// figure jittering as the frames advance.
+//
+// Before this, the mascot slid the front-facing standing figure sideways,
+// which is why it read as gliding rather than walking.
+const WALK_ASPECT = 617 / 272;
+
+const WALK_CYCLES: Partial<Record<AppIconChoice, { stand: number; frames: number[] }>> = {
+  female: {
+    stand: require('../../assets/avatar-female-side.png'),
+    frames: [
+      require('../../assets/avatar-female-walk-1.png'),
+      require('../../assets/avatar-female-walk-2.png'),
+      require('../../assets/avatar-female-walk-3.png'),
+      require('../../assets/avatar-female-walk-4.png'),
+    ],
+  },
+};
+
 // Smile plays on icon selection, wink plays on the loading screen — both
 // need real drawn art, since the current marks are pure outline with no
 // facial detail to manipulate (checked pixel-for-pixel, not assumed).
@@ -62,6 +84,23 @@ export function wordmarkSource() {
 // back to the plain standing figure rather than rendering nothing.
 export function poseSource(icon: AppIconChoice | undefined, pose: MascotPose) {
   return POSES[figureKey(icon)]?.[pose] ?? null;
+}
+
+/**
+ * The side-profile walk cycle for this icon, or null if it has none yet
+ * (male, currently) — callers fall back to sliding the standing figure.
+ * `frame` wraps, so callers can pass a monotonically increasing counter.
+ */
+export function walkFrameSource(icon: AppIconChoice | undefined, frame: number) {
+  const cycle = WALK_CYCLES[figureKey(icon)];
+  if (!cycle) return null;
+  const frames = cycle.frames;
+  return { source: frames[((frame % frames.length) + frames.length) % frames.length], aspect: WALK_ASPECT };
+}
+
+export function sideStandSource(icon: AppIconChoice | undefined) {
+  const cycle = WALK_CYCLES[figureKey(icon)];
+  return cycle ? { source: cycle.stand, aspect: WALK_ASPECT } : null;
 }
 
 // Both avatar images are 370x1180 — the female figure is padded onto the same

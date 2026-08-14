@@ -7,7 +7,7 @@ import { useSettings } from '../store/SettingsContext';
 import { useThemeControls } from '../theme/ThemeContext';
 import { computeGrowthStats } from '../lib/growth';
 import { buildMascotMessagePool, pickMascotMessage } from '../lib/mascotMessages';
-import { AVATAR_ASPECT, avatarSource, poseSource } from '../lib/avatar';
+import { AVATAR_ASPECT, avatarSource, poseSource, sideStandSource, walkFrameSource } from '../lib/avatar';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
@@ -15,7 +15,16 @@ import type { AppTheme } from '../theme/useAppTheme';
 // verified by rendering both sizes and comparing. 90px is the smallest width
 // where the coat, collar and face still read.
 const FIGURE_WIDTH = 90;
+// Every pose is sized to this HEIGHT, with its width derived from its own
+// aspect. Sizing by width instead (what this used to do) silently shrank the
+// character whenever it changed pose — a lean or a walk frame is a wider,
+// shorter image than a standing figure, so at a fixed width it rendered
+// noticeably shorter than the figure it had just been.
 const FIGURE_HEIGHT = FIGURE_WIDTH * AVATAR_ASPECT;
+// The on-screen slot the figure occupies. Wider than the standing figure
+// because a mid-stride walk frame is wider than it is — keeping the slot at
+// 90 would let the leading leg clip off the right edge of the screen.
+const SLOT_WIDTH = 132;
 
 const WALK_SPEED = 30; // px per second
 const STEP_MS = 300; // one stride, so the bob reads as footfalls
@@ -30,6 +39,9 @@ const PRESENT_GLOW_SIZE = FIGURE_WIDTH * 1.5;
 const LEAN_HOLD_MS = 900;
 const REVEAL_HOLD_MS = 1400;
 const RESUME_IDLE_DELAY_MS = 400;
+// One drawn frame per half-stride, matching the footfall bob's cadence so the
+// art and the bob stay in phase rather than drifting against each other.
+const WALK_FRAME_MS = STEP_MS / 2;
 
 function randBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -58,7 +70,7 @@ export function MascotCompanion() {
   const { xRef, presentRef, alterXtraPresentRef } = useMascotCue();
 
   const floor = insets.bottom + 10;
-  const maxX = Math.max(0, width - FIGURE_WIDTH);
+  const maxX = Math.max(0, width - SLOT_WIDTH);
 
   // Starts pinned to the left edge, not centred, per the brief — everything
   // downstream (the idle wander loop, the present sequence) already reads
@@ -96,6 +108,7 @@ export function MascotCompanion() {
   // walk which eases frame to frame. A quick fade through black hides the
   // cut instead of pretending the two poses connect.
   const poseFade = useRef(new Animated.Value(1)).current;
+  const [walkFrame, setWalkFrame] = useState(0);
 
   const visible = isLoaded && settings.mascotEnabled && !!data.identity;
 
@@ -112,7 +125,7 @@ export function MascotCompanion() {
       // Centre of the figure, not its left edge — so anything cueing off this
       // (like the Limited Beliefs panel) points at where the figure actually
       // is, not a spot half its width away from it.
-      xRef.current = value + FIGURE_WIDTH / 2;
+      xRef.current = value + SLOT_WIDTH / 2;
     });
     return () => x.removeListener(id);
   }, [x, xRef]);
@@ -254,6 +267,18 @@ export function MascotCompanion() {
     };
   }, [visible, maxX, x, mode]);
 
+  // Advance the drawn walk frames — only while actually travelling, and reset
+  // to a consistent pose on stopping so the figure never freezes mid-stride
+  // with a leg hanging in the air.
+  useEffect(() => {
+    if (!visible || !walking) {
+      setWalkFrame(0);
+      return;
+    }
+    const id = setInterval(() => setWalkFrame((f) => f + 1), WALK_FRAME_MS);
+    return () => clearInterval(id);
+  }, [visible, walking]);
+
   // Footfall bob — only while actually travelling.
   useEffect(() => {
     bobLoop.current?.stop();
@@ -297,21 +322,32 @@ export function MascotCompanion() {
 
   if (!visible) return null;
 
-  // Which art is on screen right now: the plain standing figure normally and
-  // while walking (including walking as part of the present sequence), or a
-  // held pose during the lean/reveal phases — falling back to the standing
-  // figure for any icon that doesn't have that pose's art yet.
+  // Which art is on screen right now, in priority order:
+  //   held lean/reveal pose  >  drawn walk frame while travelling  >
+  //   side-profile idle  >  the front-facing standing figure.
+  // Each step falls through to the next when an icon has no art for it, so a
+  // figure with no walk cycle (male, currently) still behaves exactly as
+  // before rather than rendering nothing.
   const icon = data.identity?.icon;
   let figureSource = avatarSource(icon);
   let figureAspect: number = AVATAR_ASPECT;
-  if (mode === 'presenting' && presentPhase !== 'walking') {
-    const pose = poseSource(icon, presentPhase);
-    if (pose) {
-      figureSource = pose.source;
-      figureAspect = pose.aspect;
+
+  const heldPose = mode === 'presenting' && presentPhase !== 'walking' ? poseSource(icon, presentPhase) : null;
+  if (heldPose) {
+    figureSource = heldPose.source;
+    figureAspect = heldPose.aspect;
+  } else {
+    const cycle = walking ? walkFrameSource(icon, walkFrame) : sideStandSource(icon);
+    if (cycle) {
+      figureSource = cycle.source;
+      figureAspect = cycle.aspect;
     }
   }
-  const figureHeight = FIGURE_WIDTH * figureAspect;
+
+  // Height is the fixed dimension; width follows from the pose's own aspect,
+  // so the character stays the same height whatever it's doing.
+  const figureHeight = FIGURE_HEIGHT;
+  const figureWidth = FIGURE_HEIGHT / figureAspect;
 
   const lift = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -BOB_HEIGHT] });
   // Shadow tightens as the figure rises, as if pushing off the floor.
@@ -351,13 +387,18 @@ export function MascotCompanion() {
               onPress={handlePress}
               accessibilityRole="button"
               accessibilityLabel="AlterX companion — tap for a message"
-              style={[styles.figureButton, { height: figureHeight }]}
+              style={[styles.figureButton, { width: figureWidth, height: figureHeight }]}
             >
               <Image
                 source={figureSource}
                 style={[
                   styles.figure,
-                  { height: figureHeight, tintColor: colors.glow, transform: [{ scaleX: facingLeft ? -1 : 1 }] },
+                  {
+                    width: figureWidth,
+                    height: figureHeight,
+                    tintColor: colors.glow,
+                    transform: [{ scaleX: facingLeft ? -1 : 1 }],
+                  },
                 ]}
                 resizeMode="contain"
               />
@@ -384,7 +425,7 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
       zIndex: 50,
     },
     column: {
-      width: FIGURE_WIDTH,
+      width: SLOT_WIDTH,
       alignItems: 'center',
     },
     figureStack: {
@@ -403,7 +444,7 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
     presentGlow: {
       position: 'absolute',
       bottom: -PRESENT_GLOW_SIZE * 0.12,
-      left: (FIGURE_WIDTH - PRESENT_GLOW_SIZE) / 2,
+      left: (SLOT_WIDTH - PRESENT_GLOW_SIZE) / 2,
       width: PRESENT_GLOW_SIZE,
       height: PRESENT_GLOW_SIZE,
       borderRadius: PRESENT_GLOW_SIZE / 2,
@@ -414,7 +455,7 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
       shadowOffset: { width: 0, height: 0 },
     },
     shadow: {
-      width: FIGURE_WIDTH * 0.52,
+      width: SLOT_WIDTH * 0.36,
       height: 5,
       borderRadius: 3,
       marginTop: -2,
