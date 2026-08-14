@@ -44,5 +44,6 @@ export function wordmarkSource() {
   return WORDMARK;
 }
 
-// Both avatar images are ~170x336, so one ratio covers each without distortion.
-export const AVATAR_ASPECT = 1.97;
+// Both avatar images are 370x1180 — the female figure is padded onto the same
+// canvas as the male so one ratio covers both without distortion.
+export const AVATAR_ASPECT = 1180 / 370;
