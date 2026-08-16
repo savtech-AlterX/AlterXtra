@@ -101,8 +101,15 @@ const vintage: Palette = {
 export const palettes = { navy, blue, purple, pink, green, amber, white, vintage } as const;
 export type ThemeName = keyof typeof palettes;
 
-export const DEFAULT_THEME: ThemeName = 'navy';
+// 'blue' ships as the default — sampled directly against the original
+// reference screens (glow core measured at ~#55b8e8-#60accd from a clean
+// card-border crop), and it already lands almost exactly there. 'navy' used
+// to be the default as a deliberately desaturated "free" look, but that
+// muted rendering is what made the shipped app read pale and washed out
+// next to the reference; it stays in the picker as one of the eight, just
+// no longer what a fresh install opens to.
+export const DEFAULT_THEME: ThemeName = 'blue';
 
 // Default palette. Static importers (there should be none outside the theme
 // module) still resolve to the shipping default.
-export const colors = navy;
+export const colors = blue;

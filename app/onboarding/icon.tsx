@@ -32,7 +32,9 @@ function IconGlyph({ option, tint, selected }: { option: AppIconChoice; tint: st
       />
     );
   }
-  return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
+  return (
+    <Image source={markSource('mystery', expression)} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />
+  );
 }
 
 export default function ChooseIcon() {
@@ -124,12 +126,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   glyphImage: {
     width: 66,
     height: 66 * 1.67,
-  },
-  mysteryGlyph: {
-    fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 64,
-    ...glowShadow,
-    textShadowRadius: 16,
   },
   reflection: {
     width: 56,
