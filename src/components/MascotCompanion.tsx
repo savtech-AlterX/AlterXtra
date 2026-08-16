@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, Image, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../store/AppDataContext';
 import { useMascotCue } from '../store/MascotCueContext';
@@ -11,20 +12,22 @@ import { AVATAR_ASPECT, avatarSource, poseSource, sideStandSource, walkFrameSour
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
-// 62px used to crush the artwork's linework into an unreadable smudge —
-// verified by rendering both sizes and comparing. 90px is the smallest width
-// where the coat, collar and face still read.
-const FIGURE_WIDTH = 90;
-// Every pose is sized to this HEIGHT, with its width derived from its own
-// aspect. Sizing by width instead (what this used to do) silently shrank the
-// character whenever it changed pose — a lean or a walk frame is a wider,
-// shorter image than a standing figure, so at a fixed width it rendered
-// noticeably shorter than the figure it had just been.
-const FIGURE_HEIGHT = FIGURE_WIDTH * AVATAR_ASPECT;
+// The figure's height as a fraction of screen height, clamped so it reads as
+// a small companion at every device size rather than a fixed pixel value
+// tuned for one screen. The previous fixed-width (90px, ~287px tall)
+// approach was calibrated against the old trenchcoat art; the business-suit
+// art rendered at that same height turned out to eat close to a third of
+// the screen and clip straight through the card grid above it — confirmed
+// by measuring the character's rendered bounds against a real screen
+// recording, not assumed.
+const FIGURE_HEIGHT_RATIO = 0.15;
+const FIGURE_HEIGHT_MIN = 110;
+const FIGURE_HEIGHT_MAX = 170;
 // The on-screen slot the figure occupies. Wider than the standing figure
-// because a mid-stride walk frame is wider than it is — keeping the slot at
-// 90 would let the leading leg clip off the right edge of the screen.
-const SLOT_WIDTH = 132;
+// because a mid-stride walk frame is wider than it is — keeping the slot
+// exactly at the figure's own width would let the leading leg clip off the
+// right edge of the screen. Scaled down to match the smaller figure.
+const SLOT_WIDTH = 96;
 
 const WALK_SPEED = 30; // px per second
 const STEP_MS = 300; // one stride, so the bob reads as footfalls
@@ -35,7 +38,6 @@ const IDLE_MAX_MS = 5200;
 const WALK_MIN_MS = 2500;
 const WALK_MAX_MS = 6000;
 const MESSAGE_VISIBLE_MS = 4000;
-const PRESENT_GLOW_SIZE = FIGURE_WIDTH * 1.5;
 const LEAN_HOLD_MS = 900;
 const REVEAL_HOLD_MS = 1400;
 const RESUME_IDLE_DELAY_MS = 400;
@@ -65,12 +67,14 @@ export function MascotCompanion() {
   const { data } = useAppData();
   const { theme } = useThemeControls();
   const { settings, isLoaded } = useSettings();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { xRef, presentRef, alterXtraPresentRef } = useMascotCue();
 
   const floor = insets.bottom + 10;
   const maxX = Math.max(0, width - SLOT_WIDTH);
+  const figureHeight = Math.min(FIGURE_HEIGHT_MAX, Math.max(FIGURE_HEIGHT_MIN, height * FIGURE_HEIGHT_RATIO));
+  const presentGlowSize = figureHeight * 0.7;
 
   // Starts pinned to the left edge, not centred, per the brief — everything
   // downstream (the idle wander loop, the present sequence) already reads
@@ -347,8 +351,27 @@ export function MascotCompanion() {
 
   // Height is the fixed dimension; width follows from the pose's own aspect,
   // so the character stays the same height whatever it's doing.
-  const figureHeight = FIGURE_HEIGHT;
-  const figureWidth = FIGURE_HEIGHT / figureAspect;
+  const figureWidth = figureHeight / figureAspect;
+
+  // The reference art has a soft neon bloom baked into every line plus a
+  // glowing floor reflection. The extracted line art itself is hard-edged
+  // (checked the raw alpha channel — 1-2px antialiasing, no soft falloff),
+  // so the bloom has to come from rendering, not the source PNGs. Native
+  // shadow* props follow a transparent image's actual alpha shape on iOS
+  // (no shadowPath set), giving a real per-line glow; Android's shadow
+  // support for that is weaker but still reads as an ambient glow. On web,
+  // drop-shadow (unlike box-shadow) also hugs the alpha silhouette.
+  const glowStyle = Platform.select({
+    web: {
+      filter: `drop-shadow(0 0 3px ${colors.glow}) drop-shadow(0 0 9px ${colors.glowStrong})`,
+    } as Record<string, unknown>,
+    default: {
+      shadowColor: colors.glow,
+      shadowOpacity: 0.9,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 0 },
+    },
+  });
 
   const lift = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -BOB_HEIGHT] });
   // Shadow tightens as the figure rises, as if pushing off the floor.
@@ -368,7 +391,7 @@ export function MascotCompanion() {
     <View pointerEvents="box-none" style={[styles.layer, { bottom: floor }]}>
       <Animated.View pointerEvents="box-none" style={[styles.column, { transform: [{ translateX: x }] }]}>
         {message && (
-          <View style={styles.bubble}>
+          <View style={[styles.bubble, { bottom: figureHeight + 12 }]}>
             <Text style={styles.bubbleText}>{message}</Text>
           </View>
         )}
@@ -376,7 +399,18 @@ export function MascotCompanion() {
         <View style={styles.figureStack}>
           <Animated.View
             pointerEvents="none"
-            style={[styles.presentGlow, { opacity: pulseGlowOpacity, transform: [{ scale: pulseGlowScale }] }]}
+            style={[
+              styles.presentGlow,
+              {
+                width: presentGlowSize,
+                height: presentGlowSize,
+                borderRadius: presentGlowSize / 2,
+                left: (SLOT_WIDTH - presentGlowSize) / 2,
+                bottom: -presentGlowSize * 0.12,
+                opacity: pulseGlowOpacity,
+                transform: [{ scale: pulseGlowScale }],
+              },
+            ]}
           />
 
           {/* Rises and falls with the stride; scales up on a present cue;
@@ -393,17 +427,35 @@ export function MascotCompanion() {
               <Image
                 source={figureSource}
                 style={[
-                  styles.figure,
-                  {
-                    width: figureWidth,
-                    height: figureHeight,
-                    tintColor: colors.glow,
-                    transform: [{ scaleX: facingLeft ? -1 : 1 }],
-                  },
+                  { width: figureWidth, height: figureHeight, tintColor: colors.glow },
+                  glowStyle,
+                  { transform: [{ scaleX: facingLeft ? -1 : 1 }] },
                 ]}
                 resizeMode="contain"
               />
             </Pressable>
+
+            {/* A faded, vertically-flipped copy of the same frame — the glossy
+                floor-reflection the style reference has. Clipped to less than
+                the figure's own height and faded to transparent so it reads
+                as a reflection dying out on the floor, not a second figure. */}
+            <View pointerEvents="none" style={[styles.reflectionClip, { width: figureWidth, height: figureHeight * 0.4 }]}>
+              <Image
+                source={figureSource}
+                style={{
+                  width: figureWidth,
+                  height: figureHeight,
+                  tintColor: colors.glow,
+                  opacity: 0.32,
+                  transform: [{ scaleX: facingLeft ? -1 : 1 }, { scaleY: -1 }],
+                }}
+                resizeMode="contain"
+              />
+              <LinearGradient
+                colors={['transparent', colors.background]}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </View>
           </Animated.View>
         </View>
 
@@ -433,22 +485,17 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
       position: 'relative',
     },
     figureButton: {
-      width: FIGURE_WIDTH,
-      height: FIGURE_HEIGHT,
       alignItems: 'center',
       justifyContent: 'flex-end',
     },
-    figure: {
-      width: FIGURE_WIDTH,
-      height: FIGURE_HEIGHT,
+    reflectionClip: {
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      overflow: 'hidden',
     },
     presentGlow: {
       position: 'absolute',
-      bottom: -PRESENT_GLOW_SIZE * 0.12,
-      left: (SLOT_WIDTH - PRESENT_GLOW_SIZE) / 2,
-      width: PRESENT_GLOW_SIZE,
-      height: PRESENT_GLOW_SIZE,
-      borderRadius: PRESENT_GLOW_SIZE / 2,
       backgroundColor: colors.glowStrong,
       shadowColor: colors.glowStrong,
       shadowOpacity: 0.9,
@@ -465,7 +512,6 @@ const makeStyles = ({ colors, typography }: AppTheme) =>
     bubble: {
       position: 'absolute',
       left: 0,
-      bottom: FIGURE_HEIGHT + 12,
       width: 180,
       padding: 10,
       borderRadius: 12,
