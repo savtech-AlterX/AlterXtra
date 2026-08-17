@@ -32,9 +32,14 @@ function rgba(hex: string, alpha: number) {
 function neon(glow: string, glowStrong: string, accent: string): Palette {
   return {
     background: '#000000',
-    backgroundElevated: '#05070c',
-    panel: 'rgba(8, 12, 20, 0.82)',
-    panelSolid: '#04060b',
+    backgroundElevated: '#000000',
+    // Genuinely black, not a dark navy — card/panel definition is meant to
+    // come entirely from the glowing border and shadow, not a lighter fill.
+    // (The previous rgba(8,12,20,...) read as a visible blue tint on a real
+    // device, confirmed against a screenshot, even though it looks almost
+    // black in isolation.)
+    panel: 'rgba(0, 0, 0, 0.82)',
+    panelSolid: '#000000',
 
     glow,
     glowStrong,
