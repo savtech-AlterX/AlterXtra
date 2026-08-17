@@ -8,7 +8,15 @@ import { useSettings } from '../store/SettingsContext';
 import { useThemeControls } from '../theme/ThemeContext';
 import { computeGrowthStats } from '../lib/growth';
 import { buildMascotMessagePool, pickMascotMessage } from '../lib/mascotMessages';
-import { AVATAR_ASPECT, avatarSource, poseSource, sideStandSource, walkFrameSource } from '../lib/avatar';
+import {
+  AVATAR_ASPECT,
+  avatarSource,
+  PAPER_PLANE_ASPECT,
+  paperPlaneSource,
+  presentPoseSource,
+  sideStandSource,
+  walkFrameSource,
+} from '../lib/avatar';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
@@ -38,9 +46,25 @@ const IDLE_MAX_MS = 5200;
 const WALK_MIN_MS = 2500;
 const WALK_MAX_MS = 6000;
 const MESSAGE_VISIBLE_MS = 4000;
-const LEAN_HOLD_MS = 900;
-const REVEAL_HOLD_MS = 1400;
+// The current Alter-Xtra premium reveal: seated -> winds up -> throws a
+// paper airplane that flies off and bursts, then the panel appears and the
+// mascot fades out. Replaces the older lean/walk/reveal choreography.
+const SEATED_HOLD_MS = 900;
+const WINDUP_HOLD_MS = 500;
+const THROW_HOLD_MS = 250;
+const PLANE_FLIGHT_MS = 850;
+const BURST_MS = 380;
+const POST_BURST_DELAY_MS = 250;
+const MASCOT_FADE_MS = 450;
 const RESUME_IDLE_DELAY_MS = 400;
+// The seated/windup/throw poses (roughly as wide as they are tall, chair
+// included) are much wider than the narrow standing/walking figure SLOT_WIDTH
+// was tuned for. Centered in that slot, the extra width overflows off-screen
+// if the mascot happens to be idling near an edge when the sequence starts —
+// caught by actually rendering it there, not assumed. This is how far in
+// from each edge it's nudged first.
+const PRESENT_SIDE_MARGIN = 40;
+const PRESENT_REPOSITION_MS = 220;
 // One drawn frame per half-stride, matching the footfall bob's cadence so the
 // art and the bob stay in phase rather than drifting against each other.
 const WALK_FRAME_MS = STEP_MS / 2;
@@ -97,6 +121,14 @@ export function MascotCompanion() {
   // watching it run in a browser, not by reading the code.
   const presentTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const walkAnim = useRef<Animated.CompositeAnimation | null>(null);
+  // Separate from walkAnim on purpose — sharing it meant the idle-wander
+  // effect's cleanup (which fires asynchronously once `mode` flips to
+  // 'presenting' and calls walkAnim.current?.stop()) was stopping this
+  // reposition animation moments after it started, leaving the mascot stuck
+  // near its old x instead of the safe, edge-clear position. Same class of
+  // bug as the earlier lean-pose timer collision — caught by reading the
+  // mascot's actual on-screen rect, not by re-reading the code.
+  const repositionAnim = useRef<Animated.CompositeAnimation | null>(null);
   const bobLoop = useRef<Animated.CompositeAnimation | null>(null);
 
   // 'idle' is the normal random wander loop below. 'presenting' pauses it for
@@ -106,13 +138,15 @@ export function MascotCompanion() {
   // needed) always agree on which one is currently in control.
   const [mode, setMode] = useState<'idle' | 'presenting'>('idle');
   const modeRef = useRef<'idle' | 'presenting'>('idle');
-  const [presentPhase, setPresentPhase] = useState<'lean' | 'walking' | 'reveal'>('lean');
-  // Swapping figureSource straight (lean art -> plain standing figure ->
-  // reveal art) is an instant pop with no motion to soften it, unlike a
-  // walk which eases frame to frame. A quick fade through black hides the
-  // cut instead of pretending the two poses connect.
+  const [presentPhase, setPresentPhase] = useState<'seated' | 'windup' | 'throw' | 'flying'>('seated');
+  // Swapping figureSource straight (seated art -> windup art -> throw art)
+  // is an instant pop with no motion to soften it. A quick fade through
+  // black hides the cut instead of pretending the two poses connect.
   const poseFade = useRef(new Animated.Value(1)).current;
   const [walkFrame, setWalkFrame] = useState(0);
+  const planeAnim = useRef(new Animated.Value(0)).current;
+  const burstAnim = useRef(new Animated.Value(0)).current;
+  const mascotFade = useRef(new Animated.Value(1)).current;
 
   const visible = isLoaded && settings.mascotEnabled && !!data.identity;
 
@@ -153,12 +187,12 @@ export function MascotCompanion() {
     };
   }, [visible, presentRef, triggerPulse]);
 
-  // The one-time sequence: lean (if this icon has that art), walk to the
-  // right edge, hold the reveal pose (or pulse, if this icon has no reveal
-  // art yet), then call back so the caller can raise its panel. Runs
-  // entirely on refs/imperative timers rather than the idle-loop's effect
-  // pattern, because it's a single run-to-completion sequence, not a
-  // repeating cycle.
+  // The one-time sequence: seated -> windup -> throw, then the paper plane
+  // flies off and bursts, the caller's panel appears, and the mascot fades
+  // out — it doesn't walk anywhere for this one, so x/facingLeft are left
+  // wherever the idle wander last put them. Runs entirely on refs/imperative
+  // timers rather than the idle-loop's effect pattern, because it's a single
+  // run-to-completion sequence, not a repeating cycle.
   const beginAlterXtraPresent = useCallback(
     (onRevealed: () => void) => {
       if (modeRef.current === 'presenting') return;
@@ -167,51 +201,74 @@ export function MascotCompanion() {
       if (presentTimer.current) clearTimeout(presentTimer.current);
       walkAnim.current?.stop();
       setWalking(false);
+      planeAnim.setValue(0);
+      burstAnim.setValue(0);
+      mascotFade.setValue(1);
 
-      const icon = data.identity?.icon;
-      const hasLean = !!poseSource(icon, 'lean');
-      const hasReveal = !!poseSource(icon, 'reveal');
-
-      function toReveal() {
-        setPresentPhase('reveal');
-        setWalking(false);
-        if (!hasReveal) triggerPulse();
-        presentTimer.current = setTimeout(() => {
-          onRevealed();
+      function toFlying() {
+        setPresentPhase('flying');
+        Animated.timing(planeAnim, {
+          toValue: 1,
+          duration: PLANE_FLIGHT_MS,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: false,
+        }).start(({ finished }) => {
+          if (!finished) return;
+          burstAnim.setValue(0);
+          Animated.timing(burstAnim, { toValue: 1, duration: BURST_MS, easing: Easing.out(Easing.quad), useNativeDriver: false }).start();
           presentTimer.current = setTimeout(() => {
-            modeRef.current = 'idle';
-            setMode('idle');
-          }, RESUME_IDLE_DELAY_MS);
-        }, REVEAL_HOLD_MS);
+            onRevealed();
+            presentTimer.current = setTimeout(() => {
+              Animated.timing(mascotFade, { toValue: 0, duration: MASCOT_FADE_MS, useNativeDriver: false }).start(() => {
+                presentTimer.current = setTimeout(() => {
+                  modeRef.current = 'idle';
+                  setMode('idle');
+                  // Without this, mascotFade stays at 0 forever — the normal
+                  // standing/walking companion would never become visible
+                  // again after this one-time sequence, instead of resuming
+                  // as intended. Caught by checking computed opacity in a
+                  // browser well after the sequence finished, not assumed.
+                  mascotFade.setValue(1);
+                }, RESUME_IDLE_DELAY_MS);
+              });
+            }, POST_BURST_DELAY_MS);
+          }, BURST_MS);
+        });
       }
 
-      function toWalk() {
-        setPresentPhase('walking');
-        const from = xValue.current;
-        const target = maxX;
-        const distance = Math.abs(target - from);
-        setFacingLeft(target < from);
-        setWalking(true);
-        walkAnim.current = Animated.timing(x, {
-          toValue: target,
-          duration: Math.max(500, (distance / WALK_SPEED) * 1000),
-          easing: Easing.inOut(Easing.quad),
+      function toThrow() {
+        setPresentPhase('throw');
+        presentTimer.current = setTimeout(toFlying, THROW_HOLD_MS);
+      }
+
+      function toWindup() {
+        setPresentPhase('windup');
+        presentTimer.current = setTimeout(toThrow, WINDUP_HOLD_MS);
+      }
+
+      function beginSeated() {
+        setPresentPhase('seated');
+        presentTimer.current = setTimeout(toWindup, SEATED_HOLD_MS);
+      }
+
+      setWalking(false);
+      const from = xValue.current;
+      const safeTarget = Math.min(Math.max(from, PRESENT_SIDE_MARGIN), Math.max(PRESENT_SIDE_MARGIN, maxX - PRESENT_SIDE_MARGIN));
+      if (Math.abs(safeTarget - from) < 1) {
+        beginSeated();
+      } else {
+        repositionAnim.current = Animated.timing(x, {
+          toValue: safeTarget,
+          duration: PRESENT_REPOSITION_MS,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         });
-        walkAnim.current.start(({ finished }) => {
-          if (finished) toReveal();
+        repositionAnim.current.start(({ finished }) => {
+          if (finished) beginSeated();
         });
       }
-
-      setPresentPhase('lean');
-      setWalking(false);
-      if (hasLean) {
-        presentTimer.current = setTimeout(toWalk, LEAN_HOLD_MS);
-      } else {
-        toWalk();
-      }
     },
-    [data, maxX, x, triggerPulse]
+    [burstAnim, mascotFade, maxX, planeAnim, x]
   );
 
   useEffect(() => {
@@ -315,6 +372,7 @@ export function MascotCompanion() {
     return () => {
       if (messageTimeout.current) clearTimeout(messageTimeout.current);
       if (presentTimer.current) clearTimeout(presentTimer.current);
+      repositionAnim.current?.stop();
     };
   }, []);
 
@@ -328,16 +386,16 @@ export function MascotCompanion() {
   if (!visible) return null;
 
   // Which art is on screen right now, in priority order:
-  //   held lean/reveal pose  >  drawn walk frame while travelling  >
-  //   side-profile idle  >  the front-facing standing figure.
-  // Each step falls through to the next when an icon has no art for it, so a
-  // figure with no walk cycle (male, currently) still behaves exactly as
-  // before rather than rendering nothing.
+  //   held seated/windup/throw pose during the present sequence  >
+  //   drawn walk frame while travelling  >  side-profile idle  >  the
+  //   front-facing standing figure. Both icons have full art for the
+  //   present sequence, so unlike the idle-wander fallbacks below there's
+  //   no missing-art case to fall through for it.
   const icon = data.identity?.icon;
   let figureSource = avatarSource(icon);
   let figureAspect: number = AVATAR_ASPECT;
 
-  const heldPose = mode === 'presenting' && presentPhase !== 'walking' ? poseSource(icon, presentPhase) : null;
+  const heldPose = mode === 'presenting' ? presentPoseSource(icon, presentPhase === 'flying' ? 'throw' : presentPhase) : null;
   if (heldPose) {
     figureSource = heldPose.source;
     figureAspect = heldPose.aspect;
@@ -380,16 +438,45 @@ export function MascotCompanion() {
   const lean = `${(facingLeft ? 1 : -1) * (walking ? LEAN_DEG : 0)}deg`;
 
   // The "present" gesture: a scale bump on the figure plus a glow burst
-  // behind it. Placeholder motion, not the eventual choreography — there's
-  // no walk-cycle or gesture reference art yet, so this is built from pure
-  // animation on the existing figure rather than new art.
+  // behind it. Used by the separate presentRef cue (e.g. Limited Beliefs),
+  // not by the Alter-Xtra sequence, which has its own paper-plane animation
+  // below.
   const pulseScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.22] });
   const pulseGlowOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.85] });
   const pulseGlowScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] });
 
+  // The paper plane: launches from roughly the throwing hand, flies up and
+  // to the right while growing — reads as approaching the viewer — then
+  // fades out right as the burst flash takes over at its final position.
+  const planeHeight = 26;
+  const planeWidth = planeHeight / PAPER_PLANE_ASPECT;
+  const PLANE_FLY_DX = 190;
+  const PLANE_FLY_DY = -70;
+  // Flies toward whichever side the figure is actually facing (it's mirrored
+  // via scaleX when facingLeft, so the thrown arm — and the plane — needs to
+  // mirror with it, not always fly rightward regardless of orientation).
+  const planeTranslateX = Animated.multiply(
+    planeAnim.interpolate({ inputRange: [0, 1], outputRange: [0, PLANE_FLY_DX] }),
+    facingLeft ? -1 : 1
+  );
+  const planeTranslateY = planeAnim.interpolate({ inputRange: [0, 1], outputRange: [0, PLANE_FLY_DY] });
+  const planeScale = planeAnim.interpolate({ inputRange: [0, 0.6, 1], outputRange: [1, 1.9, 3.4] });
+  const planeRotate = planeAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', facingLeft ? '10deg' : '-10deg'] });
+  const planeOpacity = planeAnim.interpolate({ inputRange: [0, 0.08, 0.85, 1], outputRange: [0, 1, 1, 0] });
+  const burstScale = burstAnim.interpolate({ inputRange: [0, 1], outputRange: [0.4, 2.6] });
+  const burstOpacity = burstAnim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0.9, 0] });
+  // Roughly where the throwing hand sits in the throw pose art (upper area,
+  // toward the side the arm extends). The burst flash sits at the plane's
+  // landing spot, so it uses the same offset without the animated part.
+  const planeStartLeft = figureWidth * 0.75;
+  const planeStartTop = figureHeight * 0.05;
+  const burstLeft = planeStartLeft + (facingLeft ? -PLANE_FLY_DX : PLANE_FLY_DX);
+  const burstTop = planeStartTop + PLANE_FLY_DY;
+  const burstSize = planeHeight * 2.2;
+
   return (
     <View pointerEvents="box-none" style={[styles.layer, { bottom: floor }]}>
-      <Animated.View pointerEvents="box-none" style={[styles.column, { transform: [{ translateX: x }] }]}>
+      <Animated.View pointerEvents="box-none" style={[styles.column, { opacity: mascotFade, transform: [{ translateX: x }] }]}>
         {message && (
           <View style={[styles.bubble, { bottom: figureHeight + 12 }]}>
             <Text style={styles.bubbleText}>{message}</Text>
@@ -412,6 +499,53 @@ export function MascotCompanion() {
               },
             ]}
           />
+
+          {mode === 'presenting' && presentPhase === 'flying' && (
+            <>
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: planeStartLeft,
+                  top: planeStartTop,
+                  width: planeWidth,
+                  height: planeHeight,
+                  opacity: planeOpacity,
+                  transform: [
+                    { translateX: planeTranslateX },
+                    { translateY: planeTranslateY },
+                    { scale: planeScale },
+                    { rotate: planeRotate },
+                    { scaleX: facingLeft ? -1 : 1 },
+                  ],
+                }}
+              >
+                <Image
+                  source={paperPlaneSource()}
+                  style={[{ width: planeWidth, height: planeHeight, tintColor: colors.glow }, glowStyle]}
+                  resizeMode="contain"
+                />
+              </Animated.View>
+
+              {/* The flash where the plane bursts — same technique as
+                  presentGlow, just relocated to the plane's landing spot. */}
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.presentGlow,
+                  {
+                    left: burstLeft - burstSize / 2,
+                    top: burstTop - burstSize / 2,
+                    width: burstSize,
+                    height: burstSize,
+                    borderRadius: burstSize / 2,
+                    opacity: burstOpacity,
+                    transform: [{ scale: burstScale }],
+                  },
+                ]}
+              />
+            </>
+          )}
 
           {/* Rises and falls with the stride; scales up on a present cue;
               fades through each pose change instead of popping. */}

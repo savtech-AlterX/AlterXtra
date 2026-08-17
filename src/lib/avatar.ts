@@ -50,6 +50,40 @@ const WALK_CYCLES: Partial<Record<AppIconChoice, { stand: number; frames: number
   },
 };
 
+// The current Alter-Xtra premium reveal: seated in a chair, winds up and
+// throws a paper airplane that flies off and bursts — replacing the older
+// lean/walk/reveal sequence above, which is left in place rather than
+// deleted (only swapped which one beginAlterXtraPresent in
+// MascotCompanion actually runs) since this is the current choice, not
+// necessarily the final one. Extracted from reference collages the same
+// way the walk-cycle frames were: alpha-threshold + connected-component
+// isolation, not hand-drawn.
+export type PresentPose = 'seated' | 'windup' | 'throw';
+
+const PRESENT_POSES: Record<'male' | 'female', Record<PresentPose, { source: number; aspect: number }>> = {
+  male: {
+    seated: { source: require('../../assets/avatar-male-seated.png'), aspect: 118 / 116 },
+    windup: { source: require('../../assets/avatar-male-windup.png'), aspect: 127 / 116 },
+    throw: { source: require('../../assets/avatar-male-throw.png'), aspect: 130 / 116 },
+  },
+  female: {
+    seated: { source: require('../../assets/avatar-female-seated.png'), aspect: 118 / 114 },
+    windup: { source: require('../../assets/avatar-female-windup.png'), aspect: 119 / 114 },
+    throw: { source: require('../../assets/avatar-female-throw.png'), aspect: 118 / 114 },
+  },
+};
+
+const PAPER_PLANE = require('../../assets/paper-plane.png');
+export const PAPER_PLANE_ASPECT = 37 / 39;
+
+export function presentPoseSource(icon: AppIconChoice | undefined, pose: PresentPose) {
+  return PRESENT_POSES[figureKey(icon)][pose];
+}
+
+export function paperPlaneSource() {
+  return PAPER_PLANE;
+}
+
 // Smile plays on icon selection, wink plays on the loading screen — both
 // need real drawn art, since the current marks are pure outline with no
 // facial detail to manipulate (checked pixel-for-pixel, not assumed).
