@@ -11,6 +11,7 @@ const AVATARS = {
 const MARKS = {
   male: require('../../assets/identity-mark.png'),
   female: require('../../assets/identity-mark-female.png'),
+  mystery: require('../../assets/identity-mark-mystery.png'),
 } as const;
 
 // The mascot's one-time "here's Alter-Xtra" sequence: it leans, then walks
@@ -73,7 +74,11 @@ export function markSource(icon: AppIconChoice | undefined, expression: MarkExpr
   // them here and return by [figureKey(icon)][expression] instead of always
   // falling through to the neutral mark.
   void expression;
-  return MARKS[figureKey(icon)];
+  // Unlike figureKey (which collapses 'mystery' to the male body for the
+  // full-figure mascot, since 'mystery' isn't a real avatar to walk around
+  // as), the mark has its own dedicated art — a question-mark glyph, not a
+  // fallback face — so it's looked up directly rather than through figureKey.
+  return MARKS[icon === 'female' ? 'female' : icon === 'mystery' ? 'mystery' : 'male'];
 }
 
 export function wordmarkSource() {
