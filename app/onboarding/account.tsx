@@ -46,8 +46,8 @@ export default function CreateAccount() {
         keyboardType="email-address"
       />
       <Text style={styles.note}>
-        This is a local profile, not an account — there's no password because there's no server. Everything you
-        enter stays on this device.
+        This profile is stored locally on your device. No account is created, no password is required, and no
+        data is transmitted to a server.
       </Text>
 
       <Pressable style={styles.checkboxRow} onPress={() => setConsent((v) => !v)}>

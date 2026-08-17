@@ -41,7 +41,7 @@ export default function ChooseIdentity() {
 
   return (
     <HudScreen>
-      <Text style={[typography.screenTitle, styles.title]}>WHO ARE YOU NOW?</Text>
+      <Text style={[typography.screenTitle, styles.title]}>WHO ARE YOU STEPPING INTO?</Text>
 
       <HudTextInput
         placeholder="Search archetypes..."

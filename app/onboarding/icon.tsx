@@ -64,9 +64,6 @@ export default function ChooseIcon() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={[typography.label, styles.footerLabel]}>
-          THIS BECOMES YOUR IDENTITY MARK
-        </Text>
         <GlowButton
           label="CONTINUE"
           icon={<Ionicons name="arrow-forward" size={16} color="#02141f" />}
@@ -137,8 +134,5 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   footer: {
     marginTop: 'auto',
     gap: 16,
-  },
-  footerLabel: {
-    textAlign: 'center',
   },
 });
