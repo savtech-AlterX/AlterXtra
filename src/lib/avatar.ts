@@ -55,29 +55,47 @@ const WALK_CYCLES: Partial<Record<AppIconChoice, { stand: number; frames: number
 // lean/walk/reveal sequence above, which is left in place rather than
 // deleted (only swapped which one beginAlterXtraPresent in
 // MascotCompanion actually runs) since this is the current choice, not
-// necessarily the final one. Extracted from reference collages the same
-// way the walk-cycle frames were: alpha-threshold + connected-component
-// isolation, not hand-drawn.
-export type PresentPose = 'seated' | 'windup' | 'throw';
-
-const PRESENT_POSES: Record<'male' | 'female', Record<PresentPose, { source: number; aspect: number }>> = {
-  male: {
-    seated: { source: require('../../assets/avatar-male-seated.png'), aspect: 118 / 116 },
-    windup: { source: require('../../assets/avatar-male-windup.png'), aspect: 127 / 116 },
-    throw: { source: require('../../assets/avatar-male-throw.png'), aspect: 130 / 116 },
-  },
-  female: {
-    seated: { source: require('../../assets/avatar-female-seated.png'), aspect: 118 / 114 },
-    windup: { source: require('../../assets/avatar-female-windup.png'), aspect: 119 / 114 },
-    throw: { source: require('../../assets/avatar-female-throw.png'), aspect: 118 / 114 },
-  },
+// necessarily the final one.
+//
+// This is a real multi-frame arm-throw cycle, not three static held poses —
+// the source collages were shot as ~100-frame sequences specifically so the
+// motion would read as fluid human movement, and the first version of this
+// (three poses held for hundreds of ms each, crossfaded between) threw that
+// away and looked exactly as jumpy as you'd expect. Frames extracted the
+// same way the walk cycle was: alpha-threshold + connected-component
+// isolation, not hand-drawn. Male and female have different frame counts
+// (5 vs 6) because the source material's usable arm-motion range differed —
+// callers index by icon's own array length, not a fixed count.
+const THROW_CYCLES: Record<'male' | 'female', { source: number; aspect: number }[]> = {
+  male: [
+    { source: require('../../assets/avatar-male-seated.png'), aspect: 118 / 116 },
+    { source: require('../../assets/avatar-male-windup.png'), aspect: 127 / 116 },
+    { source: require('../../assets/avatar-male-throw.png'), aspect: 130 / 116 },
+    { source: require('../../assets/avatar-male-throw2.png'), aspect: 128 / 116 },
+    { source: require('../../assets/avatar-male-throw3.png'), aspect: 128 / 116 },
+    { source: require('../../assets/avatar-male-settle.png'), aspect: 128 / 116 },
+  ],
+  female: [
+    { source: require('../../assets/avatar-female-seated.png'), aspect: 118 / 114 },
+    { source: require('../../assets/avatar-female-windup.png'), aspect: 119 / 114 },
+    { source: require('../../assets/avatar-female-throw.png'), aspect: 118 / 114 },
+    { source: require('../../assets/avatar-female-throw2.png'), aspect: 118 / 114 },
+    { source: require('../../assets/avatar-female-throw3.png'), aspect: 119 / 114 },
+  ],
 };
 
 const PAPER_PLANE = require('../../assets/paper-plane.png');
 export const PAPER_PLANE_ASPECT = 37 / 39;
 
-export function presentPoseSource(icon: AppIconChoice | undefined, pose: PresentPose) {
-  return PRESENT_POSES[figureKey(icon)][pose];
+export function throwCycleLength(icon: AppIconChoice | undefined) {
+  return THROW_CYCLES[figureKey(icon)].length;
+}
+
+// `frame` clamps rather than wraps — the last frame (arm settled/following
+// through) is meant to hold once reached, not loop back to seated.
+export function presentFrameSource(icon: AppIconChoice | undefined, frame: number) {
+  const cycle = THROW_CYCLES[figureKey(icon)];
+  return cycle[Math.max(0, Math.min(frame, cycle.length - 1))];
 }
 
 export function paperPlaneSource() {
