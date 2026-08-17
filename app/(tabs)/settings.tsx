@@ -25,8 +25,15 @@ export default function Settings() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, resetAll, restoreAll } = useAppData();
-  const { settings, setAppLockEnabled, setDailyReminder, setMascotEnabled, setShowGoalBarOnHome, resetSettings } =
-    useSettings();
+  const {
+    settings,
+    setAppLockEnabled,
+    setDailyReminder,
+    setMascotEnabled,
+    setShowGoalBarOnHome,
+    setAlterXtraIntroShown,
+    resetSettings,
+  } = useSettings();
   const { resetTheme } = useThemeControls();
   const [backupBusy, setBackupBusy] = useState(false);
   const [reminderBusy, setReminderBusy] = useState(false);
@@ -217,6 +224,16 @@ export default function Settings() {
           />
         </View>
       </GlowCard>
+
+      <GlowButton
+        label="REPLAY ALTER-XTRA INTRO"
+        variant="outline"
+        icon={<Ionicons name="play" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => {
+          setAlterXtraIntroShown(false);
+          router.replace('/(tabs)');
+        }}
+      />
 
       <GlowCard style={styles.lockCard}>
         <View style={styles.lockText}>
