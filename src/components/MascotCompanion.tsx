@@ -55,10 +55,13 @@ const MESSAGE_VISIBLE_MS = 4000;
 // airplane flies off and bursts, then the panel appears and the mascot
 // fades out. Replaces the older lean/walk/reveal choreography.
 const SEATED_HOLD_MS = 700;
-// Per-frame advance through the throw-cycle art (seated -> windup -> ... ->
-// settled). Fast enough to read as continuous motion rather than a slideshow
-// — a real arm throw takes well under half a second.
-const MOTION_FRAME_MS = 70;
+// Per-frame advance through the throw-cycle art (seated -> windup -> every
+// extracted in-between frame -> settled, ~37 frames). 24ms/frame puts the
+// whole arm motion at well under a second — snappy like a real throw — while
+// staying comfortably above single-display-frame timing (~16ms at 60Hz), so
+// each step is actually resolvable rather than racing the refresh rate for
+// no visible gain.
+const MOTION_FRAME_MS = 24;
 const SETTLE_HOLD_MS = 200;
 const PLANE_FLIGHT_MS = 850;
 const BURST_MS = 380;

@@ -57,30 +57,101 @@ const WALK_CYCLES: Partial<Record<AppIconChoice, { stand: number; frames: number
 // MascotCompanion actually runs) since this is the current choice, not
 // necessarily the final one.
 //
-// This is a real multi-frame arm-throw cycle, not three static held poses —
-// the source collages were shot as ~100-frame sequences specifically so the
-// motion would read as fluid human movement, and the first version of this
-// (three poses held for hundreds of ms each, crossfaded between) threw that
-// away and looked exactly as jumpy as you'd expect. Frames extracted the
-// same way the walk cycle was: alpha-threshold + connected-component
-// isolation, not hand-drawn. Male and female have different frame counts
-// (5 vs 6) because the source material's usable arm-motion range differed —
+// This is a real multi-frame arm-throw cycle (38 frames male, 37 female),
+// not a handful of static held poses — the source collages were shot as
+// ~100-frame sequences specifically so the motion would read as fluid human
+// movement. An earlier version of this sampled roughly one frame per 10
+// (e.g. 41, 51, 61) and held each for hundreds of ms; the frames in between
+// carry real, visible in-between motion that sampling was throwing away,
+// which is exactly why it read as jumpy rather than fluid. This uses every
+// extracted frame from windup through the arm's full extension. It stops
+// there rather than continuing into the frames where the plane is already
+// visible in flight, since the plane's flight and growth are animated
+// separately in MascotCompanion — carrying it through in these frames too
+// would show it twice. Frames extracted the same way the walk cycle was:
+// alpha-threshold + connected-component isolation, not hand-drawn. Male and
+// female have different frame counts because the source material's usable
+// arm-motion range before the plane enters frame differed by one row —
 // callers index by icon's own array length, not a fixed count.
 const THROW_CYCLES: Record<'male' | 'female', { source: number; aspect: number }[]> = {
   male: [
     { source: require('../../assets/avatar-male-seated.png'), aspect: 118 / 116 },
-    { source: require('../../assets/avatar-male-windup.png'), aspect: 127 / 116 },
-    { source: require('../../assets/avatar-male-throw.png'), aspect: 130 / 116 },
-    { source: require('../../assets/avatar-male-throw2.png'), aspect: 128 / 116 },
-    { source: require('../../assets/avatar-male-throw3.png'), aspect: 128 / 116 },
+    { source: require('../../assets/avatar-male-motion-00.png'), aspect: 127 / 116 },
+    { source: require('../../assets/avatar-male-motion-01.png'), aspect: 127 / 113 },
+    { source: require('../../assets/avatar-male-motion-02.png'), aspect: 127 / 113 },
+    { source: require('../../assets/avatar-male-motion-03.png'), aspect: 127 / 113 },
+    { source: require('../../assets/avatar-male-motion-04.png'), aspect: 127 / 113 },
+    { source: require('../../assets/avatar-male-motion-05.png'), aspect: 127 / 113 },
+    { source: require('../../assets/avatar-male-motion-06.png'), aspect: 127 / 113 },
+    { source: require('../../assets/avatar-male-motion-07.png'), aspect: 127 / 113 },
+    { source: require('../../assets/avatar-male-motion-08.png'), aspect: 127 / 117 },
+    { source: require('../../assets/avatar-male-motion-09.png'), aspect: 130 / 116 },
+    { source: require('../../assets/avatar-male-motion-10.png'), aspect: 130 / 113 },
+    { source: require('../../assets/avatar-male-motion-11.png'), aspect: 130 / 113 },
+    { source: require('../../assets/avatar-male-motion-12.png'), aspect: 130 / 113 },
+    { source: require('../../assets/avatar-male-motion-13.png'), aspect: 130 / 113 },
+    { source: require('../../assets/avatar-male-motion-14.png'), aspect: 130 / 113 },
+    { source: require('../../assets/avatar-male-motion-15.png'), aspect: 130 / 113 },
+    { source: require('../../assets/avatar-male-motion-16.png'), aspect: 130 / 113 },
+    { source: require('../../assets/avatar-male-motion-17.png'), aspect: 130 / 117 },
+    { source: require('../../assets/avatar-male-motion-18.png'), aspect: 128 / 116 },
+    { source: require('../../assets/avatar-male-motion-19.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-20.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-21.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-22.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-23.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-24.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-25.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-26.png'), aspect: 128 / 117 },
+    { source: require('../../assets/avatar-male-motion-27.png'), aspect: 128 / 116 },
+    { source: require('../../assets/avatar-male-motion-28.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-29.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-30.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-31.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-32.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-33.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-34.png'), aspect: 128 / 113 },
+    { source: require('../../assets/avatar-male-motion-35.png'), aspect: 128 / 117 },
     { source: require('../../assets/avatar-male-settle.png'), aspect: 128 / 116 },
   ],
   female: [
     { source: require('../../assets/avatar-female-seated.png'), aspect: 118 / 114 },
-    { source: require('../../assets/avatar-female-windup.png'), aspect: 119 / 114 },
-    { source: require('../../assets/avatar-female-throw.png'), aspect: 118 / 114 },
-    { source: require('../../assets/avatar-female-throw2.png'), aspect: 118 / 114 },
-    { source: require('../../assets/avatar-female-throw3.png'), aspect: 119 / 114 },
+    { source: require('../../assets/avatar-female-motion-00.png'), aspect: 119 / 114 },
+    { source: require('../../assets/avatar-female-motion-01.png'), aspect: 119 / 110 },
+    { source: require('../../assets/avatar-female-motion-02.png'), aspect: 119 / 108 },
+    { source: require('../../assets/avatar-female-motion-03.png'), aspect: 119 / 107 },
+    { source: require('../../assets/avatar-female-motion-04.png'), aspect: 119 / 107 },
+    { source: require('../../assets/avatar-female-motion-05.png'), aspect: 119 / 108 },
+    { source: require('../../assets/avatar-female-motion-06.png'), aspect: 119 / 107 },
+    { source: require('../../assets/avatar-female-motion-07.png'), aspect: 119 / 108 },
+    { source: require('../../assets/avatar-female-motion-08.png'), aspect: 119 / 107 },
+    { source: require('../../assets/avatar-female-motion-09.png'), aspect: 118 / 114 },
+    { source: require('../../assets/avatar-female-motion-10.png'), aspect: 118 / 110 },
+    { source: require('../../assets/avatar-female-motion-11.png'), aspect: 118 / 108 },
+    { source: require('../../assets/avatar-female-motion-12.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-13.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-14.png'), aspect: 118 / 108 },
+    { source: require('../../assets/avatar-female-motion-15.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-16.png'), aspect: 118 / 108 },
+    { source: require('../../assets/avatar-female-motion-17.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-18.png'), aspect: 118 / 114 },
+    { source: require('../../assets/avatar-female-motion-19.png'), aspect: 118 / 110 },
+    { source: require('../../assets/avatar-female-motion-20.png'), aspect: 118 / 108 },
+    { source: require('../../assets/avatar-female-motion-21.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-22.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-23.png'), aspect: 118 / 108 },
+    { source: require('../../assets/avatar-female-motion-24.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-25.png'), aspect: 118 / 108 },
+    { source: require('../../assets/avatar-female-motion-26.png'), aspect: 118 / 107 },
+    { source: require('../../assets/avatar-female-motion-27.png'), aspect: 119 / 114 },
+    { source: require('../../assets/avatar-female-motion-28.png'), aspect: 119 / 110 },
+    { source: require('../../assets/avatar-female-motion-29.png'), aspect: 119 / 108 },
+    { source: require('../../assets/avatar-female-motion-30.png'), aspect: 119 / 107 },
+    { source: require('../../assets/avatar-female-motion-31.png'), aspect: 119 / 107 },
+    { source: require('../../assets/avatar-female-motion-32.png'), aspect: 119 / 108 },
+    { source: require('../../assets/avatar-female-motion-33.png'), aspect: 119 / 107 },
+    { source: require('../../assets/avatar-female-motion-34.png'), aspect: 119 / 108 },
+    { source: require('../../assets/avatar-female-motion-35.png'), aspect: 119 / 107 },
   ],
 };
 
