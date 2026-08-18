@@ -101,23 +101,26 @@ export default function HabitReprogramming() {
   return (
     <HudScreen>
       <StackHeader title="HABIT REPROGRAMMING" />
-      <Text style={styles.subtitle}>Rewire the loop: trigger, replacement, reward, identity.</Text>
 
       <Text style={typography.label}>TRIGGER</Text>
       <HudTextInput placeholder="e.g. Feeling stressed after work" value={trigger} onChangeText={setTrigger} />
 
       <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
-      <HudTextInput placeholder="e.g. Doom-scrolling for an hour" value={oldHabit} onChangeText={setOldHabit} />
+      <HudTextInput placeholder="e.g. Doom-scrolling for hours" value={oldHabit} onChangeText={setOldHabit} />
 
       <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
       <HudTextInput
-        placeholder="e.g. 10 min stretch + plan tomorrow"
+        placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
         value={replacement}
         onChangeText={setReplacement}
       />
 
       <Text style={[typography.label, styles.spacer]}>REWARD</Text>
-      <HudTextInput placeholder="e.g. Better sleep, better performance" value={reward} onChangeText={setReward} />
+      <HudTextInput
+        placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
+        value={reward}
+        onChangeText={setReward}
+      />
 
       <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
       <HudTextInput
@@ -152,13 +155,6 @@ export default function HabitReprogramming() {
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
-  subtitle: {
-    fontFamily: typography.body.fontFamily,
-    color: colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: -8,
-  },
   spacer: {
     marginTop: 6,
   },
