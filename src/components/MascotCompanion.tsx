@@ -1,7 +1,7 @@
-import { usePathname } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../store/AppDataContext';
 import { useMascotCue } from '../store/MascotCueContext';
@@ -77,6 +77,16 @@ const RESUME_IDLE_DELAY_MS = 400;
 // from each edge it's nudged first.
 const PRESENT_SIDE_MARGIN = 40;
 const PRESENT_REPOSITION_MS = 220;
+// The whole sequence above is a chain of setTimeouts, each one scheduling the
+// next — reported on a real device (not reproduced locally) as occasionally
+// freezing on the seated pose forever, mode stuck at 'presenting' and never
+// releasing, including on screens that aren't Home at all since the mascot is
+// mounted once at the app root. Whatever stalls that chain on-device, this is
+// a hard backstop: however long the reposition + seated hold + full motion
+// sweep + flight + burst + fade should ever legitimately take, well past it,
+// force back to idle so a stall degrades to "the intro didn't play that time"
+// instead of "the companion is broken for the rest of the session."
+const PRESENT_WATCHDOG_MS = 6000;
 // One drawn frame per half-stride, matching the footfall bob's cadence so the
 // art and the bob stay in phase rather than drifting against each other.
 const WALK_FRAME_MS = STEP_MS / 2;
@@ -106,7 +116,14 @@ export function MascotCompanion() {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { xRef, presentRef, alterXtraPresentRef } = useMascotCue();
+  // Mounted once at the app root (see _layout.tsx), so without this it shows
+  // on every screen including the onboarding/identity-change flow — a
+  // figurine (or, worse, a stalled present sequence) sitting in the corner of
+  // a full-screen "REPROGRAMMING IDENTITY..." transition reads as broken,
+  // not as a companion. Hidden there; state keeps running underneath so
+  // anything already in flight still resolves once back on a tab screen.
   const pathname = usePathname();
+  const onOnboardingFlow = pathname.startsWith('/onboarding');
 
   const floor = insets.bottom + 10;
   const maxX = Math.max(0, width - SLOT_WIDTH);
@@ -143,6 +160,10 @@ export function MascotCompanion() {
   // mascot's actual on-screen rect, not by re-reading the code.
   const repositionAnim = useRef<Animated.CompositeAnimation | null>(null);
   const bobLoop = useRef<Animated.CompositeAnimation | null>(null);
+  // See PRESENT_WATCHDOG_MS above — a hard ceiling independent of presentTimer,
+  // so clearing/reusing presentTimer along the normal chain can never also
+  // cancel the safety net.
+  const watchdogTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 'idle' is the normal random wander loop below. 'presenting' pauses it for
   // the one-time lean -> walk -> reveal sequence toward Alter-Xtra — mode and
@@ -165,10 +186,11 @@ export function MascotCompanion() {
   const burstAnim = useRef(new Animated.Value(0)).current;
   const mascotFade = useRef(new Animated.Value(1)).current;
 
-  // The reprogramming-identity screen sets data.identity moments before
-  // navigating here — without this the companion would already be visible
-  // and pacing behind that screen's own progress bar.
-  const visible = isLoaded && settings.mascotEnabled && !!data.identity && pathname !== '/onboarding/loading';
+  // Covers the whole onboarding flow, not just /onboarding/loading — the
+  // reprogramming-identity screen sets data.identity moments before
+  // navigating there, so a narrower check would let the companion flash into
+  // view mid-transition before the route change lands.
+  const visible = isLoaded && settings.mascotEnabled && !!data.identity && !onOnboardingFlow;
 
   // Fires on every pose change, including into/out of 'presenting' — each
   // one is a different piece of art now, not a continuation of the last.
@@ -219,6 +241,13 @@ export function MascotCompanion() {
       modeRef.current = 'presenting';
       setMode('presenting');
       if (presentTimer.current) clearTimeout(presentTimer.current);
+      if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
+      watchdogTimer.current = setTimeout(() => {
+        if (modeRef.current !== 'presenting') return;
+        modeRef.current = 'idle';
+        setMode('idle');
+        mascotFade.setValue(1);
+      }, PRESENT_WATCHDOG_MS);
       walkAnim.current?.stop();
       setWalking(false);
       planeAnim.setValue(0);
@@ -244,6 +273,7 @@ export function MascotCompanion() {
             presentTimer.current = setTimeout(() => {
               Animated.timing(mascotFade, { toValue: 0, duration: MASCOT_FADE_MS, useNativeDriver: false }).start(() => {
                 presentTimer.current = setTimeout(() => {
+                  if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
                   modeRef.current = 'idle';
                   setMode('idle');
                   // Without this, mascotFade stays at 0 forever — the normal
@@ -403,6 +433,7 @@ export function MascotCompanion() {
     return () => {
       if (messageTimeout.current) clearTimeout(messageTimeout.current);
       if (presentTimer.current) clearTimeout(presentTimer.current);
+      if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
       repositionAnim.current?.stop();
     };
   }, []);

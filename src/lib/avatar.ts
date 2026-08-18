@@ -115,7 +115,7 @@ const THROW_CYCLES: Record<'male' | 'female', { source: number; aspect: number }
     { source: require('../../assets/avatar-male-settle.png'), aspect: 128 / 116 },
   ],
   female: [
-    { source: require('../../assets/avatar-female-seated.png'), aspect: 118 / 114 },
+    { source: require('../../assets/avatar-female-seated.png'), aspect: 224 / 256 },
     { source: require('../../assets/avatar-female-motion-00.png'), aspect: 119 / 114 },
     { source: require('../../assets/avatar-female-motion-01.png'), aspect: 119 / 110 },
     { source: require('../../assets/avatar-female-motion-02.png'), aspect: 119 / 108 },
