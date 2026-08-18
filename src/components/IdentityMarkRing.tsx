@@ -27,11 +27,13 @@ export function IdentityMarkRing({ size = 130, style, icon, expression = 'neutra
   const { data } = useAppData();
   const { theme } = useThemeControls();
   const resolved = icon ?? data.identity?.icon;
+  const mark = markSource(resolved, expression);
+  const markWidth = size * 0.46;
   return (
     <View style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}>
       <Image
-        source={markSource(resolved, expression)}
-        style={{ width: size * 0.46, height: size * 0.46 * (350 / 207), tintColor: colors.glow }}
+        source={mark.source}
+        style={{ width: markWidth, height: markWidth / mark.aspect, tintColor: colors.glow }}
         resizeMode="contain"
       />
     </View>

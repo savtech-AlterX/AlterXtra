@@ -8,10 +8,16 @@ const AVATARS = {
   female: require('../../assets/avatar-female.png'),
 } as const;
 
+// The logo used everywhere identity is represented as an icon rather than a
+// full figure (home hero, loading screen, app-lock screen, etc.) — the same
+// head-merges-into-a-question-mark linework as the real app icon and the
+// choose-icon screen, not the plain suit-and-tie bust these used to point to.
+// Each has its own aspect: the choice-icon art wasn't drawn to a shared
+// canvas the way the avatar poses were.
 const MARKS = {
-  male: require('../../assets/identity-mark.png'),
-  female: require('../../assets/identity-mark-female.png'),
-  mystery: require('../../assets/identity-mark-mystery.png'),
+  male: { source: require('../../assets/icon-choice-male.png'), aspect: 368 / 633 },
+  female: { source: require('../../assets/icon-choice-female.png'), aspect: 292 / 481 },
+  mystery: { source: require('../../assets/identity-mark-mystery.png'), aspect: 290 / 480 },
 } as const;
 
 // The mascot's one-time "here's Alter-Xtra" sequence: it leans, then walks
