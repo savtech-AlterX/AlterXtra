@@ -127,13 +127,13 @@ export function MascotCompanion() {
   const insets = useSafeAreaInsets();
   const { xRef, presentRef, alterXtraPresentRef, resumeIdleRef } = useMascotCue();
   // Mounted once at the app root (see _layout.tsx), so without this it shows
-  // on every screen including the onboarding/identity-change flow — a
-  // figurine (or, worse, a stalled present sequence) sitting in the corner of
-  // a full-screen "REPROGRAMMING IDENTITY..." transition reads as broken,
-  // not as a companion. Hidden there; state keeps running underneath so
-  // anything already in flight still resolves once back on a tab screen.
+  // on every screen in the app — onboarding, settings, diary, the loading
+  // transition, all of it. The companion belongs on Home only; state keeps
+  // running underneath everywhere else so anything already in flight (the
+  // Alter-Xtra present sequence, in particular — it only ever starts from
+  // Home anyway) still resolves once back there.
   const pathname = usePathname();
-  const onOnboardingFlow = pathname.startsWith('/onboarding');
+  const onHome = pathname === '/';
 
   const floor = insets.bottom + 10;
   const maxX = Math.max(0, width - SLOT_WIDTH);
@@ -196,11 +196,7 @@ export function MascotCompanion() {
   const burstAnim = useRef(new Animated.Value(0)).current;
   const mascotFade = useRef(new Animated.Value(1)).current;
 
-  // Covers the whole onboarding flow, not just /onboarding/loading — the
-  // reprogramming-identity screen sets data.identity moments before
-  // navigating there, so a narrower check would let the companion flash into
-  // view mid-transition before the route change lands.
-  const visible = isLoaded && settings.mascotEnabled && !!data.identity && !onOnboardingFlow;
+  const visible = isLoaded && settings.mascotEnabled && !!data.identity && onHome;
 
   // Fires on every pose change, including into/out of 'presenting' — each
   // one is a different piece of art now, not a continuation of the last.
