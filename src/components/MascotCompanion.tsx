@@ -31,10 +31,15 @@ const FIGURE_HEIGHT_MAX = 170;
 const SLOT_WIDTH = 96;
 
 const MESSAGE_VISIBLE_MS = 4000;
-// The companion no longer wanders the floor — she appears seated, holds
-// briefly, then fades out, once per arrival on Home. This is how long she
-// stays before that fade starts.
-const IDLE_SEATED_HOLD_MS = 3500;
+// The companion no longer wanders the floor — she appears seated, holds,
+// then fades out, once per arrival on Home. This is how long she stays
+// before that fade starts. Originally 3500ms — confirmed too short to
+// actually notice on a normal glance at the phone: by the time a real user
+// looks at the screen a few seconds after opening the app, she'd already be
+// gone (and often the first-visit Alter-Xtra sequence has already taken
+// over by then too). 25s keeps the fade-out behaviour but gives it a real
+// chance of being seen.
+const IDLE_SEATED_HOLD_MS = 25000;
 // The current Alter-Xtra premium reveal: seated -> a real multi-frame
 // throw-arm animation (not held poses crossfaded together — the source
 // material was shot specifically for fluid motion, and holding 3 static
