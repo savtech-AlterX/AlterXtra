@@ -212,7 +212,16 @@ export function MascotCompanion() {
     if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
     modeRef.current = 'idle';
     setMode('idle');
-    Animated.timing(mascotFade, { toValue: 1, duration: MASCOT_FADE_MS, useNativeDriver: false }).start();
+    // setValue, not an animated timing — the panel that calls this (via
+    // dismiss()) typically navigates away in the same tick (see
+    // AlterXtraIntro.viewAlterXtra), which unmounts this component's JSX
+    // (visible flips false, render returns null) before an in-flight
+    // Animated.timing ever gets to apply a frame. The animation doesn't
+    // survive that gap — confirmed by logging the value through the
+    // navigate-away-and-back sequence, it stayed frozen at the timing's
+    // starting value forever, leaving the mascot invisible even once back on
+    // Home. An instant set has nothing to lose mid-flight.
+    mascotFade.setValue(1);
   }, [mascotFade]);
 
   useEffect(() => {
@@ -339,6 +348,14 @@ export function MascotCompanion() {
   useEffect(() => {
     if (!visible || modeRef.current === 'presenting') return;
     mascotFade.setValue(1);
+    // poseFade has the same failure mode mascotFade did (see
+    // resumeFromPresent above): its own effect fades it in via
+    // Animated.timing whenever `mode` changes, and that animation doesn't
+    // survive being interrupted by a quick navigate-away. Unlike mascotFade
+    // it has no dependency on `visible`, so nothing else would ever recover
+    // it. Idle is always fully opaque, so forcing it here on every arrival
+    // is safe regardless of whether a stale fade left it stuck.
+    poseFade.setValue(1);
     idleFadeTimer.current = setTimeout(() => {
       if (modeRef.current === 'presenting') return;
       Animated.timing(mascotFade, { toValue: 0, duration: MASCOT_FADE_MS, useNativeDriver: false }).start();
@@ -346,7 +363,7 @@ export function MascotCompanion() {
     return () => {
       if (idleFadeTimer.current) clearTimeout(idleFadeTimer.current);
     };
-  }, [visible, mascotFade]);
+  }, [visible, mascotFade, poseFade]);
 
   useEffect(() => {
     return () => {
