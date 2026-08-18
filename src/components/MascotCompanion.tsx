@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../store/AppDataContext';
@@ -49,12 +48,13 @@ const IDLE_SEATED_HOLD_MS = 25000;
 // fades out. Replaces the older lean/walk/reveal choreography.
 const SEATED_HOLD_MS = 700;
 // Per-frame advance through the throw-cycle art (seated -> windup -> every
-// extracted in-between frame -> settled, ~37 frames). 24ms/frame (under a
-// second total) turned out too fast to actually read as fluid motion on a
-// real device — it registered as a blur, not a throw. 40ms/frame slows the
-// whole arm motion to a bit under 1.5s, still snappy but each stage of the
-// throw is now actually visible.
-const MOTION_FRAME_MS = 40;
+// extracted in-between frame -> settled, ~37 frames). Started at 24ms/frame
+// (under a second total) — too fast to read as fluid motion, registered as
+// a blur. 40ms/frame was a first pass at slowing it down but still read as
+// laggy/cheap rather than smooth. 65ms/frame stretches the whole arm motion
+// to a bit over 2s — closer to how a real throw's windup-and-release
+// actually reads.
+const MOTION_FRAME_MS = 65;
 const SETTLE_HOLD_MS = 200;
 const PLANE_FLIGHT_MS = 850;
 const BURST_MS = 380;
@@ -567,8 +567,13 @@ export function MascotCompanion() {
 
             {/* A faded, vertically-flipped copy of the same frame — the glossy
                 floor-reflection the style reference has. Clipped to less than
-                the figure's own height and faded to transparent so it reads
-                as a reflection dying out on the floor, not a second figure. */}
+                the figure's own height so it reads as a partial reflection,
+                not a second figure. Used to fade to a solid background-color
+                rectangle at the bottom, which looked fine over the plain
+                background but showed up as a visible mismatched box wherever
+                the mascot happened to sit over a card (different shade) —
+                dropped it; a hard clip edge at low opacity reads better than
+                a seam. */}
             <View pointerEvents="none" style={[styles.reflectionClip, { width: figureWidth, height: figureHeight * 0.4 }]}>
               <Image
                 source={figureSource}
@@ -580,10 +585,6 @@ export function MascotCompanion() {
                   transform: [{ scaleX: facingLeft ? -1 : 1 }, { scaleY: -1 }],
                 }}
                 resizeMode="contain"
-              />
-              <LinearGradient
-                colors={['transparent', colors.background]}
-                style={StyleSheet.absoluteFillObject}
               />
             </View>
           </Animated.View>
