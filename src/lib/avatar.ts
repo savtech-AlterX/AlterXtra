@@ -13,11 +13,23 @@ const AVATARS = {
 // head-merges-into-a-question-mark linework as the real app icon and the
 // choose-icon screen, not the plain suit-and-tie bust these used to point to.
 // Each has its own aspect: the choice-icon art wasn't drawn to a shared
-// canvas the way the avatar poses were.
+// canvas the way the avatar poses were. 'smile' is the same linework with a
+// drawn-on smirk composited onto the jaw/mouth area — same white line style
+// and glow as the rest of the mark, not a separate face. 'mystery' has no
+// expression variants (it's an abstract "?" glyph, not a profile with a
+// mouth), so it only ever resolves to its one neutral image.
 const MARKS = {
-  male: { source: require('../../assets/icon-choice-male.png'), aspect: 368 / 633 },
-  female: { source: require('../../assets/icon-choice-female.png'), aspect: 292 / 481 },
-  mystery: { source: require('../../assets/identity-mark-mystery.png'), aspect: 290 / 480 },
+  male: {
+    neutral: { source: require('../../assets/icon-choice-male.png'), aspect: 368 / 633 },
+    smile: { source: require('../../assets/icon-choice-male-smile.png'), aspect: 368 / 633 },
+  },
+  female: {
+    neutral: { source: require('../../assets/icon-choice-female.png'), aspect: 292 / 481 },
+    smile: { source: require('../../assets/icon-choice-female-smile.png'), aspect: 292 / 481 },
+  },
+  mystery: {
+    neutral: { source: require('../../assets/identity-mark-mystery.png'), aspect: 290 / 480 },
+  },
 } as const;
 
 // The mascot's one-time "here's Alter-Xtra" sequence: it leans, then walks
@@ -179,14 +191,8 @@ export function paperPlaneSource() {
   return PAPER_PLANE;
 }
 
-// Smile plays on icon selection, wink plays on the loading screen — both
-// need real drawn art, since the current marks are pure outline with no
-// facial detail to manipulate (checked pixel-for-pixel, not assumed).
-// Metro needs require() targets to exist at bundle time, so these can't be
-// wired to real files until the art exists; every expression currently
-// resolves back to MARKS until then. Once the four images land, add them
-// here and each call site below starts working immediately with no other
-// changes.
+// 'wink' has no art yet (no drawn eyes to wink with) — a call site can still
+// ask for it, it'll just fall back to neutral until that art exists.
 export type MarkExpression = 'neutral' | 'smile' | 'wink';
 
 const WORDMARK = require('../../assets/wordmark.png');
@@ -199,15 +205,12 @@ export function avatarSource(icon: AppIconChoice | undefined) {
 }
 
 export function markSource(icon: AppIconChoice | undefined, expression: MarkExpression = 'neutral') {
-  // TODO: once identity-mark(-female)-smile.png and -wink.png exist, require
-  // them here and return by [figureKey(icon)][expression] instead of always
-  // falling through to the neutral mark.
-  void expression;
   // Unlike figureKey (which collapses 'mystery' to the male body for the
   // full-figure mascot, since 'mystery' isn't a real avatar to walk around
   // as), the mark has its own dedicated art — a question-mark glyph, not a
   // fallback face — so it's looked up directly rather than through figureKey.
-  return MARKS[icon === 'female' ? 'female' : icon === 'mystery' ? 'mystery' : 'male'];
+  const variants = MARKS[icon === 'female' ? 'female' : icon === 'mystery' ? 'mystery' : 'male'];
+  return (variants as Partial<Record<MarkExpression, { source: number; aspect: number }>>)[expression] ?? variants.neutral;
 }
 
 export function wordmarkSource() {
