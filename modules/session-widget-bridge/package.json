@@ -1,0 +1,8 @@
+{
+  "name": "session-widget-bridge",
+  "version": "1.0.0",
+  "description": "Bridges identity-session start/stop state between the app and the Lock Screen / home screen widgets.",
+  "main": "index.ts",
+  "license": "UNLICENSED",
+  "private": true
+}

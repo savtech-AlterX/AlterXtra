@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import {
   Album,
   AppData,
@@ -11,12 +12,14 @@ import {
   HabitCheckIn,
   HabitReprogram,
   Identity,
+  IdentitySession,
   JournalEntry,
   LimitedBelief,
   LogEntry,
   QuickNote,
 } from './types';
 import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
+import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt } from '../lib/sessionWidgetBridge';
 
 const STORAGE_KEY = 'alterx:appData:v1';
 
@@ -50,6 +53,8 @@ type AppDataContextValue = {
   updateQuickNote: (id: string, title: string, body: string) => void;
   deleteQuickNote: (id: string) => void;
   addHabitCheckIn: (habitId: string, followedThrough: boolean) => void;
+  startIdentitySession: () => void;
+  stopIdentitySession: () => void;
   resetAll: () => void;
   restoreAll: (incoming: unknown, fromVersion: number) => void;
 };
@@ -240,6 +245,60 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, habitCheckIns: [entry, ...prev.habitCheckIns] }));
   }, []);
 
+  const startIdentitySession = useCallback(() => {
+    if (data.identitySessions.some((s) => s.endedAt === null)) return;
+    const session: IdentitySession = { id: makeId(), startedAt: new Date().toISOString(), endedAt: null };
+    setData((prev) => ({ ...prev, identitySessions: [session, ...prev.identitySessions] }));
+    writeWidgetSessionStartedAt(session.startedAt);
+  }, [data.identitySessions]);
+
+  const stopIdentitySession = useCallback(() => {
+    const active = data.identitySessions.find((s) => s.endedAt === null);
+    if (!active) return;
+    const endedAt = new Date().toISOString();
+    setData((prev) => ({
+      ...prev,
+      identitySessions: prev.identitySessions.map((s) => (s.id === active.id ? { ...s, endedAt } : s)),
+    }));
+    writeWidgetSessionStartedAt(null);
+  }, [data.identitySessions]);
+
+  // Reconciles session state set by the Lock Screen / home screen widget
+  // (a separate native process on iOS) into the in-app session log. Runs on
+  // load and whenever the app returns to the foreground, since that's the
+  // only reliable moment to learn what happened while the app wasn't running.
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  const reconcileFromWidget = useCallback(async () => {
+    const widgetStartedAt = await readWidgetSessionStartedAt();
+    const current = dataRef.current;
+    const active = current.identitySessions.find((s) => s.endedAt === null) ?? null;
+    if (widgetStartedAt && !active) {
+      const session: IdentitySession = { id: makeId(), startedAt: widgetStartedAt, endedAt: null };
+      setData((prev) => ({ ...prev, identitySessions: [session, ...prev.identitySessions] }));
+    } else if (!widgetStartedAt && active) {
+      // We only know a stop happened, not exactly when — "now" is the best
+      // available approximation for a manually tracked practice session.
+      const endedAt = new Date().toISOString();
+      setData((prev) => ({
+        ...prev,
+        identitySessions: prev.identitySessions.map((s) => (s.id === active.id ? { ...s, endedAt } : s)),
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    reconcileFromWidget();
+    const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active') reconcileFromWidget();
+    });
+    return () => sub.remove();
+  }, [isLoaded, reconcileFromWidget]);
+
   const resetAll = useCallback(() => {
     setData(emptyAppData);
   }, []);
@@ -269,6 +328,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       updateQuickNote,
       deleteQuickNote,
       addHabitCheckIn,
+      startIdentitySession,
+      stopIdentitySession,
       resetAll,
       restoreAll,
     }),
@@ -292,6 +353,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       updateQuickNote,
       deleteQuickNote,
       addHabitCheckIn,
+      startIdentitySession,
+      stopIdentitySession,
       resetAll,
       restoreAll,
     ]

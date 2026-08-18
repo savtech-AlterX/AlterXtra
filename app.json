@@ -10,7 +10,10 @@
     "backgroundColor": "#000000",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.alterxtra.app"
+      "bundleIdentifier": "com.alterxtra.app",
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.com.alterxtra.app"]
+      }
     },
     "android": {
       "package": "com.alterxtra.app",
@@ -49,6 +52,25 @@
         "expo-notifications",
         {
           "color": "#3da8f5"
+        }
+      ],
+      "@bacons/apple-targets",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "IdentitySession",
+              "label": "Identity Session",
+              "minWidth": "110dp",
+              "minHeight": "40dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 1,
+              "description": "Start or stop an identity session from your home screen.",
+              "updatePeriodMillis": 1800000,
+              "resizeMode": "none"
+            }
+          ]
         }
       ]
     ],

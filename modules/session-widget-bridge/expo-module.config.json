@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["SessionWidgetBridgeModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.sessionwidgetbridge.SessionWidgetBridgeModule"]
+  }
+}
