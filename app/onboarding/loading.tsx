@@ -29,8 +29,10 @@ export default function Loading() {
     <HudScreen scroll={false}>
       <View style={styles.center}>
         {/* A charismatic smirk while the identity data is being written — a
-            small "trust me" beat instead of a blank stare. */}
-        <IdentityMarkRing size={110} style={styles.mark} expression="smile" />
+            small "trust me" beat instead of a blank stare. Animated so it
+            plays as an expression forming, not just a different drawing
+            that was already there when the screen mounted. */}
+        <IdentityMarkRing size={110} style={styles.mark} expression="smile" animated />
         <View style={styles.barTrack}>
           <Animated.View style={[styles.barFill, { width }]} />
         </View>
