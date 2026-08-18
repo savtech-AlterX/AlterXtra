@@ -14,8 +14,9 @@ import {
   avatarSource,
   PAPER_PLANE_ASPECT,
   paperPlaneSource,
-  presentPoseSource,
+  presentFrameSource,
   sideStandSource,
+  throwCycleLength,
   walkFrameSource,
 } from '../lib/avatar';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
@@ -47,12 +48,22 @@ const IDLE_MAX_MS = 5200;
 const WALK_MIN_MS = 2500;
 const WALK_MAX_MS = 6000;
 const MESSAGE_VISIBLE_MS = 4000;
-// The current Alter-Xtra premium reveal: seated -> winds up -> throws a
-// paper airplane that flies off and bursts, then the panel appears and the
-// mascot fades out. Replaces the older lean/walk/reveal choreography.
-const SEATED_HOLD_MS = 900;
-const WINDUP_HOLD_MS = 500;
-const THROW_HOLD_MS = 250;
+// The current Alter-Xtra premium reveal: seated -> a real multi-frame
+// throw-arm animation (not held poses crossfaded together — the source
+// material was shot specifically for fluid motion, and holding 3 static
+// frames for hundreds of ms each is exactly what made the first version of
+// this read as jumpy rather than like a person moving) -> the paper
+// airplane flies off and bursts, then the panel appears and the mascot
+// fades out. Replaces the older lean/walk/reveal choreography.
+const SEATED_HOLD_MS = 700;
+// Per-frame advance through the throw-cycle art (seated -> windup -> every
+// extracted in-between frame -> settled, ~37 frames). 24ms/frame puts the
+// whole arm motion at well under a second — snappy like a real throw — while
+// staying comfortably above single-display-frame timing (~16ms at 60Hz), so
+// each step is actually resolvable rather than racing the refresh rate for
+// no visible gain.
+const MOTION_FRAME_MS = 24;
+const SETTLE_HOLD_MS = 200;
 const PLANE_FLIGHT_MS = 850;
 const BURST_MS = 380;
 const POST_BURST_DELAY_MS = 250;
@@ -140,10 +151,14 @@ export function MascotCompanion() {
   // needed) always agree on which one is currently in control.
   const [mode, setMode] = useState<'idle' | 'presenting'>('idle');
   const modeRef = useRef<'idle' | 'presenting'>('idle');
-  const [presentPhase, setPresentPhase] = useState<'seated' | 'windup' | 'throw' | 'flying'>('seated');
-  // Swapping figureSource straight (seated art -> windup art -> throw art)
-  // is an instant pop with no motion to soften it. A quick fade through
-  // black hides the cut instead of pretending the two poses connect.
+  const [presentPhase, setPresentPhase] = useState<'seated' | 'motion' | 'flying'>('seated');
+  // Which frame of the throw-cycle art is showing during 'motion'/'flying' —
+  // a real index into a multi-frame animation, not a named pose. Advancing
+  // it doesn't retrigger poseFade (that only depends on mode/presentPhase
+  // below), which is deliberate: real motion frames read as continuous
+  // without a crossfade between each one; the fade is only for the one hard
+  // cut into the sequence (idle standing figure -> seated).
+  const [throwFrame, setThrowFrame] = useState(0);
   const poseFade = useRef(new Animated.Value(1)).current;
   const [walkFrame, setWalkFrame] = useState(0);
   const planeAnim = useRef(new Animated.Value(0)).current;
@@ -210,6 +225,9 @@ export function MascotCompanion() {
       burstAnim.setValue(0);
       mascotFade.setValue(1);
 
+      const icon = data.identity?.icon;
+      const lastFrame = throwCycleLength(icon) - 1;
+
       function toFlying() {
         setPresentPhase('flying');
         Animated.timing(planeAnim, {
@@ -241,19 +259,27 @@ export function MascotCompanion() {
         });
       }
 
-      function toThrow() {
-        setPresentPhase('throw');
-        presentTimer.current = setTimeout(toFlying, THROW_HOLD_MS);
-      }
-
-      function toWindup() {
-        setPresentPhase('windup');
-        presentTimer.current = setTimeout(toThrow, WINDUP_HOLD_MS);
+      // Steps through every extracted in-between frame (windup, then the
+      // arm's full sweep through the throw) at a fast, fixed cadence — the
+      // same "advance an index on a timer" shape as the idle walk cycle's
+      // walkFrame, just driven by a chained setTimeout instead of
+      // setInterval since this run runs once and stops, not loops.
+      function advanceMotion(frame: number) {
+        setThrowFrame(frame);
+        if (frame < lastFrame) {
+          presentTimer.current = setTimeout(() => advanceMotion(frame + 1), MOTION_FRAME_MS);
+        } else {
+          presentTimer.current = setTimeout(toFlying, SETTLE_HOLD_MS);
+        }
       }
 
       function beginSeated() {
+        setThrowFrame(0);
         setPresentPhase('seated');
-        presentTimer.current = setTimeout(toWindup, SEATED_HOLD_MS);
+        presentTimer.current = setTimeout(() => {
+          setPresentPhase('motion');
+          advanceMotion(1);
+        }, SEATED_HOLD_MS);
       }
 
       setWalking(false);
@@ -273,7 +299,7 @@ export function MascotCompanion() {
         });
       }
     },
-    [burstAnim, mascotFade, maxX, planeAnim, x]
+    [burstAnim, data, mascotFade, maxX, planeAnim, x]
   );
 
   useEffect(() => {
@@ -400,7 +426,7 @@ export function MascotCompanion() {
   let figureSource = avatarSource(icon);
   let figureAspect: number = AVATAR_ASPECT;
 
-  const heldPose = mode === 'presenting' ? presentPoseSource(icon, presentPhase === 'flying' ? 'throw' : presentPhase) : null;
+  const heldPose = mode === 'presenting' ? presentFrameSource(icon, throwFrame) : null;
   if (heldPose) {
     figureSource = heldPose.source;
     figureAspect = heldPose.aspect;
