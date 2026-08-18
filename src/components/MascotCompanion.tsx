@@ -31,10 +31,15 @@ const FIGURE_HEIGHT_MAX = 170;
 const SLOT_WIDTH = 96;
 
 const MESSAGE_VISIBLE_MS = 4000;
-// The companion no longer wanders the floor — she appears seated, holds
-// briefly, then fades out, once per arrival on Home. This is how long she
-// stays before that fade starts.
-const IDLE_SEATED_HOLD_MS = 3500;
+// The companion no longer wanders the floor — she appears seated, holds,
+// then fades out, once per arrival on Home. This is how long she stays
+// before that fade starts. Originally 3500ms — confirmed too short to
+// actually notice on a normal glance at the phone: by the time a real user
+// looks at the screen a few seconds after opening the app, she'd already be
+// gone (and often the first-visit Alter-Xtra sequence has already taken
+// over by then too). 25s keeps the fade-out behaviour but gives it a real
+// chance of being seen.
+const IDLE_SEATED_HOLD_MS = 25000;
 // The current Alter-Xtra premium reveal: seated -> a real multi-frame
 // throw-arm animation (not held poses crossfaded together — the source
 // material was shot specifically for fluid motion, and holding 3 static
@@ -212,7 +217,16 @@ export function MascotCompanion() {
     if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
     modeRef.current = 'idle';
     setMode('idle');
-    Animated.timing(mascotFade, { toValue: 1, duration: MASCOT_FADE_MS, useNativeDriver: false }).start();
+    // setValue, not an animated timing — the panel that calls this (via
+    // dismiss()) typically navigates away in the same tick (see
+    // AlterXtraIntro.viewAlterXtra), which unmounts this component's JSX
+    // (visible flips false, render returns null) before an in-flight
+    // Animated.timing ever gets to apply a frame. The animation doesn't
+    // survive that gap — confirmed by logging the value through the
+    // navigate-away-and-back sequence, it stayed frozen at the timing's
+    // starting value forever, leaving the mascot invisible even once back on
+    // Home. An instant set has nothing to lose mid-flight.
+    mascotFade.setValue(1);
   }, [mascotFade]);
 
   useEffect(() => {
@@ -339,6 +353,14 @@ export function MascotCompanion() {
   useEffect(() => {
     if (!visible || modeRef.current === 'presenting') return;
     mascotFade.setValue(1);
+    // poseFade has the same failure mode mascotFade did (see
+    // resumeFromPresent above): its own effect fades it in via
+    // Animated.timing whenever `mode` changes, and that animation doesn't
+    // survive being interrupted by a quick navigate-away. Unlike mascotFade
+    // it has no dependency on `visible`, so nothing else would ever recover
+    // it. Idle is always fully opaque, so forcing it here on every arrival
+    // is safe regardless of whether a stale fade left it stuck.
+    poseFade.setValue(1);
     idleFadeTimer.current = setTimeout(() => {
       if (modeRef.current === 'presenting') return;
       Animated.timing(mascotFade, { toValue: 0, duration: MASCOT_FADE_MS, useNativeDriver: false }).start();
@@ -346,7 +368,7 @@ export function MascotCompanion() {
     return () => {
       if (idleFadeTimer.current) clearTimeout(idleFadeTimer.current);
     };
-  }, [visible, mascotFade]);
+  }, [visible, mascotFade, poseFade]);
 
   useEffect(() => {
     return () => {
@@ -379,24 +401,18 @@ export function MascotCompanion() {
   // so the character stays the same height whatever it's doing.
   const figureWidth = figureHeight / figureAspect;
 
-  // The reference art has a soft neon bloom baked into every line plus a
-  // glowing floor reflection. The extracted line art itself is hard-edged
-  // (checked the raw alpha channel — 1-2px antialiasing, no soft falloff),
-  // so the bloom has to come from rendering, not the source PNGs. Native
-  // shadow* props follow a transparent image's actual alpha shape on iOS
-  // (no shadowPath set), giving a real per-line glow; Android's shadow
-  // support for that is weaker but still reads as an ambient glow. On web,
-  // drop-shadow (unlike box-shadow) also hugs the alpha silhouette.
+  // These seated/throw-cycle poses already have a soft neon bloom baked
+  // into their own alpha channel (checked directly — a wide spread of
+  // partial-alpha pixels around every line, not a hard 1-2px antialiased
+  // edge). Stacking an additional CSS drop-shadow blur on top of art that's
+  // already soft compounds into an oversaturated blob that swallows the
+  // linework entirely — confirmed by rendering the raw asset with nothing
+  // but a plain tint next to the in-app result. Native shadow* props have
+  // the same problem for the same reason, so this is a plain tint
+  // everywhere now; the art supplies its own glow.
   const glowStyle = Platform.select({
-    web: {
-      filter: `drop-shadow(0 0 3px ${colors.glow}) drop-shadow(0 0 9px ${colors.glowStrong})`,
-    } as Record<string, unknown>,
-    default: {
-      shadowColor: colors.glow,
-      shadowOpacity: 0.9,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 0 },
-    },
+    web: {} as Record<string, unknown>,
+    default: {},
   });
 
   // No more footfall bob to drive these — she just sits, so the lift/lean
