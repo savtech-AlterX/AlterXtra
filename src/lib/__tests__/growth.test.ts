@@ -1,4 +1,4 @@
-import { computeGrowthStats } from '../growth';
+import { computeGrowthStats, formatDurationShort } from '../growth';
 import { emptyAppData } from '../../store/types';
 
 const NOW = new Date('2026-08-01T12:00:00.000Z');
@@ -89,5 +89,79 @@ describe('computeGrowthStats', () => {
     const stats = computeGrowthStats(data, NOW);
     expect(stats.futureSelf.videosSealed).toBe(2);
     expect(stats.futureSelf.videosUnlocked).toBe(1);
+  });
+
+  describe('identitySession', () => {
+    it('reports no active session and zeroed stats when there are none', () => {
+      const stats = computeGrowthStats(emptyAppData, NOW);
+      expect(stats.identitySession).toEqual({
+        active: null,
+        totalSessions: 0,
+        totalSeconds: 0,
+        todaySessions: 0,
+        currentStreakDays: 0,
+      });
+    });
+
+    it('surfaces the in-progress session as active and excludes it from totals', () => {
+      const data = {
+        ...emptyAppData,
+        identitySessions: [{ id: '1', startedAt: '2026-08-01T11:00:00.000Z', endedAt: null }],
+      };
+      const stats = computeGrowthStats(data, NOW);
+      expect(stats.identitySession.active?.id).toBe('1');
+      expect(stats.identitySession.totalSessions).toBe(0);
+      expect(stats.identitySession.totalSeconds).toBe(0);
+    });
+
+    it('sums completed session durations and counts sessions ended today', () => {
+      const data = {
+        ...emptyAppData,
+        identitySessions: [
+          { id: '1', startedAt: '2026-08-01T10:00:00.000Z', endedAt: '2026-08-01T10:10:00.000Z' }, // 600s, today
+          { id: '2', startedAt: '2026-07-31T10:00:00.000Z', endedAt: '2026-07-31T10:05:00.000Z' }, // 300s, yesterday
+        ],
+      };
+      const stats = computeGrowthStats(data, NOW);
+      expect(stats.identitySession.totalSessions).toBe(2);
+      expect(stats.identitySession.totalSeconds).toBe(900);
+      expect(stats.identitySession.todaySessions).toBe(1);
+    });
+
+    it('counts the current streak back from today, carrying over before today has a session', () => {
+      const data = {
+        ...emptyAppData,
+        identitySessions: [
+          { id: '1', startedAt: '2026-07-31T10:00:00.000Z', endedAt: '2026-07-31T10:05:00.000Z' },
+          { id: '2', startedAt: '2026-07-30T10:00:00.000Z', endedAt: '2026-07-30T10:05:00.000Z' },
+        ],
+      };
+      expect(computeGrowthStats(data, NOW).identitySession.currentStreakDays).toBe(2);
+    });
+
+    it('resets the streak once a day is skipped', () => {
+      const data = {
+        ...emptyAppData,
+        identitySessions: [
+          { id: '1', startedAt: '2026-07-31T10:00:00.000Z', endedAt: '2026-07-31T10:05:00.000Z' },
+          { id: '2', startedAt: '2026-07-20T10:00:00.000Z', endedAt: '2026-07-20T10:05:00.000Z' },
+        ],
+      };
+      expect(computeGrowthStats(data, NOW).identitySession.currentStreakDays).toBe(1);
+    });
+  });
+});
+
+describe('formatDurationShort', () => {
+  it('formats sub-minute durations as seconds', () => {
+    expect(formatDurationShort(45)).toBe('45s');
+  });
+
+  it('formats sub-hour durations as minutes', () => {
+    expect(formatDurationShort(125)).toBe('2m');
+  });
+
+  it('formats hour-plus durations as hours and minutes', () => {
+    expect(formatDurationShort(3725)).toBe('1h 2m');
   });
 });
