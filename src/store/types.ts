@@ -35,6 +35,15 @@ export type HabitCheckIn = {
   followedThrough: boolean;
 };
 
+// A single "in identity" session, started/stopped either in-app or from the
+// lock screen / home screen widget. endedAt is null while the session is
+// still running.
+export type IdentitySession = {
+  id: string;
+  startedAt: string;
+  endedAt: string | null;
+};
+
 export type QuickNote = {
   id: string;
   createdAt: string;
@@ -107,6 +116,7 @@ export type AppData = {
   habitReprograms: HabitReprogram[];
   habitCheckIns: HabitCheckIn[];
   quickNotes: QuickNote[];
+  identitySessions: IdentitySession[];
 };
 
 export const emptyAppData: AppData = {
@@ -121,4 +131,5 @@ export const emptyAppData: AppData = {
   habitReprograms: [],
   habitCheckIns: [],
   quickNotes: [],
+  identitySessions: [],
 };

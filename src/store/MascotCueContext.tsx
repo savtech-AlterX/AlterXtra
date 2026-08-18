@@ -19,6 +19,12 @@ type MascotCueValue = {
   // it's holding the reveal pose, so the caller knows when to raise the
   // panel — same "ask, don't orchestrate" shape as presentRef.
   alterXtraPresentRef: React.MutableRefObject<((onRevealed: () => void) => void) | null>;
+  // The mascot fades out once the panel is up and stays hidden — it has no
+  // way to know when the panel actually closes, so the panel calls this to
+  // hand control back. Without it the mascot could only guess with a timer,
+  // which meant it was popping back into view while the panel was still
+  // open.
+  resumeIdleRef: React.MutableRefObject<(() => void) | null>;
 };
 
 const MascotCueContext = createContext<MascotCueValue | null>(null);
@@ -27,7 +33,8 @@ export function MascotCueProvider({ children }: { children: React.ReactNode }) {
   const xRef = useRef(0);
   const presentRef = useRef<(() => void) | null>(null);
   const alterXtraPresentRef = useRef<((onRevealed: () => void) => void) | null>(null);
-  const value = useMemo(() => ({ xRef, presentRef, alterXtraPresentRef }), []);
+  const resumeIdleRef = useRef<(() => void) | null>(null);
+  const value = useMemo(() => ({ xRef, presentRef, alterXtraPresentRef, resumeIdleRef }), []);
   return <MascotCueContext.Provider value={value}>{children}</MascotCueContext.Provider>;
 }
 
