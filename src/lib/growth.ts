@@ -1,6 +1,28 @@
-import { AppData, Goal, JournalEntry } from '../store/types';
+import { AppData, Goal, IdentitySession, JournalEntry } from '../store/types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+function dateKey(iso: string) {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
+// Consecutive days (ending today) with at least one completed session.
+// Today doesn't break the streak just for being incomplete — it simply
+// doesn't count yet, so the streak carries over from yesterday until the
+// day actually ends without a session.
+function computeSessionStreakDays(sessions: IdentitySession[], now: Date): number {
+  const completedDays = new Set(sessions.filter((s) => s.endedAt).map((s) => dateKey(s.endedAt as string)));
+  let cursor = now;
+  if (!completedDays.has(dateKey(cursor.toISOString()))) {
+    cursor = new Date(cursor.getTime() - DAY_MS);
+  }
+  let streak = 0;
+  while (completedDays.has(dateKey(cursor.toISOString()))) {
+    streak++;
+    cursor = new Date(cursor.getTime() - DAY_MS);
+  }
+  return streak;
+}
 
 function isGoalComplete(goal: Goal) {
   return goal.steps.length > 0 && goal.steps.every((s) => s.done);
@@ -32,6 +54,13 @@ export type GrowthStats = {
     videosUnlocked: number;
   };
   habitFollowThrough: { followed: number; total: number };
+  identitySession: {
+    active: IdentitySession | null;
+    totalSessions: number;
+    totalSeconds: number;
+    todaySessions: number;
+    currentStreakDays: number;
+  };
 };
 
 export function computeGrowthStats(data: AppData, now: Date = new Date()): GrowthStats {
@@ -70,5 +99,30 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
       followed: data.habitCheckIns.filter((c) => c.followedThrough).length,
       total: data.habitCheckIns.length,
     },
+    identitySession: computeIdentitySessionStats(data.identitySessions, now),
+  };
+}
+
+export function formatDurationShort(totalSeconds: number): string {
+  const seconds = Math.round(totalSeconds);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m`;
+  return `${seconds}s`;
+}
+
+function computeIdentitySessionStats(sessions: AppData['identitySessions'], now: Date) {
+  const completed = sessions.filter((s) => s.endedAt !== null);
+  const totalSeconds = completed.reduce((sum, s) => {
+    const seconds = (new Date(s.endedAt as string).getTime() - new Date(s.startedAt).getTime()) / 1000;
+    return sum + Math.max(0, seconds);
+  }, 0);
+  return {
+    active: sessions.find((s) => s.endedAt === null) ?? null,
+    totalSessions: completed.length,
+    totalSeconds,
+    todaySessions: completed.filter((s) => dateKey(s.endedAt as string) === dateKey(now.toISOString())).length,
+    currentStreakDays: computeSessionStreakDays(sessions, now),
   };
 }

@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../src/components/GlowCard';
 import { EmptyState } from '../src/components/EmptyState';
 import { HudScreen } from '../src/components/HudScreen';
 import { CloseToHome } from '../src/components/CloseToHome';
-import { computeGrowthStats } from '../src/lib/growth';
+import { computeGrowthStats, formatDurationShort, GrowthStats } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
@@ -48,10 +48,65 @@ function AlignmentBar({
   );
 }
 
+function IdentitySessionCard({
+  session,
+  onStart,
+  onStop,
+}: {
+  session: GrowthStats['identitySession'];
+  onStart: () => void;
+  onStop: () => void;
+}) {
+  const { colors, typography, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+  const [, forceTick] = useState(0);
+
+  // Ticks the elapsed-time label once a second while a session is running.
+  useEffect(() => {
+    if (!session.active) return;
+    const interval = setInterval(() => forceTick((n) => n + 1), 1000);
+    return () => clearInterval(interval);
+  }, [session.active]);
+
+  const elapsedSeconds = session.active
+    ? Math.max(0, (Date.now() - new Date(session.active.startedAt).getTime()) / 1000)
+    : 0;
+
+  return (
+    <GlowCard
+      strong={!!session.active}
+      style={styles.sessionCard}
+      onPress={session.active ? onStop : onStart}
+    >
+      <View style={styles.sessionHeaderRow}>
+        <Ionicons
+          name={session.active ? 'stop-circle-outline' : 'play-circle-outline'}
+          size={28}
+          color={colors.glow}
+          style={iconGlow}
+        />
+        <View style={styles.sessionHeaderText}>
+          <Text style={styles.sessionTitle}>{session.active ? 'IN IDENTITY' : 'START SESSION'}</Text>
+          <Text style={styles.sessionSubtitle}>
+            {session.active
+              ? `${formatDurationShort(elapsedSeconds)} elapsed · tap to stop`
+              : 'Tap to start practicing your identity right now'}
+          </Text>
+        </View>
+      </View>
+      <View style={styles.sessionStatsRow}>
+        <Text style={styles.sessionStat}>{session.currentStreakDays}d streak</Text>
+        <Text style={styles.sessionStat}>{session.todaySessions} today</Text>
+        <Text style={styles.sessionStat}>{formatDurationShort(session.totalSeconds)} total</Text>
+      </View>
+    </GlowCard>
+  );
+}
+
 export default function Growth() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { data } = useAppData();
+  const { data, startIdentitySession, stopIdentitySession } = useAppData();
   const stats = useMemo(() => computeGrowthStats(data), [data]);
 
   const hasAnyProgress =
@@ -75,6 +130,12 @@ export default function Growth() {
         <Text style={styles.heroValue}>{stats.daysSinceStart ?? '—'}</Text>
         <Text style={styles.heroLabel}>DAYS SINCE YOU BEGAN</Text>
       </GlowCard>
+
+      <IdentitySessionCard
+        session={stats.identitySession}
+        onStart={startIdentitySession}
+        onStop={stopIdentitySession}
+      />
 
       {!hasAnyProgress ? (
         <EmptyState
@@ -171,6 +232,39 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     color: colors.glowStrong,
     letterSpacing: 2,
     marginTop: 4,
+  },
+  sessionCard: {
+    gap: 14,
+  },
+  sessionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sessionHeaderText: {
+    flex: 1,
+    gap: 2,
+  },
+  sessionTitle: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 13,
+    letterSpacing: 2,
+    color: colors.textPrimary,
+  },
+  sessionSubtitle: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
+  },
+  sessionStatsRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  sessionStat: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    color: colors.glow,
   },
   emptyCard: {
     alignItems: 'center',

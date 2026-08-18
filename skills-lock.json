@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "apple-targets": {
+      "source": "EvanBacon/expo-apple-targets",
+      "sourceType": "github",
+      "skillPath": "skills/apple-targets/SKILL.md",
+      "computedHash": "6e144cc599c0ad3cfab8db217682d87de535e829d386383962e3bbc1f8ce1cc7"
+    }
+  }
+}
