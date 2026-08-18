@@ -10,7 +10,7 @@ import { useSettings } from '../store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
-const DELAY_MS = 2500;
+const DELAY_MS = 2000;
 
 const TEASER_POINTS = ['Unlimited identities', 'Unlimited habits', 'Weekly reports', 'Every neon theme'];
 
