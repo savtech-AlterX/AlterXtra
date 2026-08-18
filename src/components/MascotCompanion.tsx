@@ -186,6 +186,10 @@ export function MascotCompanion() {
   const burstAnim = useRef(new Animated.Value(0)).current;
   const mascotFade = useRef(new Animated.Value(1)).current;
 
+  // Covers the whole onboarding flow, not just /onboarding/loading — the
+  // reprogramming-identity screen sets data.identity moments before
+  // navigating there, so a narrower check would let the companion flash into
+  // view mid-transition before the route change lands.
   const visible = isLoaded && settings.mascotEnabled && !!data.identity && !onOnboardingFlow;
 
   // Fires on every pose change, including into/out of 'presenting' — each
