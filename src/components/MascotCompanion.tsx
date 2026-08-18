@@ -9,16 +9,7 @@ import { useSettings } from '../store/SettingsContext';
 import { useThemeControls } from '../theme/ThemeContext';
 import { computeGrowthStats } from '../lib/growth';
 import { buildMascotMessagePool, pickMascotMessage } from '../lib/mascotMessages';
-import {
-  AVATAR_ASPECT,
-  avatarSource,
-  PAPER_PLANE_ASPECT,
-  paperPlaneSource,
-  presentFrameSource,
-  sideStandSource,
-  throwCycleLength,
-  walkFrameSource,
-} from '../lib/avatar';
+import { PAPER_PLANE_ASPECT, paperPlaneSource, presentFrameSource, throwCycleLength } from '../lib/avatar';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
@@ -39,15 +30,11 @@ const FIGURE_HEIGHT_MAX = 170;
 // right edge of the screen. Scaled down to match the smaller figure.
 const SLOT_WIDTH = 96;
 
-const WALK_SPEED = 30; // px per second
-const STEP_MS = 300; // one stride, so the bob reads as footfalls
-const BOB_HEIGHT = 3.5;
-const LEAN_DEG = 2.5;
-const IDLE_MIN_MS = 2000;
-const IDLE_MAX_MS = 5200;
-const WALK_MIN_MS = 2500;
-const WALK_MAX_MS = 6000;
 const MESSAGE_VISIBLE_MS = 4000;
+// The companion no longer wanders the floor — she appears seated, holds
+// briefly, then fades out, once per arrival on Home. This is how long she
+// stays before that fade starts.
+const IDLE_SEATED_HOLD_MS = 3500;
 // The current Alter-Xtra premium reveal: seated -> a real multi-frame
 // throw-arm animation (not held poses crossfaded together — the source
 // material was shot specifically for fluid motion, and holding 3 static
@@ -70,11 +57,10 @@ const POST_BURST_DELAY_MS = 250;
 const MASCOT_FADE_MS = 450;
 const RESUME_IDLE_DELAY_MS = 400;
 // The seated/windup/throw poses (roughly as wide as they are tall, chair
-// included) are much wider than the narrow standing/walking figure SLOT_WIDTH
-// was tuned for. Centered in that slot, the extra width overflows off-screen
-// if the mascot happens to be idling near an edge when the sequence starts —
-// caught by actually rendering it there, not assumed. This is how far in
-// from each edge it's nudged first.
+// included) are much wider than SLOT_WIDTH. Centered in that slot, the extra
+// width overflows off-screen if the mascot happens to be sitting near an edge
+// when the sequence starts — caught by actually rendering it there, not
+// assumed. This is how far in from each edge it's nudged first.
 const PRESENT_SIDE_MARGIN = 40;
 const PRESENT_REPOSITION_MS = 220;
 // The whole sequence above is a chain of setTimeouts, each one scheduling the
@@ -87,25 +73,10 @@ const PRESENT_REPOSITION_MS = 220;
 // force back to idle so a stall degrades to "the intro didn't play that time"
 // instead of "the companion is broken for the rest of the session."
 const PRESENT_WATCHDOG_MS = 6000;
-// One drawn frame per half-stride, matching the footfall bob's cadence so the
-// art and the bob stay in phase rather than drifting against each other.
-const WALK_FRAME_MS = STEP_MS / 2;
-
-function randBetween(min: number, max: number) {
-  return min + Math.random() * (max - min);
-}
 
 /**
- * A companion that walks the floor.
- *
- * The art is a single static image, so there are no moving legs to animate —
- * the sense of walking has to come from motion cues instead:
- *   - a contact shadow pinned to the floor line, which never bobs, so the
- *     figure reads as standing ON something rather than hovering over it
- *   - a footfall bob that runs ONLY while travelling; standing still means
- *     standing perfectly still (a bob while stationary is what made the
- *     earlier version look like it was floating)
- *   - the shadow tightening on each footfall, and a slight forward lean
+ * A companion that appears seated on Home, holds for a few seconds, and
+ * fades out — a presence, not a figure that wanders the floor.
  */
 export function MascotCompanion() {
   const styles = useThemedStyles(makeStyles);
@@ -130,46 +101,42 @@ export function MascotCompanion() {
   const figureHeight = Math.min(FIGURE_HEIGHT_MAX, Math.max(FIGURE_HEIGHT_MIN, height * FIGURE_HEIGHT_RATIO));
   const presentGlowSize = figureHeight * 0.7;
 
-  // Starts pinned to the left edge, not centred, per the brief — everything
-  // downstream (the idle wander loop, the present sequence) already reads
-  // position off this ref, so nothing else needed to change.
+  // Starts pinned to the left edge, not centred, per the brief — the present
+  // sequence's reposition step reads its starting point off this ref, so
+  // nothing else needed to change when the idle wander was removed.
   const x = useRef(new Animated.Value(0)).current;
-  const bob = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0)).current;
   const xValue = useRef(0);
-  const [facingLeft, setFacingLeft] = useState(false);
-  const [walking, setWalking] = useState(false);
+  // No longer toggled by a wander direction (there isn't one any more) —
+  // stays at the art's default orientation. Kept as a real value rather than
+  // deleted outright since the throw pose and paper-plane flight direction
+  // both still mirror off it.
+  const facingLeft = false;
   const [message, setMessage] = useState<string | null>(null);
   const messageTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const phaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Separate from phaseTimer on purpose: setMode('presenting') triggers the
-  // idle-loop effect's cleanup asynchronously (after this function returns,
-  // once React re-renders), and that cleanup unconditionally clears
-  // phaseTimer.current. Sharing one ref meant the cleanup was silently
-  // cancelling the walk-transition timer this function had just scheduled —
-  // the sequence got stuck holding the lean pose forever. Caught by actually
-  // watching it run in a browser, not by reading the code.
   const presentTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const walkAnim = useRef<Animated.CompositeAnimation | null>(null);
-  // Separate from walkAnim on purpose — sharing it meant the idle-wander
-  // effect's cleanup (which fires asynchronously once `mode` flips to
-  // 'presenting' and calls walkAnim.current?.stop()) was stopping this
-  // reposition animation moments after it started, leaving the mascot stuck
-  // near its old x instead of the safe, edge-clear position. Same class of
-  // bug as the earlier lean-pose timer collision — caught by reading the
-  // mascot's actual on-screen rect, not by re-reading the code.
+  // Separate from presentTimer on purpose — sharing it meant the idle
+  // seated-then-fade effect's cleanup (which fires asynchronously once
+  // `mode` flips to 'presenting') was clearing a timer the present sequence
+  // had just scheduled. Same class of bug as the other timer collisions
+  // documented below — caught by actually watching it run, not by reading
+  // the code.
   const repositionAnim = useRef<Animated.CompositeAnimation | null>(null);
-  const bobLoop = useRef<Animated.CompositeAnimation | null>(null);
   // See PRESENT_WATCHDOG_MS above — a hard ceiling independent of presentTimer,
   // so clearing/reusing presentTimer along the normal chain can never also
   // cancel the safety net.
   const watchdogTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The idle seated-then-fade timer — separate from presentTimer/watchdogTimer
+  // so starting the present sequence can cleanly cancel it without touching
+  // either of those.
+  const idleFadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 'idle' is the normal random wander loop below. 'presenting' pauses it for
-  // the one-time lean -> walk -> reveal sequence toward Alter-Xtra — mode and
-  // modeRef stay in lockstep so the idle-loop effect (reads state, re-runs on
-  // change) and the imperative sequence function (reads the ref, no re-render
-  // needed) always agree on which one is currently in control.
+  // 'idle' is just sitting there before the fade-out below. 'presenting' pauses
+  // that for the one-time seated -> throw -> reveal sequence toward
+  // Alter-Xtra — mode and modeRef stay in lockstep so the idle effect (reads
+  // state, re-runs on change) and the imperative sequence function (reads the
+  // ref, no re-render needed) always agree on which one is currently in
+  // control.
   const [mode, setMode] = useState<'idle' | 'presenting'>('idle');
   const modeRef = useRef<'idle' | 'presenting'>('idle');
   const [presentPhase, setPresentPhase] = useState<'seated' | 'motion' | 'flying'>('seated');
@@ -178,10 +145,9 @@ export function MascotCompanion() {
   // it doesn't retrigger poseFade (that only depends on mode/presentPhase
   // below), which is deliberate: real motion frames read as continuous
   // without a crossfade between each one; the fade is only for the one hard
-  // cut into the sequence (idle standing figure -> seated).
+  // cut into the sequence (plain seated -> throw motion).
   const [throwFrame, setThrowFrame] = useState(0);
   const poseFade = useRef(new Animated.Value(1)).current;
-  const [walkFrame, setWalkFrame] = useState(0);
   const planeAnim = useRef(new Animated.Value(0)).current;
   const burstAnim = useRef(new Animated.Value(0)).current;
   const mascotFade = useRef(new Animated.Value(1)).current;
@@ -227,10 +193,9 @@ export function MascotCompanion() {
 
   // The one-time sequence: seated -> windup -> throw, then the paper plane
   // flies off and bursts, the caller's panel appears, and the mascot fades
-  // out — it doesn't walk anywhere for this one, so x/facingLeft are left
-  // wherever the idle wander last put them. Runs entirely on refs/imperative
-  // timers rather than the idle-loop's effect pattern, because it's a single
-  // run-to-completion sequence, not a repeating cycle.
+  // out. Runs entirely on refs/imperative timers rather than an effect
+  // pattern, because it's a single run-to-completion sequence, not a
+  // repeating cycle.
   const beginAlterXtraPresent = useCallback(
     (onRevealed: () => void) => {
       if (modeRef.current === 'presenting') return;
@@ -238,14 +203,13 @@ export function MascotCompanion() {
       setMode('presenting');
       if (presentTimer.current) clearTimeout(presentTimer.current);
       if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
+      if (idleFadeTimer.current) clearTimeout(idleFadeTimer.current);
       watchdogTimer.current = setTimeout(() => {
         if (modeRef.current !== 'presenting') return;
         modeRef.current = 'idle';
         setMode('idle');
         mascotFade.setValue(1);
       }, PRESENT_WATCHDOG_MS);
-      walkAnim.current?.stop();
-      setWalking(false);
       planeAnim.setValue(0);
       burstAnim.setValue(0);
       mascotFade.setValue(1);
@@ -272,10 +236,10 @@ export function MascotCompanion() {
                   if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
                   modeRef.current = 'idle';
                   setMode('idle');
-                  // Without this, mascotFade stays at 0 forever — the normal
-                  // standing/walking companion would never become visible
-                  // again after this one-time sequence, instead of resuming
-                  // as intended. Caught by checking computed opacity in a
+                  // Without this, mascotFade stays at 0 forever — the idle
+                  // seated companion would never become visible again after
+                  // this one-time sequence, instead of resuming as intended
+                  // on the next Home visit. Caught by checking computed opacity in a
                   // browser well after the sequence finished, not assumed.
                   mascotFade.setValue(1);
                 }, RESUME_IDLE_DELAY_MS);
@@ -286,10 +250,8 @@ export function MascotCompanion() {
       }
 
       // Steps through every extracted in-between frame (windup, then the
-      // arm's full sweep through the throw) at a fast, fixed cadence — the
-      // same "advance an index on a timer" shape as the idle walk cycle's
-      // walkFrame, just driven by a chained setTimeout instead of
-      // setInterval since this run runs once and stops, not loops.
+      // arm's full sweep through the throw) at a fast, fixed cadence via a
+      // chained setTimeout, since this run runs once and stops, not loops.
       function advanceMotion(frame: number) {
         setThrowFrame(frame);
         if (frame < lastFrame) {
@@ -308,7 +270,6 @@ export function MascotCompanion() {
         }, SEATED_HOLD_MS);
       }
 
-      setWalking(false);
       const from = xValue.current;
       const safeTarget = Math.min(Math.max(from, PRESENT_SIDE_MARGIN), Math.max(PRESENT_SIDE_MARGIN, maxX - PRESENT_SIDE_MARGIN));
       if (Math.abs(safeTarget - from) < 1) {
@@ -336,100 +297,30 @@ export function MascotCompanion() {
     };
   }, [visible, alterXtraPresentRef, beginAlterXtraPresent]);
 
-  // Alternate between standing still and walking to a new spot on the floor.
-  // Paused entirely while the present sequence above has control.
+  // Appear seated, hold, then fade out — fires each time the mascot becomes
+  // visible (i.e. each arrival on Home), not just once ever. Paused entirely
+  // while the present sequence above has control; reads modeRef rather than
+  // depending on `mode` so this doesn't also re-fire the moment the present
+  // sequence hands control back (that already ends on its own fade-out —
+  // replaying this one right after would just be a redundant second fade).
   useEffect(() => {
-    if (!visible || mode === 'presenting') return;
-    let cancelled = false;
-
-    function stand() {
-      if (cancelled) return;
-      setWalking(false);
-      phaseTimer.current = setTimeout(walk, randBetween(IDLE_MIN_MS, IDLE_MAX_MS));
-    }
-
-    function walk() {
-      if (cancelled) return;
-      const from = xValue.current;
-      const reach = (WALK_SPEED * randBetween(WALK_MIN_MS, WALK_MAX_MS)) / 1000;
-      const direction = Math.random() < 0.5 ? -1 : 1;
-      // Keep it on screen: fold the target back inside the bounds.
-      let target = from + direction * reach;
-      if (target < 0) target = Math.min(maxX, Math.abs(target));
-      if (target > maxX) target = Math.max(0, maxX - (target - maxX));
-
-      const distance = Math.abs(target - from);
-      if (distance < 4) {
-        stand();
-        return;
-      }
-
-      setFacingLeft(target < from);
-      setWalking(true);
-
-      walkAnim.current = Animated.timing(x, {
-        toValue: target,
-        duration: (distance / WALK_SPEED) * 1000,
-        easing: Easing.inOut(Easing.quad), // ease off the mark and settle, not a constant glide
-        useNativeDriver: false,
-      });
-      walkAnim.current.start(({ finished }) => {
-        if (finished && !cancelled) stand();
-      });
-    }
-
-    stand();
+    if (!visible || modeRef.current === 'presenting') return;
+    mascotFade.setValue(1);
+    idleFadeTimer.current = setTimeout(() => {
+      if (modeRef.current === 'presenting') return;
+      Animated.timing(mascotFade, { toValue: 0, duration: MASCOT_FADE_MS, useNativeDriver: false }).start();
+    }, IDLE_SEATED_HOLD_MS);
     return () => {
-      cancelled = true;
-      if (phaseTimer.current) clearTimeout(phaseTimer.current);
-      walkAnim.current?.stop();
+      if (idleFadeTimer.current) clearTimeout(idleFadeTimer.current);
     };
-  }, [visible, maxX, x, mode]);
-
-  // Advance the drawn walk frames — only while actually travelling, and reset
-  // to a consistent pose on stopping so the figure never freezes mid-stride
-  // with a leg hanging in the air.
-  useEffect(() => {
-    if (!visible || !walking) {
-      setWalkFrame(0);
-      return;
-    }
-    const id = setInterval(() => setWalkFrame((f) => f + 1), WALK_FRAME_MS);
-    return () => clearInterval(id);
-  }, [visible, walking]);
-
-  // Footfall bob — only while actually travelling.
-  useEffect(() => {
-    bobLoop.current?.stop();
-    if (!visible || !walking) {
-      Animated.timing(bob, { toValue: 0, duration: 120, useNativeDriver: false }).start();
-      return;
-    }
-    bobLoop.current = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bob, {
-          toValue: 1,
-          duration: STEP_MS / 2,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: false,
-        }),
-        Animated.timing(bob, {
-          toValue: 0,
-          duration: STEP_MS / 2,
-          easing: Easing.in(Easing.quad),
-          useNativeDriver: false,
-        }),
-      ])
-    );
-    bobLoop.current.start();
-    return () => bobLoop.current?.stop();
-  }, [visible, walking, bob]);
+  }, [visible, mascotFade]);
 
   useEffect(() => {
     return () => {
       if (messageTimeout.current) clearTimeout(messageTimeout.current);
       if (presentTimer.current) clearTimeout(presentTimer.current);
       if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
+      if (idleFadeTimer.current) clearTimeout(idleFadeTimer.current);
       repositionAnim.current?.stop();
     };
   }, []);
@@ -443,27 +334,13 @@ export function MascotCompanion() {
 
   if (!visible) return null;
 
-  // Which art is on screen right now, in priority order:
-  //   held seated/windup/throw pose during the present sequence  >
-  //   drawn walk frame while travelling  >  side-profile idle  >  the
-  //   front-facing standing figure. Both icons have full art for the
-  //   present sequence, so unlike the idle-wander fallbacks below there's
-  //   no missing-art case to fall through for it.
+  // Which art is on screen right now: the held throw-cycle frame while
+  // presenting, otherwise just the seated frame (frame 0 of the same cycle)
+  // — she's never anything but seated outside the present sequence now.
   const icon = data.identity?.icon;
-  let figureSource = avatarSource(icon);
-  let figureAspect: number = AVATAR_ASPECT;
-
-  const heldPose = mode === 'presenting' ? presentFrameSource(icon, throwFrame) : null;
-  if (heldPose) {
-    figureSource = heldPose.source;
-    figureAspect = heldPose.aspect;
-  } else {
-    const cycle = walking ? walkFrameSource(icon, walkFrame) : sideStandSource(icon);
-    if (cycle) {
-      figureSource = cycle.source;
-      figureAspect = cycle.aspect;
-    }
-  }
+  const heldPose = presentFrameSource(icon, mode === 'presenting' ? throwFrame : 0);
+  const figureSource = heldPose.source;
+  const figureAspect = heldPose.aspect;
 
   // Height is the fixed dimension; width follows from the pose's own aspect,
   // so the character stays the same height whatever it's doing.
@@ -489,11 +366,12 @@ export function MascotCompanion() {
     },
   });
 
-  const lift = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -BOB_HEIGHT] });
-  // Shadow tightens as the figure rises, as if pushing off the floor.
-  const shadowScale = bob.interpolate({ inputRange: [0, 1], outputRange: [1, 0.72] });
-  const shadowOpacity = bob.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.26] });
-  const lean = `${(facingLeft ? 1 : -1) * (walking ? LEAN_DEG : 0)}deg`;
+  // No more footfall bob to drive these — she just sits, so the lift/lean
+  // stay neutral and the shadow stays put under her.
+  const lift = 0;
+  const shadowScale = 1;
+  const shadowOpacity = 0.5;
+  const lean = '0deg';
 
   // The "present" gesture: a scale bump on the figure plus a glow burst
   // behind it. Used by the separate presentRef cue (e.g. Limited Beliefs),
