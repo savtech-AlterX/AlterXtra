@@ -14,8 +14,7 @@ type Props = {
   // during onboarding, so the choice carries through the whole app.
   icon?: AppIconChoice;
   // Defaults to neutral everywhere except the one screen that asks for
-  // something else (loading, currently) — see markSource for why this is a
-  // no-op until the expression art exists.
+  // something else (loading, currently, which shows the charismatic smirk).
   expression?: MarkExpression;
 };
 
