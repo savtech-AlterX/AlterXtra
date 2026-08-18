@@ -401,24 +401,18 @@ export function MascotCompanion() {
   // so the character stays the same height whatever it's doing.
   const figureWidth = figureHeight / figureAspect;
 
-  // The reference art has a soft neon bloom baked into every line plus a
-  // glowing floor reflection. The extracted line art itself is hard-edged
-  // (checked the raw alpha channel — 1-2px antialiasing, no soft falloff),
-  // so the bloom has to come from rendering, not the source PNGs. Native
-  // shadow* props follow a transparent image's actual alpha shape on iOS
-  // (no shadowPath set), giving a real per-line glow; Android's shadow
-  // support for that is weaker but still reads as an ambient glow. On web,
-  // drop-shadow (unlike box-shadow) also hugs the alpha silhouette.
+  // These seated/throw-cycle poses already have a soft neon bloom baked
+  // into their own alpha channel (checked directly — a wide spread of
+  // partial-alpha pixels around every line, not a hard 1-2px antialiased
+  // edge). Stacking an additional CSS drop-shadow blur on top of art that's
+  // already soft compounds into an oversaturated blob that swallows the
+  // linework entirely — confirmed by rendering the raw asset with nothing
+  // but a plain tint next to the in-app result. Native shadow* props have
+  // the same problem for the same reason, so this is a plain tint
+  // everywhere now; the art supplies its own glow.
   const glowStyle = Platform.select({
-    web: {
-      filter: `drop-shadow(0 0 3px ${colors.glow}) drop-shadow(0 0 9px ${colors.glowStrong})`,
-    } as Record<string, unknown>,
-    default: {
-      shadowColor: colors.glow,
-      shadowOpacity: 0.9,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 0 },
-    },
+    web: {} as Record<string, unknown>,
+    default: {},
   });
 
   // No more footfall bob to drive these — she just sits, so the lift/lean
