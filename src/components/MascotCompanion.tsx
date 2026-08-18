@@ -44,23 +44,23 @@ const IDLE_SEATED_HOLD_MS = 3500;
 // fades out. Replaces the older lean/walk/reveal choreography.
 const SEATED_HOLD_MS = 700;
 // Per-frame advance through the throw-cycle art (seated -> windup -> every
-// extracted in-between frame -> settled, ~37 frames). 24ms/frame puts the
-// whole arm motion at well under a second — snappy like a real throw — while
-// staying comfortably above single-display-frame timing (~16ms at 60Hz), so
-// each step is actually resolvable rather than racing the refresh rate for
-// no visible gain.
-const MOTION_FRAME_MS = 24;
+// extracted in-between frame -> settled, ~37 frames). 24ms/frame (under a
+// second total) turned out too fast to actually read as fluid motion on a
+// real device — it registered as a blur, not a throw. 40ms/frame slows the
+// whole arm motion to a bit under 1.5s, still snappy but each stage of the
+// throw is now actually visible.
+const MOTION_FRAME_MS = 40;
 const SETTLE_HOLD_MS = 200;
 const PLANE_FLIGHT_MS = 850;
 const BURST_MS = 380;
 const POST_BURST_DELAY_MS = 250;
 const MASCOT_FADE_MS = 450;
-const RESUME_IDLE_DELAY_MS = 400;
 // The seated/windup/throw poses (roughly as wide as they are tall, chair
 // included) are much wider than SLOT_WIDTH. Centered in that slot, the extra
-// width overflows off-screen if the mascot happens to be sitting near an edge
-// when the sequence starts — caught by actually rendering it there, not
-// assumed. This is how far in from each edge it's nudged first.
+// width overflows off-screen if rendered flush at x=0 — this is how far in
+// from the left edge it's nudged before sitting. The mascot always starts at
+// the left already (idle wander was removed), so this is mostly a small,
+// deliberate scoot rather than a correction.
 const PRESENT_SIDE_MARGIN = 40;
 const PRESENT_REPOSITION_MS = 220;
 // The whole sequence above is a chain of setTimeouts, each one scheduling the
@@ -69,10 +69,19 @@ const PRESENT_REPOSITION_MS = 220;
 // releasing, including on screens that aren't Home at all since the mascot is
 // mounted once at the app root. Whatever stalls that chain on-device, this is
 // a hard backstop: however long the reposition + seated hold + full motion
-// sweep + flight + burst + fade should ever legitimately take, well past it,
-// force back to idle so a stall degrades to "the intro didn't play that time"
-// instead of "the companion is broken for the rest of the session."
+// sweep + flight + burst should ever legitimately take, well past it, force
+// back to idle so a stall degrades to "the intro didn't play that time"
+// instead of "the companion is broken for the rest of the session." Only
+// covers up to the fade-out — once the mascot is actually hidden and waiting
+// on the panel to close, HIDDEN_WATCHDOG_MS below takes over, since that wait
+// is supposed to be open-ended.
 const PRESENT_WATCHDOG_MS = 6000;
+// Once faded out, the mascot has no way to know when the Alter-Xtra panel
+// actually closes — the panel calls resumeIdleRef when it does. This is
+// purely a fallback for that call never arriving (panel unmounting some
+// other way), not a normal-path timer, so it's generous — long enough that
+// it never fires while someone's just reading the panel.
+const HIDDEN_WATCHDOG_MS = 30000;
 
 /**
  * A companion that appears seated on Home, holds for a few seconds, and
@@ -86,7 +95,7 @@ export function MascotCompanion() {
   const { settings, isLoaded } = useSettings();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { xRef, presentRef, alterXtraPresentRef } = useMascotCue();
+  const { xRef, presentRef, alterXtraPresentRef, resumeIdleRef } = useMascotCue();
   // Mounted once at the app root (see _layout.tsx), so without this it shows
   // on every screen in the app — onboarding, settings, diary, the loading
   // transition, all of it. The companion belongs on Home only; state keeps
@@ -191,9 +200,33 @@ export function MascotCompanion() {
     };
   }, [visible, presentRef, triggerPulse]);
 
+  // Hands control back to the idle seated state — called either by the
+  // Alter-Xtra panel itself once it actually closes (the normal path) or by
+  // HIDDEN_WATCHDOG_MS if that call never arrives. Also reachable mid-flight
+  // via PRESENT_WATCHDOG_MS if the animation chain itself stalls, which is
+  // why every step is guarded by modeRef rather than assuming it always
+  // starts from the faded-out end state.
+  const resumeFromPresent = useCallback(() => {
+    if (modeRef.current !== 'presenting') return;
+    if (presentTimer.current) clearTimeout(presentTimer.current);
+    if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
+    modeRef.current = 'idle';
+    setMode('idle');
+    Animated.timing(mascotFade, { toValue: 1, duration: MASCOT_FADE_MS, useNativeDriver: false }).start();
+  }, [mascotFade]);
+
+  useEffect(() => {
+    if (!visible) return;
+    resumeIdleRef.current = resumeFromPresent;
+    return () => {
+      if (resumeIdleRef.current === resumeFromPresent) resumeIdleRef.current = null;
+    };
+  }, [visible, resumeIdleRef, resumeFromPresent]);
+
   // The one-time sequence: seated -> windup -> throw, then the paper plane
   // flies off and bursts, the caller's panel appears, and the mascot fades
-  // out. Runs entirely on refs/imperative timers rather than an effect
+  // out and stays out until that panel actually closes (see resumeIdleRef
+  // above). Runs entirely on refs/imperative timers rather than an effect
   // pattern, because it's a single run-to-completion sequence, not a
   // repeating cycle.
   const beginAlterXtraPresent = useCallback(
@@ -222,7 +255,12 @@ export function MascotCompanion() {
         Animated.timing(planeAnim, {
           toValue: 1,
           duration: PLANE_FLIGHT_MS,
-          easing: Easing.in(Easing.quad),
+          // A thrown object is fastest the instant it leaves the hand and
+          // decelerates from there (release energy, then drag) — ease-out,
+          // not ease-in. The previous ease-in made it crawl for most of the
+          // flight and then rocket away in the last instant, backwards from
+          // how a throw actually reads.
+          easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }).start(({ finished }) => {
           if (!finished) return;
@@ -232,17 +270,12 @@ export function MascotCompanion() {
             onRevealed();
             presentTimer.current = setTimeout(() => {
               Animated.timing(mascotFade, { toValue: 0, duration: MASCOT_FADE_MS, useNativeDriver: false }).start(() => {
-                presentTimer.current = setTimeout(() => {
-                  if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
-                  modeRef.current = 'idle';
-                  setMode('idle');
-                  // Without this, mascotFade stays at 0 forever — the idle
-                  // seated companion would never become visible again after
-                  // this one-time sequence, instead of resuming as intended
-                  // on the next Home visit. Caught by checking computed opacity in a
-                  // browser well after the sequence finished, not assumed.
-                  mascotFade.setValue(1);
-                }, RESUME_IDLE_DELAY_MS);
+                // Faded out now — done with the animation chain, so the 6s
+                // stall watchdog no longer applies. From here it's an
+                // open-ended wait for the panel to close, guarded only by
+                // the much longer HIDDEN_WATCHDOG_MS fallback.
+                if (watchdogTimer.current) clearTimeout(watchdogTimer.current);
+                watchdogTimer.current = setTimeout(resumeFromPresent, HIDDEN_WATCHDOG_MS);
               });
             }, POST_BURST_DELAY_MS);
           }, BURST_MS);
@@ -271,12 +304,12 @@ export function MascotCompanion() {
       }
 
       const from = xValue.current;
-      const safeTarget = Math.min(Math.max(from, PRESENT_SIDE_MARGIN), Math.max(PRESENT_SIDE_MARGIN, maxX - PRESENT_SIDE_MARGIN));
-      if (Math.abs(safeTarget - from) < 1) {
+      const target = PRESENT_SIDE_MARGIN;
+      if (Math.abs(target - from) < 1) {
         beginSeated();
       } else {
         repositionAnim.current = Animated.timing(x, {
-          toValue: safeTarget,
+          toValue: target,
           duration: PRESENT_REPOSITION_MS,
           easing: Easing.out(Easing.quad),
           useNativeDriver: false,
@@ -286,7 +319,7 @@ export function MascotCompanion() {
         });
       }
     },
-    [burstAnim, data, mascotFade, maxX, planeAnim, x]
+    [burstAnim, data, mascotFade, planeAnim, resumeFromPresent, x]
   );
 
   useEffect(() => {
@@ -381,13 +414,21 @@ export function MascotCompanion() {
   const pulseGlowOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.85] });
   const pulseGlowScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] });
 
-  // The paper plane: launches from roughly the throwing hand, flies up and
-  // to the right while growing — reads as approaching the viewer — then
-  // fades out right as the burst flash takes over at its final position.
+  // The paper plane: launches from roughly the throwing hand and flies up
+  // and away, shrinking as it goes — it's receding into the distance, so
+  // growing (the previous behaviour) read as flying both away and toward
+  // the viewer at once. Fades out right as the burst flash takes over at
+  // its final position.
   const planeHeight = 26;
   const planeWidth = planeHeight / PAPER_PLANE_ASPECT;
   const PLANE_FLY_DX = 190;
   const PLANE_FLY_DY = -70;
+  // A thrown paper plane climbs on the initial force then settles/dips as
+  // that force runs out and gravity takes over — not a dead-straight line.
+  // The peak sits above the final resting height so the last leg of the
+  // flight reads as a gentle downward settle, matching the burst landing
+  // slightly below where the arc topped out.
+  const PLANE_ARC_PEAK_DY = -105;
   // Flies toward whichever side the figure is actually facing (it's mirrored
   // via scaleX when facingLeft, so the thrown arm — and the plane — needs to
   // mirror with it, not always fly rightward regardless of orientation).
@@ -395,8 +436,11 @@ export function MascotCompanion() {
     planeAnim.interpolate({ inputRange: [0, 1], outputRange: [0, PLANE_FLY_DX] }),
     facingLeft ? -1 : 1
   );
-  const planeTranslateY = planeAnim.interpolate({ inputRange: [0, 1], outputRange: [0, PLANE_FLY_DY] });
-  const planeScale = planeAnim.interpolate({ inputRange: [0, 0.6, 1], outputRange: [1, 1.9, 3.4] });
+  const planeTranslateY = planeAnim.interpolate({
+    inputRange: [0, 0.55, 1],
+    outputRange: [0, PLANE_ARC_PEAK_DY, PLANE_FLY_DY],
+  });
+  const planeScale = planeAnim.interpolate({ inputRange: [0, 0.6, 1], outputRange: [1, 0.78, 0.5] });
   const planeRotate = planeAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', facingLeft ? '10deg' : '-10deg'] });
   const planeOpacity = planeAnim.interpolate({ inputRange: [0, 0.08, 0.85, 1], outputRange: [0, 1, 1, 0] });
   const burstScale = burstAnim.interpolate({ inputRange: [0, 1], outputRange: [0.4, 2.6] });

@@ -32,7 +32,7 @@ export function AlterXtraIntro() {
   const router = useRouter();
   const { data } = useAppData();
   const { settings, isLoaded, setAlterXtraIntroShown } = useSettings();
-  const { alterXtraPresentRef } = useMascotCue();
+  const { alterXtraPresentRef, resumeIdleRef } = useMascotCue();
 
   const [visible, setVisible] = useState(false);
   const rise = useRef(new Animated.Value(0)).current;
@@ -55,6 +55,10 @@ export function AlterXtraIntro() {
   function dismiss() {
     setAlterXtraIntroShown(true);
     setVisible(false);
+    // The mascot has been sitting there faded out since the panel rose —
+    // this is what actually hands it back, not a fixed timer that can't
+    // know whether the panel is still on screen.
+    resumeIdleRef.current?.();
   }
 
   function viewAlterXtra() {
