@@ -208,22 +208,10 @@ export default function Settings() {
         </GlowCard>
       )}
 
-      <GlowCard style={styles.card}>
-        <View style={styles.lockCard}>
-          <View style={styles.lockText}>
-            <Text style={typography.label}>COMPANION</Text>
-            <Text style={styles.lockDesc}>
-              A figurine that walks around the screen. Tap it for a stat or a nudge.
-            </Text>
-          </View>
-          <Switch
-            value={settings.mascotEnabled}
-            onValueChange={setMascotEnabled}
-            trackColor={{ false: colors.borderDim, true: colors.glow }}
-            thumbColor={colors.textPrimary}
-          />
-        </View>
-      </GlowCard>
+      {/* The mascot is held off for now (see app/_layout.tsx) — this toggle
+          would just do nothing with it unmounted, which reads as more
+          broken than not having the setting at all. Bring it back
+          alongside re-enabling <MascotCompanion />. */}
 
       <GlowButton
         label="REPLAY ALTER-XTRA INTRO"
