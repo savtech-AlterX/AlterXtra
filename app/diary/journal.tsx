@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
@@ -8,6 +8,7 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
+import { JournalEntry } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -27,6 +28,19 @@ function today() {
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function JournalEntryCard({ entry }: { entry: JournalEntry }) {
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <GlowCard style={styles.entry}>
+      <Text style={styles.entryDate}>
+        {entry.date} · SAVED {formatDate(entry.createdAt)}
+      </Text>
+      {!!entry.title && <Text style={styles.entryTitle}>{entry.title}</Text>}
+      <Text style={styles.entryBody}>{entry.body}</Text>
+    </GlowCard>
+  );
 }
 
 export default function Journal() {
@@ -63,83 +77,100 @@ export default function Journal() {
   }
 
   return (
-    <HudScreen>
-      <StackHeader
-        title="PERSONAL JOURNAL"
-        right={
-          !composing ? (
-            <Pressable
-              onPress={() => setComposing(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Write a new entry"
-              style={styles.headerAction}
-            >
-              <Ionicons name="add" size={22} color={colors.glow} style={iconGlow} />
-            </Pressable>
-          ) : undefined
-        }
-      />
+    <HudScreen scroll={false} style={styles.noPad}>
+      {/* A FlatList so a long-running journal (hundreds of entries) stays
+          smooth instead of every entry rendering into one giant ScrollView. */}
+      <FlatList
+        data={entries}
+        keyExtractor={(entry) => entry.id}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.headerBlock}>
+            <StackHeader
+              title="PERSONAL JOURNAL"
+              right={
+                !composing ? (
+                  <Pressable
+                    onPress={() => setComposing(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Write a new entry"
+                    style={styles.headerAction}
+                  >
+                    <Ionicons name="add" size={22} color={colors.glow} style={iconGlow} />
+                  </Pressable>
+                ) : undefined
+              }
+            />
 
-      {composing && (
-        <View style={styles.composer}>
-          <Text style={typography.label}>DATE</Text>
-          <HudTextInput value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
+            {composing && (
+              <View style={styles.composer}>
+                <Text style={typography.label}>DATE</Text>
+                <HudTextInput value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
 
-          <Text style={[typography.label, styles.spacer]}>TITLE (OPTIONAL)</Text>
-          <HudTextInput placeholder="Give your entry a title..." value={title} onChangeText={setTitle} />
+                <Text style={[typography.label, styles.spacer]}>TITLE (OPTIONAL)</Text>
+                <HudTextInput placeholder="Give your entry a title..." value={title} onChangeText={setTitle} />
 
-          <Text style={[typography.label, styles.spacer]}>YOUR ENTRY</Text>
-          <HudTextInput
-            placeholder="Write your thoughts..."
-            value={body}
-            onChangeText={setBody}
-            multiline
-          />
+                <Text style={[typography.label, styles.spacer]}>YOUR ENTRY</Text>
+                <HudTextInput
+                  placeholder="Write your thoughts..."
+                  value={body}
+                  onChangeText={setBody}
+                  multiline
+                />
 
-          <GlowButton label="SAVE ENTRY" onPress={save} disabled={!body.trim()} style={styles.spacer} />
-          <GlowButton
-            label="DISCARD"
-            variant="outline"
-            style={styles.discardButton}
-            labelColor={colors.danger}
-            onPress={cancel}
-          />
-        </View>
-      )}
+                <GlowButton label="SAVE ENTRY" onPress={save} disabled={!body.trim()} style={styles.spacer} />
+                <GlowButton
+                  label="DISCARD"
+                  variant="outline"
+                  style={styles.discardButton}
+                  labelColor={colors.danger}
+                  onPress={cancel}
+                />
+              </View>
+            )}
 
-      {entries.length === 0 && !composing ? (
-        <EmptyState
-          icon="book-outline"
-          title="YOUR JOURNAL IS EMPTY"
-          body="This is where your reflections live. Write the first one and it stays here for you to look back on."
-          actionLabel="WRITE FIRST ENTRY"
-          onAction={() => setComposing(true)}
-          style={styles.emptyState}
-        />
-      ) : (
-        <View style={styles.list}>
-          {entries.length > 0 && (
-            <Text style={[typography.label, styles.listLabel]}>
-              {entries.length} {entries.length === 1 ? 'ENTRY' : 'ENTRIES'}
-            </Text>
-          )}
-          {entries.map((entry) => (
-            <GlowCard key={entry.id} style={styles.entry}>
-              <Text style={styles.entryDate}>
-                {entry.date} · SAVED {formatDate(entry.createdAt)}
+            {entries.length > 0 && (
+              <Text style={[typography.label, styles.listLabel]}>
+                {entries.length} {entries.length === 1 ? 'ENTRY' : 'ENTRIES'}
               </Text>
-              {!!entry.title && <Text style={styles.entryTitle}>{entry.title}</Text>}
-              <Text style={styles.entryBody}>{entry.body}</Text>
-            </GlowCard>
-          ))}
-        </View>
-      )}
+            )}
+          </View>
+        }
+        ListEmptyComponent={
+          composing ? undefined : (
+            <EmptyState
+              icon="book-outline"
+              title="YOUR JOURNAL IS EMPTY"
+              body="This is where your reflections live. Write the first one and it stays here for you to look back on."
+              actionLabel="WRITE FIRST ENTRY"
+              onAction={() => setComposing(true)}
+              style={styles.emptyState}
+            />
+          )
+        }
+        renderItem={({ item }) => <JournalEntryCard entry={item} />}
+      />
     </HudScreen>
   );
 }
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+    // Zeroes out HudScreen's own padding/gap so the FlatList's
+    // contentContainerStyle is the only thing controlling spacing.
+    noPad: {
+      padding: 0,
+      gap: 0,
+    },
+    listContent: {
+      padding: 20,
+      paddingBottom: 40,
+      gap: 16,
+    },
+    headerBlock: {
+      gap: 16,
+    },
     headerAction: {
       width: 40,
       height: 40,
@@ -157,10 +188,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     },
     emptyState: {
       marginTop: 20,
-    },
-    list: {
-      gap: 12,
-      marginTop: 8,
     },
     listLabel: {
       marginBottom: 2,

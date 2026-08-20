@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
@@ -46,7 +46,7 @@ export default function AlbumDetail() {
   }
 
   return (
-    <HudScreen>
+    <HudScreen scroll={false}>
       <StackHeader
         title={album.title.toUpperCase()}
         right={
@@ -62,21 +62,27 @@ export default function AlbumDetail() {
         }
       />
 
-      {album.photoUris.length === 0 ? (
-        <EmptyState
-          icon="images-outline"
-          title="NO PHOTOS IN THIS ALBUM"
-          body="Add photos from your library and they stay on this device — nothing is uploaded anywhere."
-          actionLabel="ADD PHOTOS"
-          onAction={pickImages}
-        />
-      ) : (
-        <View style={styles.grid}>
-          {album.photoUris.map((uri, i) => (
-            <Image key={i} source={{ uri }} style={styles.gridImage} />
-          ))}
-        </View>
-      )}
+      {/* A virtualized grid, not every photo mounted into one View — an
+          album with hundreds of full-res images stayed smooth this way
+          instead of ballooning memory and lagging the scroll. */}
+      <FlatList
+        style={styles.flatList}
+        data={album.photoUris}
+        keyExtractor={(uri, i) => `${i}-${uri}`}
+        numColumns={3}
+        columnWrapperStyle={styles.gridRow}
+        contentContainerStyle={styles.gridContent}
+        renderItem={({ item }) => <Image source={{ uri: item }} style={styles.gridImage} />}
+        ListEmptyComponent={
+          <EmptyState
+            icon="images-outline"
+            title="NO PHOTOS IN THIS ALBUM"
+            body="Add photos from your library and they stay on this device — nothing is uploaded anywhere."
+            actionLabel="ADD PHOTOS"
+            onAction={pickImages}
+          />
+        }
+      />
     </HudScreen>
   );
 }
@@ -94,9 +100,13 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     textAlign: 'center',
     maxWidth: 260,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  flatList: {
+    flex: 1,
+  },
+  gridContent: {
+    gap: 8,
+  },
+  gridRow: {
     gap: 8,
   },
   gridImage: {
