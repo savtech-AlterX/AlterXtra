@@ -173,6 +173,12 @@ export default function Home() {
           onPress={() => router.push('/(tabs)/logbook')}
         />
         <GridCard
+          icon="calendar"
+          title="Calendar"
+          subtitle="Your activity by day"
+          onPress={() => router.push('/calendar')}
+        />
+        <GridCard
           icon="trending-up"
           title="Growth"
           subtitle="See how far you've come"
