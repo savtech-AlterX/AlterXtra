@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../src/components/HudScreen';
 import { HudTextInput } from '../src/components/HudTextInput';
+import { confirmDestructive } from '../src/lib/confirm';
 import { useAppData } from '../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
@@ -36,7 +37,9 @@ export default function QuickNotes() {
 
   function remove() {
     if (!note) return;
-    deleteQuickNote(note.id);
+    confirmDestructive('Delete Note', 'This note will be permanently deleted.', 'Delete', () =>
+      deleteQuickNote(note.id)
+    );
   }
 
   return (

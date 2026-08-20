@@ -7,6 +7,7 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { exportBackup, importBackup } from '../../src/lib/backup';
+import { confirmDestructive } from '../../src/lib/confirm';
 import { disableDailyReminder, enableDailyReminder } from '../../src/lib/notifications';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
@@ -103,26 +104,11 @@ export default function Settings() {
   }
 
   function confirmReset() {
-    // React Native Web's Alert.alert is a documented no-op — it never calls
-    // any button's onPress, so this button silently did nothing in any web
-    // preview. window.confirm is the web equivalent of the same prompt.
-    if (Platform.OS === 'web') {
-      if (window.confirm('Reset AlterX: this clears your identity, diary, goals, and log book on this device. This cannot be undone.')) {
-        doReset();
-      }
-      return;
-    }
-    Alert.alert(
+    confirmDestructive(
       'Reset AlterX',
       'This clears your identity, diary, goals, and log book on this device. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reset',
-          style: 'destructive',
-          onPress: doReset,
-        },
-      ]
+      'Reset',
+      doReset
     );
   }
 

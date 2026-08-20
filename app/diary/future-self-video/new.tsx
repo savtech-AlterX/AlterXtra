@@ -8,14 +8,31 @@ import { GlowButton } from '../../../src/components/GlowButton';
 import { HudScreen } from '../../../src/components/HudScreen';
 import { HudTextInput } from '../../../src/components/HudTextInput';
 import { StackHeader } from '../../../src/components/StackHeader';
+import { explainPermissionDenied } from '../../../src/lib/permissionAlert';
 import { useAppData } from '../../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../../src/theme/useAppTheme';
 import type { AppTheme } from '../../../src/theme/useAppTheme';
 
+function pad(n: number) {
+  return String(n).padStart(2, '0');
+}
+
+// Local calendar day, not UTC — see journal.tsx's today() for why.
 function tomorrow() {
   const d = new Date();
   d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDateString(s: string) {
+  if (!DATE_RE.test(s)) return false;
+  const [y, m, d] = s.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  // new Date() silently rolls invalid days (e.g. Feb 30) into the next
+  // month rather than rejecting them — round-tripping catches that.
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
 }
 
 function VideoPreview({ uri }: { uri: string }) {
@@ -37,7 +54,10 @@ export default function RecordFutureSelfVideo() {
 
   async function record() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) return;
+    if (!permission.granted) {
+      explainPermissionDenied('camera');
+      return;
+    }
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['videos'],
@@ -52,7 +72,10 @@ export default function RecordFutureSelfVideo() {
 
   async function pickFromLibrary() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
+    if (!permission.granted) {
+      explainPermissionDenied('photo library');
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['videos'],
@@ -64,7 +87,8 @@ export default function RecordFutureSelfVideo() {
     }
   }
 
-  const canSave = !!videoUri && answerDate.trim().length > 0;
+  const dateValid = isValidDateString(answerDate.trim());
+  const canSave = !!videoUri && dateValid;
 
   function save() {
     if (!canSave || !videoUri) return;
@@ -116,7 +140,11 @@ export default function RecordFutureSelfVideo() {
 
       <Text style={[typography.label, styles.spacer]}>ANSWER DATE (YYYY-MM-DD)</Text>
       <HudTextInput value={answerDate} onChangeText={setAnswerDate} placeholder="2027-01-01" />
-      <Text style={styles.hint}>Locked until this date — you'll then record your reply.</Text>
+      {answerDate.trim().length > 0 && !dateValid ? (
+        <Text style={[styles.hint, { color: colors.danger }]}>Enter a real date as YYYY-MM-DD.</Text>
+      ) : (
+        <Text style={styles.hint}>Locked until this date — you'll then record your reply.</Text>
+      )}
 
       <GlowButton label="SEAL VIDEO" onPress={save} disabled={!canSave} style={styles.spacer} />
     </HudScreen>

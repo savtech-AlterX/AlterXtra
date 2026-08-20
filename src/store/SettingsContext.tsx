@@ -32,6 +32,8 @@ const defaultSettings: Settings = {
 type SettingsContextValue = {
   settings: Settings;
   isLoaded: boolean;
+  saveError: boolean;
+  retrySave: () => void;
   setAppLockEnabled: (enabled: boolean) => void;
   setDailyReminder: (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => void;
   setMascotEnabled: (enabled: boolean) => void;
@@ -46,6 +48,7 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(SETTINGS_KEY)
@@ -56,10 +59,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setIsLoaded(true));
   }, []);
 
+  const persist = useCallback((toSave: Settings) => {
+    AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(toSave))
+      .then(() => setSaveError(false))
+      .catch(() => setSaveError(true));
+  }, []);
+
   useEffect(() => {
     if (!isLoaded) return;
-    AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)).catch(() => {});
-  }, [settings, isLoaded]);
+    persist(settings);
+  }, [settings, isLoaded, persist]);
+
+  const retrySave = useCallback(() => persist(settings), [persist, settings]);
 
   const setAppLockEnabled = useCallback((enabled: boolean) => {
     setSettings((prev) => ({ ...prev, appLockEnabled: enabled }));
@@ -99,6 +110,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     () => ({
       settings,
       isLoaded,
+      saveError,
+      retrySave,
       setAppLockEnabled,
       setDailyReminder,
       setMascotEnabled,
@@ -110,6 +123,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     [
       settings,
       isLoaded,
+      saveError,
+      retrySave,
       setAppLockEnabled,
       setDailyReminder,
       setMascotEnabled,
