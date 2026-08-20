@@ -39,7 +39,13 @@ type AppDataContextValue = {
   setOnboardingDraft: (partial: Partial<OnboardingDraft>) => void;
   addJournalEntry: (date: string, title: string, body: string) => void;
   addFutureSelfLetter: (title: string, body: string) => void;
-  addFutureSelfVideo: (question: string, videoUri: string, answerDate: string) => void;
+  addFutureSelfVideo: (
+    question: string,
+    videoUri: string,
+    answerDate: string,
+    lockMode?: 'date' | 'consistency',
+    unlockAfterLogEntries?: number
+  ) => void;
   addFutureSelfVideoReply: (id: string, replyVideoUri: string) => void;
   addGoal: (objective: string, targetDate: string, steps: string[]) => void;
   toggleGoalStep: (goalId: string, stepIndex: number) => void;
@@ -147,16 +153,27 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, futureSelfLetters: [letter, ...prev.futureSelfLetters] }));
   }, []);
 
-  const addFutureSelfVideo = useCallback((question: string, videoUri: string, answerDate: string) => {
-    const video: FutureSelfVideo = {
-      id: makeId(),
-      createdAt: new Date().toISOString(),
-      question,
-      videoUri,
-      answerDate,
-    };
-    setData((prev) => ({ ...prev, futureSelfVideos: [video, ...prev.futureSelfVideos] }));
-  }, []);
+  const addFutureSelfVideo = useCallback(
+    (
+      question: string,
+      videoUri: string,
+      answerDate: string,
+      lockMode?: 'date' | 'consistency',
+      unlockAfterLogEntries?: number
+    ) => {
+      const video: FutureSelfVideo = {
+        id: makeId(),
+        createdAt: new Date().toISOString(),
+        question,
+        videoUri,
+        answerDate,
+        lockMode,
+        unlockAfterLogEntries,
+      };
+      setData((prev) => ({ ...prev, futureSelfVideos: [video, ...prev.futureSelfVideos] }));
+    },
+    []
+  );
 
   const addFutureSelfVideoReply = useCallback((id: string, replyVideoUri: string) => {
     setData((prev) => ({

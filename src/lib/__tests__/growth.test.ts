@@ -263,6 +263,43 @@ describe('journalThenNow (rolling 30-day window)', () => {
   });
 });
 
+describe('momentum (30-day self comparison)', () => {
+  it('splits active days, alignment, and follow-through into this-month vs last-month windows', () => {
+    const data = {
+      ...emptyAppData,
+      logEntries: [
+        { id: '1', createdAt: '2026-08-01T00:00:00.000Z', aligned: true, proof: '', correction: '' }, // this month
+        { id: '2', createdAt: '2026-07-15T00:00:00.000Z', aligned: false, proof: '', correction: '' }, // this month
+        { id: '3', createdAt: '2026-06-15T00:00:00.000Z', aligned: true, proof: '', correction: '' }, // last month
+      ],
+      habitCheckIns: [
+        { id: '1', habitId: 'h', createdAt: '2026-08-01T00:00:00.000Z', followedThrough: true }, // this month
+        { id: '2', habitId: 'h', createdAt: '2026-06-05T00:00:00.000Z', followedThrough: false }, // last month
+      ],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    expect(stats.momentum.alignmentThisMonth).toEqual({ aligned: 1, total: 2 });
+    expect(stats.momentum.alignmentLastMonth).toEqual({ aligned: 1, total: 1 });
+    expect(stats.momentum.followThroughThisMonth).toEqual({ followed: 1, total: 1 });
+    expect(stats.momentum.followThroughLastMonth).toEqual({ followed: 0, total: 1 });
+    expect(stats.momentum.activeDaysThisMonth).toBe(2);
+    // Two distinct active days land in the 30-59-days-back window: the
+    // June 15 log entry and the June 5 habit check-in.
+    expect(stats.momentum.activeDaysLastMonth).toBe(2);
+  });
+
+  it('counts each active day once even with multiple entries on it', () => {
+    const data = {
+      ...emptyAppData,
+      logEntries: [
+        { id: '1', createdAt: '2026-08-01T08:00:00.000Z', aligned: true, proof: '', correction: '' },
+        { id: '2', createdAt: '2026-08-01T20:00:00.000Z', aligned: true, proof: '', correction: '' },
+      ],
+    };
+    expect(computeGrowthStats(data, NOW).momentum.activeDaysThisMonth).toBe(1);
+  });
+});
+
 describe('formatDurationShort', () => {
   it('formats sub-minute durations as seconds', () => {
     expect(formatDurationShort(45)).toBe('45s');
