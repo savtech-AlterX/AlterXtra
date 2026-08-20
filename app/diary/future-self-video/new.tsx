@@ -43,6 +43,9 @@ function VideoPreview({ uri }: { uri: string }) {
   return <VideoView style={styles.preview} player={player} contentFit="cover" nativeControls />;
 }
 
+const MIN_UNLOCK_LOGS = 1;
+const MAX_UNLOCK_LOGS = 30;
+
 export default function RecordFutureSelfVideo() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
@@ -51,6 +54,8 @@ export default function RecordFutureSelfVideo() {
   const [question, setQuestion] = useState('');
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [answerDate, setAnswerDate] = useState(tomorrow());
+  const [lockMode, setLockMode] = useState<'date' | 'consistency'>('date');
+  const [unlockAfterLogEntries, setUnlockAfterLogEntries] = useState(5);
 
   async function record() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -88,12 +93,22 @@ export default function RecordFutureSelfVideo() {
   }
 
   const dateValid = isValidDateString(answerDate.trim());
-  const canSave = !!videoUri && dateValid;
+  const canSave = !!videoUri && (lockMode === 'date' ? dateValid : unlockAfterLogEntries >= MIN_UNLOCK_LOGS);
 
   function save() {
     if (!canSave || !videoUri) return;
-    addFutureSelfVideo(question.trim(), videoUri, answerDate.trim());
+    addFutureSelfVideo(
+      question.trim(),
+      videoUri,
+      lockMode === 'date' ? answerDate.trim() : tomorrow(),
+      lockMode,
+      lockMode === 'consistency' ? unlockAfterLogEntries : undefined
+    );
     router.back();
+  }
+
+  function adjustUnlockCount(delta: number) {
+    setUnlockAfterLogEntries((n) => Math.max(MIN_UNLOCK_LOGS, Math.min(MAX_UNLOCK_LOGS, n + delta)));
   }
 
   return (
@@ -138,12 +153,63 @@ export default function RecordFutureSelfVideo() {
         />
       </View>
 
-      <Text style={[typography.label, styles.spacer]}>ANSWER DATE (YYYY-MM-DD)</Text>
-      <HudTextInput value={answerDate} onChangeText={setAnswerDate} placeholder="2027-01-01" />
-      {answerDate.trim().length > 0 && !dateValid ? (
-        <Text style={[styles.hint, { color: colors.danger }]}>Enter a real date as YYYY-MM-DD.</Text>
+      <Text style={[typography.label, styles.spacer]}>WHEN DOES IT UNLOCK?</Text>
+      <View style={styles.lockModeRow}>
+        <Pressable
+          style={[styles.lockModeButton, lockMode === 'date' && styles.lockModeButtonActive]}
+          onPress={() => setLockMode('date')}
+          accessibilityRole="button"
+          accessibilityLabel="Unlock on a date"
+        >
+          <Text style={[styles.lockModeLabel, lockMode === 'date' && styles.lockModeLabelActive]}>ON A DATE</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.lockModeButton, lockMode === 'consistency' && styles.lockModeButtonActive]}
+          onPress={() => setLockMode('consistency')}
+          accessibilityRole="button"
+          accessibilityLabel="Unlock by showing up"
+        >
+          <Text style={[styles.lockModeLabel, lockMode === 'consistency' && styles.lockModeLabelActive]}>
+            BY SHOWING UP
+          </Text>
+        </Pressable>
+      </View>
+
+      {lockMode === 'date' ? (
+        <>
+          <HudTextInput value={answerDate} onChangeText={setAnswerDate} placeholder="2027-01-01" style={styles.spacer} />
+          {answerDate.trim().length > 0 && !dateValid ? (
+            <Text style={[styles.hint, { color: colors.danger }]}>Enter a real date as YYYY-MM-DD.</Text>
+          ) : (
+            <Text style={styles.hint}>Locked until this date — you'll then record your reply.</Text>
+          )}
+        </>
       ) : (
-        <Text style={styles.hint}>Locked until this date — you'll then record your reply.</Text>
+        <>
+          <View style={styles.stepperRow}>
+            <Pressable
+              onPress={() => adjustUnlockCount(-1)}
+              accessibilityRole="button"
+              accessibilityLabel="Fewer log entries required"
+              style={styles.stepperButton}
+            >
+              <Ionicons name="chevron-back" size={18} color={colors.glow} style={iconGlow} />
+            </Pressable>
+            <Text style={styles.stepperValue}>{unlockAfterLogEntries}</Text>
+            <Pressable
+              onPress={() => adjustUnlockCount(1)}
+              accessibilityRole="button"
+              accessibilityLabel="More log entries required"
+              style={styles.stepperButton}
+            >
+              <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
+            </Pressable>
+          </View>
+          <Text style={styles.hint}>
+            Locked until you've logged {unlockAfterLogEntries} Log Book {unlockAfterLogEntries === 1 ? 'entry' : 'entries'} after sealing this — no
+            calendar, just showing up.
+          </Text>
+        </>
       )}
 
       <GlowButton label="SEAL VIDEO" onPress={save} disabled={!canSave} style={styles.spacer} />
@@ -196,5 +262,54 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     color: colors.textMuted,
     fontSize: 12,
     lineHeight: 17,
+  },
+  lockModeRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  lockModeButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.borderDim,
+    alignItems: 'center',
+  },
+  lockModeButtonActive: {
+    borderColor: colors.glowStrong,
+    backgroundColor: colors.glowDim,
+  },
+  lockModeLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 11,
+    letterSpacing: 1,
+    color: colors.textMuted,
+  },
+  lockModeLabelActive: {
+    color: colors.glowStrong,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 20,
+    marginTop: 6,
+  },
+  stepperButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperValue: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 28,
+    color: colors.textPrimary,
+    minWidth: 50,
+    textAlign: 'center',
+    ...glowShadow,
   },
 });

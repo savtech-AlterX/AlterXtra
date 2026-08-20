@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { DissonanceReflection } from '../../src/components/DissonanceReflection';
 import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
@@ -103,6 +104,8 @@ export default function LogBook() {
               <StatBox value={alignedDays} label="ALIGNED DAYS" />
               <StatBox value={missedTarget} label="MISSED TARGET" />
             </GlowCard>
+
+            <DissonanceReflection />
 
             <Text style={typography.label}>RECENT ENTRIES</Text>
           </View>

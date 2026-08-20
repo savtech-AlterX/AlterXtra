@@ -98,6 +98,85 @@ function AlignmentTrend({ stats }: { stats: GrowthStats }) {
   );
 }
 
+function MomentumRow({
+  icon,
+  label,
+  thisValue,
+  lastValue,
+  suffix,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  thisValue: number;
+  lastValue: number;
+  suffix: string;
+}) {
+  const { colors, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+  const delta = thisValue - lastValue;
+  return (
+    <View style={styles.momentumRow}>
+      <Ionicons name={icon} size={16} color={colors.glow} style={iconGlow} />
+      <View style={styles.momentumTextBlock}>
+        <Text style={styles.momentumLabel}>{label}</Text>
+        <Text style={styles.momentumCompare}>
+          {thisValue}
+          {suffix} this month · {lastValue}
+          {suffix} last month
+        </Text>
+      </View>
+      {delta !== 0 && (
+        <View style={styles.deltaPill}>
+          <Ionicons name={delta > 0 ? 'trending-up' : 'trending-down'} size={12} color={delta > 0 ? colors.success : colors.danger} />
+          <Text style={[styles.deltaText, { color: delta > 0 ? colors.success : colors.danger }]}>
+            {delta > 0 ? '+' : ''}
+            {delta}
+            {suffix}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// Against your own 30-days-ago self, never against other users — a
+// leaderboard invites competing with strangers; this invites competing with
+// who you were.
+function MomentumComparison({ stats }: { stats: GrowthStats }) {
+  const styles = useThemedStyles(makeStyles);
+  const m = stats.momentum;
+  const hasData = m.activeDaysThisMonth > 0 || m.activeDaysLastMonth > 0;
+  if (!hasData) return null;
+
+  const rate = (r: { aligned?: number; followed?: number; total: number }) => {
+    const numerator = 'aligned' in r ? r.aligned! : r.followed!;
+    return r.total === 0 ? null : Math.round((numerator / r.total) * 100);
+  };
+  const alignThis = rate(m.alignmentThisMonth);
+  const alignLast = rate(m.alignmentLastMonth);
+  const followThis = rate(m.followThroughThisMonth);
+  const followLast = rate(m.followThroughLastMonth);
+
+  return (
+    <GlowCard style={styles.card}>
+      <Text style={styles.label}>YOU · 30 DAYS AGO VS NOW</Text>
+      <MomentumRow
+        icon="calendar-outline"
+        label="Days you showed up"
+        thisValue={m.activeDaysThisMonth}
+        lastValue={m.activeDaysLastMonth}
+        suffix="d"
+      />
+      {(alignThis !== null || alignLast !== null) && (
+        <MomentumRow icon="checkmark-circle-outline" label="Alignment rate" thisValue={alignThis ?? 0} lastValue={alignLast ?? 0} suffix="%" />
+      )}
+      {(followThis !== null || followLast !== null) && (
+        <MomentumRow icon="repeat-outline" label="Habit follow-through" thisValue={followThis ?? 0} lastValue={followLast ?? 0} suffix="%" />
+      )}
+    </GlowCard>
+  );
+}
+
 function IdentitySessionCard({
   session,
   onStart,
@@ -255,6 +334,8 @@ export default function Growth() {
           )}
 
           <AlignmentTrend stats={stats} />
+
+          <MomentumComparison stats={stats} />
 
           {stats.journalThenNow && (
             <GlowCard style={styles.card}>
@@ -469,5 +550,24 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontSize: 14,
     color: colors.textPrimary,
     lineHeight: 20,
+  },
+  momentumRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  momentumTextBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  momentumLabel: {
+    fontFamily: typography.body.fontFamily,
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+  momentumCompare: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 11,
+    color: colors.textMuted,
   },
 });

@@ -1,7 +1,8 @@
-import { AppData, Goal, IdentitySession, JournalEntry } from '../store/types';
+import { AppData, Goal, HabitCheckIn, IdentitySession, JournalEntry } from '../store/types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
+const MONTH_MS = 30 * DAY_MS;
 // Journal comparison rolls forward with a 30-day window rather than staying
 // pinned to the very first entry forever — see journalThenNow below.
 const THEN_NOW_WINDOW_MS = 30 * DAY_MS;
@@ -51,6 +52,35 @@ function alignmentRate(entries: AppData['logEntries'], from: Date, to: Date) {
   return { aligned, total: inRange.length };
 }
 
+function followThroughRate(checkIns: HabitCheckIn[], from: Date, to: Date) {
+  const inRange = checkIns.filter((c) => {
+    const t = new Date(c.createdAt).getTime();
+    return t >= from.getTime() && t < to.getTime();
+  });
+  const followed = inRange.filter((c) => c.followedThrough).length;
+  return { followed, total: inRange.length };
+}
+
+// Distinct calendar days with any logged activity in the `windowDays`-day
+// window ending on (and including) `to`, and the same for the equal-length
+// window immediately before it — walked day-by-day like computeStreakDays,
+// not via millisecond range math, so the day containing `to` is never
+// silently dropped by a boundary that lands exactly on it.
+function activeDayCounts(activeDayKeys: Set<string>, to: Date, windowDays: number) {
+  let thisWindow = 0;
+  let lastWindow = 0;
+  let cursor = to;
+  for (let i = 0; i < windowDays; i++) {
+    if (activeDayKeys.has(dateKeyOf(cursor))) thisWindow++;
+    cursor = new Date(cursor.getTime() - DAY_MS);
+  }
+  for (let i = 0; i < windowDays; i++) {
+    if (activeDayKeys.has(dateKeyOf(cursor))) lastWindow++;
+    cursor = new Date(cursor.getTime() - DAY_MS);
+  }
+  return { thisWindow, lastWindow };
+}
+
 export type GrowthStats = {
   daysSinceStart: number | null;
   // Consecutive days ending today with any logged activity — a session,
@@ -78,6 +108,18 @@ export type GrowthStats = {
   // 0 for weeks with no entries — total distinguishes "no data" from "0%".
   weeklyTrend: { weekStart: string; aligned: number; total: number; rate: number }[];
   journalThenNow: { then: JournalEntry; now: JournalEntry } | null;
+  // The user against their own 30-day-ago self, not against other users —
+  // three independent signals (showing up at all, staying aligned, following
+  // through on habits) rather than one blended score, since someone can move
+  // on one without the others.
+  momentum: {
+    activeDaysThisMonth: number;
+    activeDaysLastMonth: number;
+    alignmentThisMonth: { aligned: number; total: number };
+    alignmentLastMonth: { aligned: number; total: number };
+    followThroughThisMonth: { followed: number; total: number };
+    followThroughLastMonth: { followed: number; total: number };
+  };
   futureSelf: {
     letters: number;
     videosSealed: number;
@@ -100,6 +142,8 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
 
   const weekStart = new Date(now.getTime() - WEEK_MS);
   const twoWeeksStart = new Date(now.getTime() - 2 * WEEK_MS);
+  const monthStart = new Date(now.getTime() - MONTH_MS);
+  const twoMonthsStart = new Date(now.getTime() - 2 * MONTH_MS);
 
   const journalSorted = [...data.journalEntries].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -117,6 +161,8 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
   data.habitCheckIns.forEach((c) => addKey(c.createdAt));
   data.logEntries.forEach((e) => addKey(e.createdAt));
   data.journalEntries.forEach((e) => addKey(e.createdAt));
+
+  const momentumActiveDays = activeDayCounts(activeDayKeys, now, 30);
 
   const weeklyTrend = Array.from({ length: 8 }, (_, i) => {
     const weeksAgo = 7 - i; // 7 = oldest week, 0 = this week
@@ -148,6 +194,14 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
     },
     weeklyTrend,
     journalThenNow,
+    momentum: {
+      activeDaysThisMonth: momentumActiveDays.thisWindow,
+      activeDaysLastMonth: momentumActiveDays.lastWindow,
+      alignmentThisMonth: alignmentRate(data.logEntries, monthStart, now),
+      alignmentLastMonth: alignmentRate(data.logEntries, twoMonthsStart, monthStart),
+      followThroughThisMonth: followThroughRate(data.habitCheckIns, monthStart, now),
+      followThroughLastMonth: followThroughRate(data.habitCheckIns, twoMonthsStart, monthStart),
+    },
     futureSelf: {
       letters: data.futureSelfLetters.length,
       videosSealed: data.futureSelfVideos.length,

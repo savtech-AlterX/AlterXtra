@@ -4,9 +4,11 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AlterXtraIntro } from '../../src/components/AlterXtraIntro';
+import { FreshStartBanner } from '../../src/components/FreshStartBanner';
 import { GlowCard } from '../../src/components/GlowCard';
 import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
 import { HudScreen } from '../../src/components/HudScreen';
+import { IdentityVoiceNudge } from '../../src/components/IdentityVoiceNudge';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { LimitedBeliefsIntro } from '../../src/components/LimitedBeliefsIntro';
 
@@ -118,6 +120,9 @@ export default function Home() {
           </Text>
         )}
       </View>
+
+      <FreshStartBanner />
+      <IdentityVoiceNudge />
 
       {settings.showGoalBarOnHome && primaryGoal && <GoalCountdownBar goal={primaryGoal} />}
 
