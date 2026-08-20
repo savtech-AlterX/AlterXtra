@@ -42,7 +42,15 @@ export function AlterXtraIntro() {
   useEffect(() => {
     if (!eligible) return;
     const timer = setTimeout(() => {
-      alterXtraPresentRef.current?.(() => setVisible(true));
+      // The mascot is held off for now (see _layout.tsx) — when there's no
+      // present sequence to wait for, show the panel directly instead of
+      // never showing it at all, since this teaser is the actual point,
+      // the mascot animation was only ever the lead-in to it.
+      if (alterXtraPresentRef.current) {
+        alterXtraPresentRef.current(() => setVisible(true));
+      } else {
+        setVisible(true);
+      }
     }, DELAY_MS);
     return () => clearTimeout(timer);
   }, [eligible, alterXtraPresentRef]);

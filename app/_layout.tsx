@@ -29,7 +29,11 @@ function ThemedApp() {
                 animation: 'fade',
               }}
             />
-            <MascotCompanion />
+            {/* Held off for now — plan is to bring the avatar/mascot
+                companion back after the app is published. Everything it
+                depends on (MascotCueContext, the Alter-Xtra present
+                sequence, the art) is left in place; this is the only line
+                that needs to come back to re-enable it. */}
           </MascotCueProvider>
         </AppLockGate>
       </AppDataProvider>
