@@ -1,0 +1,23 @@
+name: Create development builds
+
+# Runs automatically on every push to the main branch, and can also be
+# triggered manually from the Workflows tab on the EAS dashboard (or with
+# `eas workflow:run .eas/workflows/create-development-builds.yml`) — no
+# local CLI required either way once this file exists in the repo.
+on:
+  push:
+    branches: ['claude/hello-46bydk']
+
+jobs:
+  build_ios:
+    name: Build iOS (development)
+    type: build
+    params:
+      platform: ios
+      profile: development
+  build_android:
+    name: Build Android (development)
+    type: build
+    params:
+      platform: android
+      profile: development
