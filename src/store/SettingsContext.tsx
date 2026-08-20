@@ -8,6 +8,10 @@ type Settings = {
   dailyReminderEnabled: boolean;
   dailyReminderHour: number;
   dailyReminderMinute: number;
+  // Weekdays the reminder fires on, 1-7 with 1 = Sunday (expo-notifications'
+  // WEEKLY trigger convention) — kept in that convention end-to-end so no
+  // translation layer is needed between here and notifications.ts.
+  dailyReminderDays: number[];
   mascotEnabled: boolean;
   showGoalBarOnHome: boolean;
   // Limited Beliefs no longer sits in the onboarding stack — the avatar
@@ -23,6 +27,7 @@ const defaultSettings: Settings = {
   dailyReminderEnabled: false,
   dailyReminderHour: 19,
   dailyReminderMinute: 0,
+  dailyReminderDays: [1, 2, 3, 4, 5, 6, 7],
   mascotEnabled: true,
   showGoalBarOnHome: true,
   limitedBeliefsIntroShown: false,
@@ -33,7 +38,9 @@ type SettingsContextValue = {
   settings: Settings;
   isLoaded: boolean;
   setAppLockEnabled: (enabled: boolean) => void;
-  setDailyReminder: (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => void;
+  setDailyReminder: (
+    partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute' | 'dailyReminderDays'>>
+  ) => void;
   setMascotEnabled: (enabled: boolean) => void;
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
@@ -66,7 +73,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setDailyReminder = useCallback(
-    (partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute'>>) => {
+    (
+      partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute' | 'dailyReminderDays'>>
+    ) => {
       setSettings((prev) => ({ ...prev, ...partial }));
     },
     []

@@ -20,6 +20,17 @@ function formatTime(hour: number, minute: number) {
   return `${h12}:${String(minute).padStart(2, '0')} ${period}`;
 }
 
+// 1 = Sunday, matching expo-notifications' WEEKLY trigger convention.
+const DAY_LABELS: { day: number; label: string }[] = [
+  { day: 1, label: 'S' },
+  { day: 2, label: 'M' },
+  { day: 3, label: 'T' },
+  { day: 4, label: 'W' },
+  { day: 5, label: 'T' },
+  { day: 6, label: 'F' },
+  { day: 7, label: 'S' },
+];
+
 export default function Settings() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
@@ -41,7 +52,7 @@ export default function Settings() {
   async function handleReminderToggle(enabled: boolean) {
     setReminderBusy(true);
     if (enabled) {
-      const result = await enableDailyReminder(settings.dailyReminderHour, settings.dailyReminderMinute);
+      const result = await enableDailyReminder(settings.dailyReminderHour, settings.dailyReminderMinute, settings.dailyReminderDays);
       if (result.ok) {
         setDailyReminder({ dailyReminderEnabled: true });
       } else {
@@ -60,7 +71,21 @@ export default function Settings() {
     const minute = total % 60;
     setDailyReminder({ dailyReminderHour: hour, dailyReminderMinute: minute });
     if (settings.dailyReminderEnabled) {
-      await enableDailyReminder(hour, minute);
+      await enableDailyReminder(hour, minute, settings.dailyReminderDays);
+    }
+  }
+
+  async function toggleReminderDay(day: number) {
+    const current = settings.dailyReminderDays;
+    const isLast = current.length === 1 && current[0] === day;
+    if (isLast) {
+      Alert.alert('Pick at least one day', 'The reminder needs at least one day to fire on.');
+      return;
+    }
+    const days = current.includes(day) ? current.filter((d) => d !== day) : [...current, day].sort((a, b) => a - b);
+    setDailyReminder({ dailyReminderDays: days });
+    if (settings.dailyReminderEnabled) {
+      await enableDailyReminder(settings.dailyReminderHour, settings.dailyReminderMinute, days);
     }
   }
 
@@ -205,6 +230,25 @@ export default function Settings() {
               </View>
             </View>
           )}
+          {settings.dailyReminderEnabled && (
+            <View style={styles.dayRow}>
+              {DAY_LABELS.map(({ day, label }) => {
+                const active = settings.dailyReminderDays.includes(day);
+                return (
+                  <Text
+                    key={day}
+                    style={[styles.dayPill, active && styles.dayPillActive]}
+                    onPress={() => toggleReminderDay(day)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Toggle ${label === 'S' ? (day === 1 ? 'Sunday' : 'Saturday') : label} reminder`}
+                    accessibilityState={{ selected: active }}
+                  >
+                    {label}
+                  </Text>
+                );
+              })}
+            </View>
+          )}
         </GlowCard>
       )}
 
@@ -323,6 +367,31 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   timeSteppers: {
     flexDirection: 'row',
     gap: 18,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  dayPill: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: colors.borderDim,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 28,
+    fontFamily: typography.label.fontFamily,
+    fontSize: 12,
+    color: colors.textMuted,
+    overflow: 'hidden',
+  },
+  dayPillActive: {
+    borderColor: colors.glow,
+    color: colors.textPrimary,
+    backgroundColor: colors.glowDim,
+    ...glowShadow,
   },
   value: {
     fontFamily: typography.cardTitle.fontFamily,
