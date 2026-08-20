@@ -42,8 +42,7 @@ export default function AlterXtra() {
       <GlowCard strong style={styles.priceCard}>
         <Text style={styles.eyebrow}>ALTER X</Text>
         <Text style={styles.title}>Alter-Xtra</Text>
-        <Text style={styles.price}>$17.99</Text>
-        <Text style={styles.priceUnit}>one-time unlock</Text>
+        <Text style={styles.price}>$17.99 <Text style={styles.priceUnit}>one-time unlock</Text></Text>
         <Text style={styles.tagline}>
           Buy it once and keep it. No subscription, and nothing you've written ever expires.
         </Text>
