@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CloseToHome } from '../src/components/CloseToHome';
 import { EmptyState } from '../src/components/EmptyState';
 import { GlowCard } from '../src/components/GlowCard';
@@ -49,6 +50,20 @@ export default function Calendar() {
     return new Date(n.getFullYear(), n.getMonth(), 1);
   });
   const [selectedKey, setSelectedKey] = useState(todayKey);
+
+  // Today's cell reads as a live sensor, not a static marker — a slow
+  // breathing ring rather than a fixed border.
+  const pulse = useRef(new Animated.Value(0.35)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 0.35, duration: 1100, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
 
   const itemsByDay = useMemo(() => {
     const map = new Map<string, DayItem[]>();
@@ -133,66 +148,85 @@ export default function Calendar() {
         <Text style={typography.screenTitle}>CALENDAR</Text>
       </View>
 
-      <GlowCard style={styles.monthCard}>
-        <View style={styles.monthNav}>
-          <Pressable
-            onPress={() => changeMonth(-1)}
-            accessibilityRole="button"
-            accessibilityLabel="Previous month"
-            style={styles.navButton}
-          >
-            <Ionicons name="chevron-back" size={18} color={colors.glow} style={iconGlow} />
-          </Pressable>
-          <Text style={styles.monthLabel}>{monthLabel}</Text>
-          <Pressable
-            onPress={() => changeMonth(1)}
-            accessibilityRole="button"
-            accessibilityLabel="Next month"
-            style={styles.navButton}
-          >
-            <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
-          </Pressable>
-        </View>
+      <View style={styles.monthCardWrap}>
+        <GlowCard style={styles.monthCard}>
+          <LinearGradient
+            colors={['transparent', colors.glowStrong, 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.accentLine}
+          />
+          <View style={styles.monthNav}>
+            <Pressable
+              onPress={() => changeMonth(-1)}
+              accessibilityRole="button"
+              accessibilityLabel="Previous month"
+              style={styles.navButton}
+            >
+              <Ionicons name="chevron-back" size={18} color={colors.glow} style={iconGlow} />
+            </Pressable>
+            <Text style={styles.monthLabel}>{monthLabel}</Text>
+            <Pressable
+              onPress={() => changeMonth(1)}
+              accessibilityRole="button"
+              accessibilityLabel="Next month"
+              style={styles.navButton}
+            >
+              <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
+            </Pressable>
+          </View>
 
-        <View style={styles.weekdayRow}>
-          {WEEKDAY_LABELS.map((label, i) => (
-            <Text key={i} style={styles.weekdayLabel}>
-              {label}
-            </Text>
-          ))}
-        </View>
+          <View style={styles.weekdayRow}>
+            {WEEKDAY_LABELS.map((label, i) => (
+              <Text key={i} style={styles.weekdayLabel}>
+                {label}
+              </Text>
+            ))}
+          </View>
 
-        <View style={styles.grid}>
-          {grid.map((cell) => {
-            if (cell.day === null) return <View key={cell.key} style={styles.dayCell} />;
-            const isToday = cell.key === todayKey;
-            const isSelected = cell.key === selectedKey;
-            const hasActivity = (itemsByDay.get(cell.key)?.length ?? 0) > 0;
-            return (
-              <Pressable
-                key={cell.key}
-                style={[
-                  styles.dayCell,
-                  styles.dayTouchable,
-                  isToday && !isSelected && styles.dayCellToday,
-                  isSelected && styles.dayCellSelected,
-                ]}
-                onPress={() => setSelectedKey(cell.key)}
-                accessibilityRole="button"
-                accessibilityLabel={`${cell.key}${hasActivity ? ', has activity' : ''}`}
-                accessibilityState={{ selected: isSelected }}
-              >
-                <Text style={[styles.dayNumber, isSelected && styles.dayNumberSelected]}>
-                  {cell.day}
-                </Text>
-                <View style={[styles.dayDot, { opacity: hasActivity ? 1 : 0 }]} />
-              </Pressable>
-            );
-          })}
-        </View>
-      </GlowCard>
+          <View style={styles.grid}>
+            {grid.map((cell) => {
+              if (cell.day === null) return <View key={cell.key} style={styles.dayCell} />;
+              const isToday = cell.key === todayKey;
+              const isSelected = cell.key === selectedKey;
+              const hasActivity = (itemsByDay.get(cell.key)?.length ?? 0) > 0;
+              return (
+                <Pressable
+                  key={cell.key}
+                  style={[styles.dayCell, styles.dayTouchable, isSelected && styles.dayCellSelected]}
+                  onPress={() => setSelectedKey(cell.key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${cell.key}${hasActivity ? ', has activity' : ''}`}
+                  accessibilityState={{ selected: isSelected }}
+                >
+                  {isToday && !isSelected && (
+                    <Animated.View pointerEvents="none" style={[styles.todayRing, { opacity: pulse }]} />
+                  )}
+                  {isSelected && (
+                    <>
+                      <View pointerEvents="none" style={[styles.reticleTick, styles.reticleTL]} />
+                      <View pointerEvents="none" style={[styles.reticleTick, styles.reticleBR]} />
+                    </>
+                  )}
+                  <Text style={[styles.dayNumber, (isSelected || isToday) && styles.dayNumberActive]}>
+                    {cell.day}
+                  </Text>
+                  <View style={[styles.dayDot, { opacity: hasActivity ? 1 : 0 }]} />
+                </Pressable>
+              );
+            })}
+          </View>
+        </GlowCard>
+        <View pointerEvents="none" style={[styles.cornerBracket, styles.cornerTL]} />
+        <View pointerEvents="none" style={[styles.cornerBracket, styles.cornerTR]} />
+        <View pointerEvents="none" style={[styles.cornerBracket, styles.cornerBL]} />
+        <View pointerEvents="none" style={[styles.cornerBracket, styles.cornerBR]} />
+      </View>
 
-      <Text style={typography.label}>{selectedLabel.toUpperCase()}</Text>
+      <View style={styles.selectedHeader}>
+        <View style={styles.selectedHeaderBar} />
+        <Text style={typography.label}>{selectedLabel.toUpperCase()}</Text>
+      </View>
       {selectedItems.length === 0 ? (
         <EmptyState
           icon="calendar-outline"
@@ -225,9 +259,30 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
       alignItems: 'center',
       gap: 12,
     },
+    monthCardWrap: {
+      position: 'relative',
+    },
     monthCard: {
       gap: 14,
+      overflow: 'hidden',
     },
+    accentLine: {
+      position: 'absolute',
+      top: 0,
+      left: '18%',
+      right: '18%',
+      height: 2,
+    },
+    cornerBracket: {
+      position: 'absolute',
+      width: 16,
+      height: 16,
+      borderColor: colors.glowStrong,
+    },
+    cornerTL: { top: -1, left: -1, borderTopWidth: 2, borderLeftWidth: 2, borderTopLeftRadius: 4 },
+    cornerTR: { top: -1, right: -1, borderTopWidth: 2, borderRightWidth: 2, borderTopRightRadius: 4 },
+    cornerBL: { bottom: -1, left: -1, borderBottomWidth: 2, borderLeftWidth: 2, borderBottomLeftRadius: 4 },
+    cornerBR: { bottom: -1, right: -1, borderBottomWidth: 2, borderRightWidth: 2, borderBottomRightRadius: 4 },
     monthNav: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -251,12 +306,17 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     },
     weekdayRow: {
       flexDirection: 'row',
+      paddingBottom: 8,
+      marginBottom: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderDim,
     },
     weekdayLabel: {
       width: CELL_WIDTH,
       textAlign: 'center',
       fontFamily: typography.label.fontFamily,
       fontSize: 11,
+      letterSpacing: 1,
       color: colors.textMuted,
     },
     grid: {
@@ -270,32 +330,60 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
       justifyContent: 'center',
     },
     dayTouchable: {
+      position: 'relative',
       borderRadius: 10,
       borderWidth: 1,
       borderColor: 'transparent',
-    },
-    dayCellToday: {
-      borderColor: colors.borderDim,
     },
     dayCellSelected: {
       backgroundColor: colors.panelSolid,
       borderColor: colors.glowStrong,
     },
+    todayRing: {
+      position: 'absolute',
+      top: 2,
+      left: 2,
+      right: 2,
+      bottom: 2,
+      borderRadius: 8,
+      borderWidth: 1.5,
+      borderColor: colors.glow,
+    },
+    reticleTick: {
+      position: 'absolute',
+      width: 8,
+      height: 8,
+      borderColor: colors.glowStrong,
+    },
+    reticleTL: { top: 2, left: 2, borderTopWidth: 1.5, borderLeftWidth: 1.5 },
+    reticleBR: { bottom: 2, right: 2, borderBottomWidth: 1.5, borderRightWidth: 1.5 },
     dayNumber: {
-      fontFamily: typography.body.fontFamily,
-      fontSize: 14,
+      fontFamily: typography.label.fontFamily,
+      fontSize: 15,
+      letterSpacing: 0.5,
       color: colors.textPrimary,
     },
-    dayNumberSelected: {
+    dayNumberActive: {
       color: colors.glowStrong,
       ...glowShadow,
     },
     dayDot: {
       width: 5,
       height: 5,
-      borderRadius: 2.5,
       backgroundColor: colors.glow,
       marginTop: 3,
+      transform: [{ rotate: '45deg' }],
+    },
+    selectedHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    selectedHeaderBar: {
+      width: 3,
+      height: 14,
+      borderRadius: 2,
+      backgroundColor: colors.glow,
     },
     itemsList: {
       gap: 10,
