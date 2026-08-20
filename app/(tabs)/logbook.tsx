@@ -6,6 +6,7 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
+import { confirmDestructive } from '../../src/lib/confirm';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
@@ -93,7 +94,11 @@ export default function LogBook() {
               <Text style={styles.entryProof}>{entry.proof}</Text>
             </View>
             <Pressable
-              onPress={() => deleteLogEntry(entry.id)}
+              onPress={() =>
+                confirmDestructive('Delete Entry', 'This log entry will be permanently deleted.', 'Delete', () =>
+                  deleteLogEntry(entry.id)
+                )
+              }
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel="Delete log entry"

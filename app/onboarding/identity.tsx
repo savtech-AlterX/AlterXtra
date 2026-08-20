@@ -20,9 +20,15 @@ export default function ChooseIdentity() {
     name?: string;
     email?: string;
   }>();
-  const { data, setIdentity } = useAppData();
+  const { data, setIdentity, setOnboardingDraft } = useAppData();
   const [query, setQuery] = useState('');
-  const [customName, setCustomName] = useState('');
+  // Resume a custom archetype already typed before a force-quit.
+  const [customName, setCustomName] = useState(data.onboardingDraft?.customArchetype ?? '');
+
+  function updateCustomName(text: string) {
+    setCustomName(text);
+    setOnboardingDraft({ customArchetype: text });
+  }
 
   const filtered = useMemo(
     () => archetypes.filter((a) => a.label.toLowerCase().includes(query.toLowerCase())),
@@ -32,9 +38,9 @@ export default function ChooseIdentity() {
   function embody(label: string) {
     setIdentity({
       archetype: label,
-      icon: icon ?? data.identity?.icon ?? 'mystery',
-      name: name || data.identity?.name || 'there',
-      email: email || data.identity?.email,
+      icon: icon ?? data.onboardingDraft?.icon ?? data.identity?.icon ?? 'mystery',
+      name: name || data.onboardingDraft?.name || data.identity?.name || 'there',
+      email: email || data.onboardingDraft?.email || data.identity?.email,
     });
     router.push('/onboarding/loading');
   }
@@ -65,7 +71,7 @@ export default function ChooseIdentity() {
       <HudTextInput
         placeholder="e.g. Elite Founder"
         value={customName}
-        onChangeText={setCustomName}
+        onChangeText={updateCustomName}
       />
 
       <GlowButton

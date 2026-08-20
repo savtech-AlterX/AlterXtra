@@ -8,6 +8,7 @@ import { AppDataProvider } from '../src/store/AppDataContext';
 import { SettingsProvider } from '../src/store/SettingsContext';
 import { AppLockGate } from '../src/components/AppLockGate';
 import { MascotCompanion } from '../src/components/MascotCompanion';
+import { SaveErrorBanner } from '../src/components/SaveErrorBanner';
 import { Platform, View } from 'react-native';
 import { MascotCueProvider } from '../src/store/MascotCueContext';
 import { ThemeProvider } from '../src/theme/ThemeContext';
@@ -22,6 +23,7 @@ function ThemedApp() {
         <StatusBar style="light" />
         <AppLockGate>
           <MascotCueProvider>
+            <SaveErrorBanner />
             <Stack
               screenOptions={{
                 headerShown: false,

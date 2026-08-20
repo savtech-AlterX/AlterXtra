@@ -8,6 +8,17 @@ export type Identity = {
   createdAt?: string;
 };
 
+// What's been filled in so far on the onboarding screens, before there's a
+// real Identity to save. Persisted so a force-quit mid-onboarding doesn't
+// silently throw away a name/icon/email the user already typed — cleared the
+// moment a real Identity is created.
+export type OnboardingDraft = {
+  icon?: AppIconChoice;
+  name?: string;
+  email?: string;
+  customArchetype?: string;
+};
+
 export type LimitedBelief = {
   id: string;
   createdAt: string;
@@ -106,6 +117,7 @@ export type Album = {
 
 export type AppData = {
   identity: Identity | null;
+  onboardingDraft: OnboardingDraft | null;
   journalEntries: JournalEntry[];
   futureSelfLetters: FutureSelfLetter[];
   futureSelfVideos: FutureSelfVideo[];
@@ -121,6 +133,7 @@ export type AppData = {
 
 export const emptyAppData: AppData = {
   identity: null,
+  onboardingDraft: null,
   journalEntries: [],
   futureSelfLetters: [],
   futureSelfVideos: [],

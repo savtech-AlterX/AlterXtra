@@ -11,8 +11,17 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
+function pad(n: number) {
+  return String(n).padStart(2, '0');
+}
+
+// Local calendar day, not UTC — calendar.tsx's localDateKey() does the same
+// thing for the same reason: an entry written in the evening in a
+// negative-UTC-offset zone (or early morning in a positive one) shouldn't
+// default to the wrong day just because toISOString() reads in UTC.
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function formatDate(iso: string) {
