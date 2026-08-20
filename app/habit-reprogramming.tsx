@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
@@ -70,6 +70,27 @@ function CheckInRow({
   );
 }
 
+function ReprogrammedHabitCard({
+  habit,
+  checkIns,
+  onCheckIn,
+}: {
+  habit: HabitReprogram;
+  checkIns: HabitCheckIn[];
+  onCheckIn: (followedThrough: boolean) => void;
+}) {
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <GlowCard style={styles.entry}>
+      <Text style={styles.entryDate}>{formatDate(habit.createdAt)}</Text>
+      <Text style={styles.entryTitle}>{habit.trigger}</Text>
+      <Text style={styles.entryBody}>→ {habit.replacement}</Text>
+      {!!habit.identityStatement && <Text style={styles.entryIdentity}>"{habit.identityStatement}"</Text>}
+      <CheckInRow habit={habit} checkIns={checkIns} onCheckIn={onCheckIn} />
+    </GlowCard>
+  );
+}
+
 export default function HabitReprogramming() {
   const { colors, typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
@@ -99,62 +120,78 @@ export default function HabitReprogramming() {
   }
 
   return (
-    <HudScreen>
-      <StackHeader title="HABIT REPROGRAMMING" />
+    <HudScreen scroll={false} style={styles.noPad}>
+      {/* A FlatList so a long reprogramming history stays smooth instead of
+          every habit rendering into one giant ScrollView. */}
+      <FlatList
+        data={data.habitReprograms}
+        keyExtractor={(h) => h.id}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.headerBlock}>
+            <StackHeader title="HABIT REPROGRAMMING" />
 
-      <Text style={typography.label}>TRIGGER</Text>
-      <HudTextInput placeholder="e.g. Feeling stressed after work" value={trigger} onChangeText={setTrigger} />
+            <Text style={typography.label}>TRIGGER</Text>
+            <HudTextInput placeholder="e.g. Feeling stressed after work" value={trigger} onChangeText={setTrigger} />
 
-      <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
-      <HudTextInput placeholder="e.g. Doom-scrolling for hours" value={oldHabit} onChangeText={setOldHabit} />
+            <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
+            <HudTextInput placeholder="e.g. Doom-scrolling for hours" value={oldHabit} onChangeText={setOldHabit} />
 
-      <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
-      <HudTextInput
-        placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
-        value={replacement}
-        onChangeText={setReplacement}
+            <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
+            <HudTextInput
+              placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
+              value={replacement}
+              onChangeText={setReplacement}
+            />
+
+            <Text style={[typography.label, styles.spacer]}>REWARD</Text>
+            <HudTextInput
+              placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
+              value={reward}
+              onChangeText={setReward}
+            />
+
+            <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
+            <HudTextInput
+              placeholder="e.g. I follow through on what I commit to."
+              value={identityStatement}
+              onChangeText={setIdentityStatement}
+            />
+
+            <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
+
+            {data.habitReprograms.length > 0 && (
+              <Text style={[typography.label, styles.spacer]}>REPROGRAMMED HABITS</Text>
+            )}
+          </View>
+        }
+        renderItem={({ item }) => (
+          <ReprogrammedHabitCard
+            habit={item}
+            checkIns={data.habitCheckIns}
+            onCheckIn={(followedThrough) => addHabitCheckIn(item.id, followedThrough)}
+          />
+        )}
       />
-
-      <Text style={[typography.label, styles.spacer]}>REWARD</Text>
-      <HudTextInput
-        placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
-        value={reward}
-        onChangeText={setReward}
-      />
-
-      <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
-      <HudTextInput
-        placeholder="e.g. I follow through on what I commit to."
-        value={identityStatement}
-        onChangeText={setIdentityStatement}
-      />
-
-      <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
-
-      {data.habitReprograms.length > 0 && (
-        <>
-          <Text style={[typography.label, styles.spacer]}>REPROGRAMMED HABITS</Text>
-          {data.habitReprograms.map((h) => (
-            <GlowCard key={h.id} style={styles.entry}>
-              <Text style={styles.entryDate}>{formatDate(h.createdAt)}</Text>
-              <Text style={styles.entryTitle}>{h.trigger}</Text>
-              <Text style={styles.entryBody}>→ {h.replacement}</Text>
-              {!!h.identityStatement && <Text style={styles.entryIdentity}>"{h.identityStatement}"</Text>}
-              <CheckInRow
-                habit={h}
-                checkIns={data.habitCheckIns}
-                onCheckIn={(followedThrough) => addHabitCheckIn(h.id, followedThrough)}
-              />
-            </GlowCard>
-          ))}
-        </>
-      )}
     </HudScreen>
   );
 }
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  noPad: {
+    padding: 0,
+    gap: 0,
+  },
+  listContent: {
+    padding: 20,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  headerBlock: {
+    gap: 16,
+  },
   spacer: {
     marginTop: 6,
   },

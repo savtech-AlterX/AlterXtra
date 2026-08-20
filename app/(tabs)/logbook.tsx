@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { confirmDestructive } from '../../src/lib/confirm';
 import { useAppData } from '../../src/store/AppDataContext';
+import { LogEntry } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 import { fonts } from '../../src/theme/typography';
@@ -21,6 +22,31 @@ function StatBox({ value, label }: { value: string | number; label: string }) {
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
+  );
+}
+
+function LogEntryRow({ entry, onDelete }: { entry: LogEntry; onDelete: () => void }) {
+  const { colors, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+  const d = new Date(entry.createdAt);
+  return (
+    <GlowCard style={styles.entryRow}>
+      <View style={styles.entryDate}>
+        <Text style={styles.entryDateNum}>{d.getDate()}</Text>
+        <Text style={styles.entryDateMonth}>
+          {d.toLocaleDateString(undefined, { month: 'short' }).toUpperCase()}
+        </Text>
+      </View>
+      <View style={styles.entryBody}>
+        <Text style={[styles.entryTag, entry.aligned ? styles.tagAligned : styles.tagMisaligned]}>
+          ● {entry.aligned ? 'ALIGNED' : 'MISALIGNED'}
+        </Text>
+        <Text style={styles.entryProof}>{entry.proof}</Text>
+      </View>
+      <Pressable onPress={onDelete} hitSlop={8} accessibilityRole="button" accessibilityLabel="Delete log entry">
+        <Ionicons name="trash-outline" size={18} color={colors.danger} />
+      </Pressable>
+    </GlowCard>
   );
 }
 
@@ -43,77 +69,84 @@ export default function LogBook() {
   }, [data.logEntries]);
 
   return (
-    <HudScreen>
-      <View style={styles.titleRow}>
-        <CloseToHome />
-        <Text style={typography.screenTitle}>LOG BOOK</Text>
-      </View>
-
-      <GlowCard style={styles.logToday} onPress={() => router.push('/logbook/new')}>
-        <View style={styles.logTodayIcon}>
-          <Ionicons name="document-text-outline" size={22} color={colors.glow} style={iconGlow} />
-        </View>
-        <View style={styles.logTodayText}>
-          <Text style={styles.logTodayTitle}>LOG TODAY</Text>
-          <Text style={styles.logTodaySubtitle}>Record proof, misalignment, and corrections.</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
-      </GlowCard>
-
-      <Text style={typography.label}>THIS WEEK</Text>
-      <GlowCard style={styles.statsRow}>
-        <StatBox value={thisWeekEntries.length} label="ENTRIES" />
-        <StatBox value={alignedDays} label="ALIGNED DAYS" />
-        <StatBox value={missedTarget} label="MISSED TARGET" />
-      </GlowCard>
-
-      <Text style={typography.label}>RECENT ENTRIES</Text>
-      {data.logEntries.length === 0 && (
-        <EmptyState
-          icon="clipboard-outline"
-          title="NOTHING LOGGED YET"
-          body="Log a day and it appears here. The weekly counts above fill in as you go."
-          actionLabel="LOG TODAY"
-          onAction={() => router.push('/logbook/new')}
-        />
-      )}
-      {data.logEntries.slice(0, 20).map((entry) => {
-        const d = new Date(entry.createdAt);
-        return (
-          <GlowCard key={entry.id} style={styles.entryRow}>
-            <View style={styles.entryDate}>
-              <Text style={styles.entryDateNum}>{d.getDate()}</Text>
-              <Text style={styles.entryDateMonth}>
-                {d.toLocaleDateString(undefined, { month: 'short' }).toUpperCase()}
-              </Text>
+    <HudScreen scroll={false} style={styles.noPad}>
+      {/* A FlatList, not the ScrollView+map every other screen used to use —
+          this is the full log, unbounded, and it needs to stay smooth once
+          someone has hundreds of entries instead of only ever rendering the
+          most recent 20. */}
+      <FlatList
+        data={data.logEntries}
+        keyExtractor={(entry) => entry.id}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.headerBlock}>
+            <View style={styles.titleRow}>
+              <CloseToHome />
+              <Text style={typography.screenTitle}>LOG BOOK</Text>
             </View>
-            <View style={styles.entryBody}>
-              <Text style={[styles.entryTag, entry.aligned ? styles.tagAligned : styles.tagMisaligned]}>
-                ● {entry.aligned ? 'ALIGNED' : 'MISALIGNED'}
-              </Text>
-              <Text style={styles.entryProof}>{entry.proof}</Text>
-            </View>
-            <Pressable
-              onPress={() =>
-                confirmDestructive('Delete Entry', 'This log entry will be permanently deleted.', 'Delete', () =>
-                  deleteLogEntry(entry.id)
-                )
-              }
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Delete log entry"
-            >
-              <Ionicons name="trash-outline" size={18} color={colors.danger} />
-            </Pressable>
-          </GlowCard>
-        );
-      })}
+
+            <GlowCard style={styles.logToday} onPress={() => router.push('/logbook/new')}>
+              <View style={styles.logTodayIcon}>
+                <Ionicons name="document-text-outline" size={22} color={colors.glow} style={iconGlow} />
+              </View>
+              <View style={styles.logTodayText}>
+                <Text style={styles.logTodayTitle}>LOG TODAY</Text>
+                <Text style={styles.logTodaySubtitle}>Record proof, misalignment, and corrections.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
+            </GlowCard>
+
+            <Text style={typography.label}>THIS WEEK</Text>
+            <GlowCard style={styles.statsRow}>
+              <StatBox value={thisWeekEntries.length} label="ENTRIES" />
+              <StatBox value={alignedDays} label="ALIGNED DAYS" />
+              <StatBox value={missedTarget} label="MISSED TARGET" />
+            </GlowCard>
+
+            <Text style={typography.label}>RECENT ENTRIES</Text>
+          </View>
+        }
+        ListEmptyComponent={
+          <EmptyState
+            icon="clipboard-outline"
+            title="NOTHING LOGGED YET"
+            body="Log a day and it appears here. The weekly counts above fill in as you go."
+            actionLabel="LOG TODAY"
+            onAction={() => router.push('/logbook/new')}
+          />
+        }
+        renderItem={({ item }) => (
+          <LogEntryRow
+            entry={item}
+            onDelete={() =>
+              confirmDestructive('Delete Entry', 'This log entry will be permanently deleted.', 'Delete', () =>
+                deleteLogEntry(item.id)
+              )
+            }
+          />
+        )}
+      />
     </HudScreen>
   );
 }
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  // Zeroes out HudScreen's own padding/gap so the FlatList's
+  // contentContainerStyle is the only thing controlling spacing.
+  noPad: {
+    padding: 0,
+    gap: 0,
+  },
+  listContent: {
+    padding: 20,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  headerBlock: {
+    gap: 16,
+  },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
