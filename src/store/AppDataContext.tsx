@@ -16,6 +16,7 @@ import {
   JournalEntry,
   LimitedBelief,
   LogEntry,
+  OnboardingDraft,
   QuickNote,
 } from './types';
 import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
@@ -30,7 +31,12 @@ function makeId() {
 type AppDataContextValue = {
   data: AppData;
   isLoaded: boolean;
+  // True when the most recent write to local storage failed — the in-app
+  // state above is still correct, but it isn't safely on disk yet.
+  saveError: boolean;
+  retrySave: () => void;
   setIdentity: (identity: Identity) => void;
+  setOnboardingDraft: (partial: Partial<OnboardingDraft>) => void;
   addJournalEntry: (date: string, title: string, body: string) => void;
   addFutureSelfLetter: (title: string, body: string) => void;
   addFutureSelfVideo: (question: string, videoUri: string, answerDate: string) => void;
@@ -64,6 +70,7 @@ const AppDataContext = createContext<AppDataContextValue | null>(null);
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<AppData>(emptyAppData);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
@@ -86,17 +93,37 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setIsLoaded(true));
   }, []);
 
+  // A failed write here means whatever the user just did (a saved journal
+  // entry, a completed habit check-in) LOOKS saved — the screen already
+  // re-rendered from the optimistic state update — but isn't actually on
+  // disk. Surfacing that (and retrying) beats losing it silently on next
+  // launch with no sign anything went wrong.
+  const persist = useCallback((toSave: AppData) => {
+    const envelope = { schemaVersion: SCHEMA_VERSION, data: toSave };
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))
+      .then(() => setSaveError(false))
+      .catch(() => setSaveError(true));
+  }, []);
+
   useEffect(() => {
     if (!isLoaded) return;
-    const envelope = { schemaVersion: SCHEMA_VERSION, data };
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(envelope)).catch(() => {});
-  }, [data, isLoaded]);
+    persist(data);
+  }, [data, isLoaded, persist]);
+
+  const retrySave = useCallback(() => persist(data), [persist, data]);
 
   const setIdentity = useCallback((identity: Identity) => {
     setData((prev) => ({
       ...prev,
       identity: { ...identity, createdAt: prev.identity?.createdAt ?? identity.createdAt ?? new Date().toISOString() },
+      // Onboarding is done — the draft that was covering for a mid-flow
+      // force-quit has served its purpose.
+      onboardingDraft: null,
     }));
+  }, []);
+
+  const setOnboardingDraft = useCallback((partial: Partial<OnboardingDraft>) => {
+    setData((prev) => ({ ...prev, onboardingDraft: { ...prev.onboardingDraft, ...partial } }));
   }, []);
 
   const addJournalEntry = useCallback((date: string, title: string, body: string) => {
@@ -311,7 +338,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     () => ({
       data,
       isLoaded,
+      saveError,
+      retrySave,
       setIdentity,
+      setOnboardingDraft,
       addJournalEntry,
       addFutureSelfLetter,
       addFutureSelfVideo,
@@ -336,7 +366,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     [
       data,
       isLoaded,
+      saveError,
+      retrySave,
       setIdentity,
+      setOnboardingDraft,
       addJournalEntry,
       addFutureSelfLetter,
       addFutureSelfVideo,

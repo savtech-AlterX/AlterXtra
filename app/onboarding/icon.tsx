@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
+import { useAppData } from '../../src/store/AppDataContext';
 import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
@@ -32,7 +33,10 @@ export default function ChooseIcon() {
   const { colors, typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const [selected, setSelected] = useState<AppIconChoice>('mystery');
+  const { data, setOnboardingDraft } = useAppData();
+  // Resume a choice already made before a force-quit, instead of starting
+  // this pick over from scratch every time onboarding is re-entered.
+  const [selected, setSelected] = useState<AppIconChoice>(data.onboardingDraft?.icon ?? 'mystery');
 
   return (
     <HudScreen scroll={false}>
@@ -49,7 +53,10 @@ export default function ChooseIcon() {
           return (
             <View key={opt} style={styles.cardWrap}>
               <Pressable
-                onPress={() => setSelected(opt)}
+                onPress={() => {
+                  setSelected(opt);
+                  setOnboardingDraft({ icon: opt });
+                }}
                 style={[styles.box, isSelected && styles.boxSelected]}
                 accessibilityRole="button"
                 accessibilityLabel={`${opt} icon`}
@@ -67,7 +74,10 @@ export default function ChooseIcon() {
         <GlowButton
           label="CONTINUE"
           icon={<Ionicons name="arrow-forward" size={16} color="#02141f" />}
-          onPress={() => router.push({ pathname: '/onboarding/account', params: { icon: selected } })}
+          onPress={() => {
+            setOnboardingDraft({ icon: selected });
+            router.push({ pathname: '/onboarding/account', params: { icon: selected } });
+          }}
         />
       </View>
     </HudScreen>

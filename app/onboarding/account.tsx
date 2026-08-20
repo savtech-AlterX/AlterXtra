@@ -6,6 +6,7 @@ import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
+import { useAppData } from '../../src/store/AppDataContext';
 import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
@@ -15,11 +16,26 @@ export default function CreateAccount() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { icon } = useLocalSearchParams<{ icon: AppIconChoice }>();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const { data, setOnboardingDraft } = useAppData();
+  // Resume text already typed before a force-quit, instead of greeting a
+  // returning user with blank fields.
+  const [fullName, setFullName] = useState(data.onboardingDraft?.name ?? '');
+  const [email, setEmail] = useState(data.onboardingDraft?.email ?? '');
   const [consent, setConsent] = useState(false);
 
   const canContinue = fullName.trim().length > 0 && consent;
+
+  // Persisted as-typed, not just on Continue — a force-quit can happen
+  // while the user is still on this screen, before they ever tap through.
+  function updateFullName(text: string) {
+    setFullName(text);
+    setOnboardingDraft({ name: text });
+  }
+
+  function updateEmail(text: string) {
+    setEmail(text);
+    setOnboardingDraft({ email: text });
+  }
 
   function proceed() {
     router.push({
@@ -35,13 +51,13 @@ export default function CreateAccount() {
       <Text style={styles.subtitle}>Your transformation starts here.</Text>
 
       <Text style={typography.label}>FULL NAME</Text>
-      <HudTextInput placeholder="Your name" value={fullName} onChangeText={setFullName} />
+      <HudTextInput placeholder="Your name" value={fullName} onChangeText={updateFullName} />
 
       <Text style={[typography.label, styles.spacer]}>EMAIL (OPTIONAL)</Text>
       <HudTextInput
         placeholder="your@email.com"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={updateEmail}
         autoCapitalize="none"
         keyboardType="email-address"
       />

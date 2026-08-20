@@ -8,6 +8,7 @@ import { GlowButton } from '../../../../src/components/GlowButton';
 import { GlowCard } from '../../../../src/components/GlowCard';
 import { HudScreen } from '../../../../src/components/HudScreen';
 import { StackHeader } from '../../../../src/components/StackHeader';
+import { explainPermissionDenied } from '../../../../src/lib/permissionAlert';
 import { useAppData } from '../../../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../../../src/theme/useAppTheme';
 import type { AppTheme } from '../../../../src/theme/useAppTheme';
@@ -31,7 +32,10 @@ export default function RecordReply() {
 
   async function record() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) return;
+    if (!permission.granted) {
+      explainPermissionDenied('camera');
+      return;
+    }
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['videos'],
       videoMaxDuration: 120,

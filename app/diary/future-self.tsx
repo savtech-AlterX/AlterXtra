@@ -18,7 +18,12 @@ function formatDate(iso: string) {
 }
 
 function isUnlocked(answerDate: string) {
-  return new Date(`${answerDate}T00:00:00`).getTime() <= Date.now();
+  const t = new Date(`${answerDate}T00:00:00`).getTime();
+  // A malformed date should never permanently lock a recording out of
+  // reach — the entry screen now validates this going in, but this is the
+  // fail-open guard for any date that got saved before that check existed.
+  if (Number.isNaN(t)) return true;
+  return t <= Date.now();
 }
 
 type Mode = 'letters' | 'video';
