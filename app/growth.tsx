@@ -11,6 +11,7 @@ import { Sparkline } from '../src/components/Sparkline';
 import { computeGrowthStats, formatDurationShort, GrowthStats } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
 import { useSettings } from '../src/store/SettingsContext';
+import { useWinFlash } from '../src/store/WinFlashContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
@@ -175,7 +176,13 @@ export default function Growth() {
   const styles = useThemedStyles(makeStyles);
   const { data, startIdentitySession, stopIdentitySession } = useAppData();
   const { settings, setCelebratedStreakMilestone } = useSettings();
+  const winFlash = useWinFlash();
   const stats = useMemo(() => computeGrowthStats(data), [data]);
+
+  function handleStopSession() {
+    stopIdentitySession();
+    winFlash();
+  }
 
   const milestoneToCelebrate = STREAK_MILESTONES.find(
     (m) => stats.activeStreakDays >= m && settings.celebratedStreakMilestone < m
@@ -211,7 +218,7 @@ export default function Growth() {
       <IdentitySessionCard
         session={stats.identitySession}
         onStart={startIdentitySession}
-        onStop={stopIdentitySession}
+        onStop={handleStopSession}
         onViewHistory={() => router.push('/calendar')}
       />
 

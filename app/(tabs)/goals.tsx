@@ -10,6 +10,7 @@ import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { Goal } from '../../src/store/types';
+import { useWinFlash } from '../../src/store/WinFlashContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -117,18 +118,26 @@ export default function Goals() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, toggleGoalStep } = useAppData();
+  const winFlash = useWinFlash();
   const [celebrating, setCelebrating] = useState<string | null>(null);
 
   const primary = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
   const secondary = data.goals.length > 1 ? data.goals.slice(0, -1) : [];
 
-  // Toggle the step, and if that action is what finished the goal, celebrate it.
+  // Toggle the step, and if that action is what finished the goal, celebrate
+  // it with the full-screen moment instead — the edge flash would be
+  // redundant right on top of that.
   function handleToggleStep(goal: Goal, stepIndex: number) {
+    const wasDone = goal.steps[stepIndex]?.done ?? false;
     const wasComplete = goal.steps.length > 0 && goal.steps.every((s) => s.done);
     toggleGoalStep(goal.id, stepIndex);
     const next = goal.steps.map((s, i) => (i === stepIndex ? { ...s, done: !s.done } : s));
     const nowComplete = next.length > 0 && next.every((s) => s.done);
-    if (!wasComplete && nowComplete) setCelebrating(goal.objective);
+    if (!wasComplete && nowComplete) {
+      setCelebrating(goal.objective);
+    } else if (!wasDone) {
+      winFlash();
+    }
   }
 
   return (

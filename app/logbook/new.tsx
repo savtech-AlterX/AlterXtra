@@ -6,6 +6,7 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
+import { useWinFlash } from '../../src/store/WinFlashContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -14,6 +15,7 @@ export default function NewLogEntry() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { addLogEntry } = useAppData();
+  const winFlash = useWinFlash();
   const [aligned, setAligned] = useState<boolean | null>(null);
   const [proof, setProof] = useState('');
   const [correction, setCorrection] = useState('');
@@ -21,6 +23,7 @@ export default function NewLogEntry() {
   function save() {
     if (aligned === null || !proof.trim()) return;
     addLogEntry(aligned, proof.trim(), correction.trim());
+    if (aligned) winFlash();
     router.back();
   }
 

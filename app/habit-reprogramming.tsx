@@ -9,6 +9,7 @@ import { StackHeader } from '../src/components/StackHeader';
 import { hasCheckedInToday, successRate } from '../src/lib/habitCheckIns';
 import { useAppData } from '../src/store/AppDataContext';
 import { HabitCheckIn, HabitReprogram } from '../src/store/types';
+import { useWinFlash } from '../src/store/WinFlashContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
@@ -74,6 +75,7 @@ export default function HabitReprogramming() {
   const { colors, typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const { data, addHabitReprogram, addHabitCheckIn } = useAppData();
+  const winFlash = useWinFlash();
   const [trigger, setTrigger] = useState('');
   const [oldHabit, setOldHabit] = useState('');
   const [replacement, setReplacement] = useState('');
@@ -143,7 +145,10 @@ export default function HabitReprogramming() {
               <CheckInRow
                 habit={h}
                 checkIns={data.habitCheckIns}
-                onCheckIn={(followedThrough) => addHabitCheckIn(h.id, followedThrough)}
+                onCheckIn={(followedThrough) => {
+                  addHabitCheckIn(h.id, followedThrough);
+                  if (followedThrough) winFlash();
+                }}
               />
             </GlowCard>
           ))}
