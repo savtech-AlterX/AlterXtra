@@ -42,10 +42,7 @@ export default function AlterXtra() {
       <GlowCard strong style={styles.priceCard}>
         <Text style={styles.eyebrow}>ALTER X</Text>
         <Text style={styles.title}>Alter-Xtra</Text>
-        {/* No price shown until there's a real purchase behind it. Naming a
-            figure next to a button that does nothing is an App Store
-            rejection, and the price hasn't been decided yet. */}
-        <Text style={styles.price}>One-time unlock</Text>
+        <Text style={styles.price}>$17.99 <Text style={styles.priceUnit}>one-time unlock</Text></Text>
         <Text style={styles.tagline}>
           Buy it once and keep it. No subscription, and nothing you've written ever expires.
         </Text>
