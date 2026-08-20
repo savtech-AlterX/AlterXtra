@@ -72,7 +72,8 @@
             }
           ]
         }
-      ]
+      ],
+      "./plugins/withAndroidWidgetSdkVersions"
     ],
     "extra": {
       "router": {},
