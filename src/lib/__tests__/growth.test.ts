@@ -152,6 +152,77 @@ describe('computeGrowthStats', () => {
   });
 });
 
+describe('activeStreakDays', () => {
+  it('counts a streak from mixed activity types, not just sessions', () => {
+    const data = {
+      ...emptyAppData,
+      logEntries: [{ id: '1', createdAt: '2026-08-01T00:00:00.000Z', aligned: true, proof: '', correction: '' }],
+      habitCheckIns: [{ id: '1', habitId: 'h', createdAt: '2026-07-31T00:00:00.000Z', followedThrough: true }],
+      journalEntries: [{ id: '1', createdAt: '2026-07-30T00:00:00.000Z', date: '', body: 'x' }],
+    };
+    expect(computeGrowthStats(data, NOW).activeStreakDays).toBe(3);
+  });
+
+  it('ignores entries with unparseable timestamps instead of throwing', () => {
+    const data = {
+      ...emptyAppData,
+      habitCheckIns: [{ id: '1', habitId: 'h', createdAt: 'not-a-date', followedThrough: true }],
+    };
+    expect(() => computeGrowthStats(data, NOW)).not.toThrow();
+    expect(computeGrowthStats(data, NOW).activeStreakDays).toBe(0);
+  });
+});
+
+describe('recentAdds', () => {
+  it('counts beliefs, habits, and unlocked future-self videos from the last 7 days', () => {
+    const data = {
+      ...emptyAppData,
+      limitedBeliefs: [
+        { id: '1', createdAt: '2026-07-30T00:00:00.000Z', belief: 'x', origin: 'x', replacement: 'x' }, // this week
+        { id: '2', createdAt: '2026-07-01T00:00:00.000Z', belief: 'x', origin: 'x', replacement: 'x' }, // not this week
+      ],
+      habitReprograms: [
+        { id: '1', createdAt: '2026-08-01T00:00:00.000Z', trigger: 'x', oldHabit: 'x', replacement: 'x', reward: 'x', identityStatement: 'x' },
+      ],
+      futureSelfVideos: [
+        { id: '1', createdAt: 'x', question: '', videoUri: 'x', answerDate: '2026-07-31T00:00:00.000Z' }, // unlocked this week
+        { id: '2', createdAt: 'x', question: '', videoUri: 'x', answerDate: '2026-07-01T00:00:00.000Z' }, // unlocked earlier
+      ],
+    };
+    expect(computeGrowthStats(data, NOW).recentAdds).toEqual({ beliefs: 1, habits: 1, futureSelfUnlocked: 1 });
+  });
+});
+
+describe('weeklyTrend', () => {
+  it('returns 8 weeks oldest-first, with the last matching alignment.thisWeek', () => {
+    const data = {
+      ...emptyAppData,
+      logEntries: [{ id: '1', createdAt: '2026-08-01T00:00:00.000Z', aligned: true, proof: '', correction: '' }],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    expect(stats.weeklyTrend).toHaveLength(8);
+    expect(stats.weeklyTrend[7]).toEqual({ weekStart: stats.weeklyTrend[7].weekStart, aligned: 1, total: 1, rate: 100 });
+    expect(stats.weeklyTrend[7].aligned).toBe(stats.alignment.thisWeek.aligned);
+    expect(stats.weeklyTrend[7].total).toBe(stats.alignment.thisWeek.total);
+  });
+});
+
+describe('journalThenNow (rolling 30-day window)', () => {
+  it('picks the entry closest to 30 days before now when history is long enough', () => {
+    const data = {
+      ...emptyAppData,
+      journalEntries: [
+        { id: 'oldest', createdAt: '2026-06-01T00:00:00.000Z', date: '', body: 'oldest' },
+        { id: 'thirtyish', createdAt: '2026-07-01T00:00:00.000Z', date: '', body: 'thirtyish' }, // ~31 days before NOW
+        { id: 'newest', createdAt: NOW.toISOString(), date: '', body: 'newest' },
+      ],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    expect(stats.journalThenNow?.then.body).toBe('thirtyish');
+    expect(stats.journalThenNow?.now.body).toBe('newest');
+  });
+});
+
 describe('formatDurationShort', () => {
   it('formats sub-minute durations as seconds', () => {
     expect(formatDurationShort(45)).toBe('45s');

@@ -1,23 +1,43 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowCard } from '../src/components/GlowCard';
 import { EmptyState } from '../src/components/EmptyState';
 import { HudScreen } from '../src/components/HudScreen';
 import { CloseToHome } from '../src/components/CloseToHome';
+import { MilestoneCelebration } from '../src/components/MilestoneCelebration';
+import { Sparkline } from '../src/components/Sparkline';
 import { computeGrowthStats, formatDurationShort, GrowthStats } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
+import { useSettings } from '../src/store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
-function StatCard({ icon, value, label }: { icon: keyof typeof Ionicons.glyphMap; value: string; label: string }) {
-  const { colors, typography, iconGlow } = useAppTheme();
+// Streak-day thresholds that trigger a one-time celebration, largest first
+// so the highest one already crossed wins if several are hit at once (e.g.
+// importing a backup that jumps the streak straight past two thresholds).
+const STREAK_MILESTONES = [365, 100, 30, 7];
+
+function StatCard({
+  icon,
+  value,
+  label,
+  recentAdd,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  value: string;
+  label: string;
+  recentAdd?: number;
+}) {
+  const { colors, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   return (
     <GlowCard containerStyle={styles.statCardContainer} style={styles.statCard}>
       <Ionicons name={icon} size={20} color={colors.glow} style={iconGlow} />
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+      {!!recentAdd && <Text style={styles.statDelta}>+{recentAdd} this wk</Text>}
     </GlowCard>
   );
 }
@@ -48,16 +68,47 @@ function AlignmentBar({
   );
 }
 
+function AlignmentTrend({ stats }: { stats: GrowthStats }) {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+  const { thisWeek, lastWeek } = stats.alignment;
+  const thisRate = thisWeek.total === 0 ? null : Math.round((thisWeek.aligned / thisWeek.total) * 100);
+  const lastRate = lastWeek.total === 0 ? null : Math.round((lastWeek.aligned / lastWeek.total) * 100);
+  const delta = thisRate !== null && lastRate !== null ? thisRate - lastRate : null;
+
+  return (
+    <GlowCard style={styles.card}>
+      <View style={styles.trendHeaderRow}>
+        <Text style={styles.label}>ALIGNMENT TREND · 8 WEEKS</Text>
+        {delta !== null && delta !== 0 && (
+          <View style={styles.deltaPill}>
+            <Ionicons name={delta > 0 ? 'trending-up' : 'trending-down'} size={12} color={delta > 0 ? colors.success : colors.danger} />
+            <Text style={[styles.deltaText, { color: delta > 0 ? colors.success : colors.danger }]}>
+              {delta > 0 ? '+' : ''}
+              {delta}% vs last wk
+            </Text>
+          </View>
+        )}
+      </View>
+      <Sparkline points={stats.weeklyTrend} />
+      <AlignmentBar label="THIS WEEK" aligned={thisWeek.aligned} total={thisWeek.total} />
+      <AlignmentBar label="LAST WEEK" aligned={lastWeek.aligned} total={lastWeek.total} />
+    </GlowCard>
+  );
+}
+
 function IdentitySessionCard({
   session,
   onStart,
   onStop,
+  onViewHistory,
 }: {
   session: GrowthStats['identitySession'];
   onStart: () => void;
   onStop: () => void;
+  onViewHistory: () => void;
 }) {
-  const { colors, typography, iconGlow } = useAppTheme();
+  const { colors, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const [, forceTick] = useState(0);
 
@@ -73,41 +124,64 @@ function IdentitySessionCard({
     : 0;
 
   return (
-    <GlowCard
-      strong={!!session.active}
-      style={styles.sessionCard}
-      onPress={session.active ? onStop : onStart}
-    >
-      <View style={styles.sessionHeaderRow}>
+    <GlowCard strong={!!session.active} style={styles.sessionCard}>
+      <View style={styles.sessionStatsRow}>
+        <View style={styles.sessionStatBlock}>
+          <Text style={styles.sessionStatValue}>{session.currentStreakDays}d</Text>
+          <Text style={styles.sessionStatLabel}>STREAK</Text>
+        </View>
+        <View style={styles.sessionStatBlock}>
+          <Text style={styles.sessionStatValue}>{session.todaySessions}</Text>
+          <Text style={styles.sessionStatLabel}>TODAY</Text>
+        </View>
+        <View style={styles.sessionStatBlock}>
+          <Text style={styles.sessionStatValue}>{formatDurationShort(session.totalSeconds)}</Text>
+          <Text style={styles.sessionStatLabel}>TOTAL</Text>
+        </View>
+        <Pressable
+          onPress={onViewHistory}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel="View activity calendar"
+          style={styles.historyButton}
+        >
+          <Ionicons name="calendar-outline" size={18} color={colors.glow} style={iconGlow} />
+        </Pressable>
+      </View>
+
+      <Pressable
+        style={[styles.sessionAction, session.active && styles.sessionActionActive]}
+        onPress={session.active ? onStop : onStart}
+        accessibilityRole="button"
+        accessibilityLabel={session.active ? 'Stop identity session' : 'Start identity session'}
+      >
         <Ionicons
           name={session.active ? 'stop-circle-outline' : 'play-circle-outline'}
-          size={28}
+          size={24}
           color={colors.glow}
           style={iconGlow}
         />
-        <View style={styles.sessionHeaderText}>
-          <Text style={styles.sessionTitle}>{session.active ? 'IN IDENTITY' : 'START SESSION'}</Text>
-          <Text style={styles.sessionSubtitle}>
-            {session.active
-              ? `${formatDurationShort(elapsedSeconds)} elapsed · tap to stop`
-              : 'Tap to start practicing your identity right now'}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.sessionStatsRow}>
-        <Text style={styles.sessionStat}>{session.currentStreakDays}d streak</Text>
-        <Text style={styles.sessionStat}>{session.todaySessions} today</Text>
-        <Text style={styles.sessionStat}>{formatDurationShort(session.totalSeconds)} total</Text>
-      </View>
+        <Text style={styles.sessionActionText}>
+          {session.active ? `IN IDENTITY · ${formatDurationShort(elapsedSeconds)} · TAP TO STOP` : 'START SESSION'}
+        </Text>
+      </Pressable>
     </GlowCard>
   );
 }
 
 export default function Growth() {
-  const { colors, typography, iconGlow } = useAppTheme();
+  const router = useRouter();
+  const { typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const { data, startIdentitySession, stopIdentitySession } = useAppData();
+  const { settings, setCelebratedStreakMilestone } = useSettings();
   const stats = useMemo(() => computeGrowthStats(data), [data]);
+
+  const milestoneToCelebrate = STREAK_MILESTONES.find(
+    (m) => stats.activeStreakDays >= m && settings.celebratedStreakMilestone < m
+  );
+  const [dismissedMilestone, setDismissedMilestone] = useState<number | null>(null);
+  const showMilestone = milestoneToCelebrate !== undefined && dismissedMilestone !== milestoneToCelebrate;
 
   const hasAnyProgress =
     stats.beliefsRewired > 0 ||
@@ -127,14 +201,18 @@ export default function Growth() {
       </View>
 
       <GlowCard strong style={styles.hero}>
-        <Text style={styles.heroValue}>{stats.daysSinceStart ?? '—'}</Text>
-        <Text style={styles.heroLabel}>DAYS SINCE YOU BEGAN</Text>
+        <Text style={styles.heroValue}>{stats.activeStreakDays}</Text>
+        <Text style={styles.heroLabel}>DAY ACTIVE STREAK</Text>
+        {stats.daysSinceStart !== null && (
+          <Text style={styles.heroSubtext}>Started {stats.daysSinceStart} days ago</Text>
+        )}
       </GlowCard>
 
       <IdentitySessionCard
         session={stats.identitySession}
         onStart={startIdentitySession}
         onStop={stopIdentitySession}
+        onViewHistory={() => router.push('/calendar')}
       />
 
       {!hasAnyProgress ? (
@@ -146,19 +224,20 @@ export default function Growth() {
       ) : (
         <>
           <View style={styles.grid}>
-            <StatCard icon="bulb-outline" value={String(stats.beliefsRewired)} label="Beliefs Rewired" />
-            <StatCard icon="repeat-outline" value={String(stats.habitsReprogrammed)} label="Habits Reprogrammed" />
+            <StatCard icon="bulb-outline" value={String(stats.beliefsRewired)} label="Beliefs Rewired" recentAdd={stats.recentAdds.beliefs} />
+            <StatCard icon="repeat-outline" value={String(stats.habitsReprogrammed)} label="Habits Reprogrammed" recentAdd={stats.recentAdds.habits} />
             <StatCard icon="flag-outline" value={`${stats.goalsCompleted}/${stats.goalsTotal}`} label="Goals Completed" />
             <StatCard
               icon="videocam-outline"
               value={`${stats.futureSelf.videosUnlocked}/${stats.futureSelf.videosSealed}`}
               label="Future Self Unlocked"
+              recentAdd={stats.recentAdds.futureSelfUnlocked}
             />
           </View>
 
           {stats.habitFollowThrough.total > 0 && (
             <GlowCard style={styles.card}>
-              <Text style={typography.label}>HABIT FOLLOW-THROUGH</Text>
+              <Text style={styles.label}>HABIT FOLLOW-THROUGH</Text>
               <AlignmentBar
                 label="ALL CHECK-INS"
                 aligned={stats.habitFollowThrough.followed}
@@ -168,23 +247,11 @@ export default function Growth() {
             </GlowCard>
           )}
 
-          <GlowCard style={styles.card}>
-            <Text style={typography.label}>ALIGNMENT</Text>
-            <AlignmentBar
-              label="THIS WEEK"
-              aligned={stats.alignment.thisWeek.aligned}
-              total={stats.alignment.thisWeek.total}
-            />
-            <AlignmentBar
-              label="LAST WEEK"
-              aligned={stats.alignment.lastWeek.aligned}
-              total={stats.alignment.lastWeek.total}
-            />
-          </GlowCard>
+          <AlignmentTrend stats={stats} />
 
           {stats.journalThenNow && (
             <GlowCard style={styles.card}>
-              <Text style={typography.label}>THEN VS NOW</Text>
+              <Text style={styles.label}>THEN VS NOW</Text>
               <View style={styles.thenNowBlock}>
                 <Text style={styles.thenNowLabel}>
                   THEN · {new Date(stats.journalThenNow.then.createdAt).toLocaleDateString()}
@@ -204,6 +271,16 @@ export default function Growth() {
             </GlowCard>
           )}
         </>
+      )}
+
+      {showMilestone && milestoneToCelebrate !== undefined && (
+        <MilestoneCelebration
+          days={milestoneToCelebrate}
+          onDismiss={() => {
+            setCelebratedStreakMilestone(milestoneToCelebrate);
+            setDismissedMilestone(milestoneToCelebrate);
+          }}
+        />
       )}
     </HudScreen>
   );
@@ -233,50 +310,70 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     letterSpacing: 2,
     marginTop: 4,
   },
+  heroSubtext: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 8,
+  },
+  label: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 11,
+    color: colors.glow,
+    letterSpacing: 2,
+  },
   sessionCard: {
     gap: 14,
   },
-  sessionHeaderRow: {
+  sessionStatsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
-  sessionHeaderText: {
+  sessionStatBlock: {
     flex: 1,
     gap: 2,
   },
-  sessionTitle: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 13,
-    letterSpacing: 2,
+  sessionStatValue: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 17,
     color: colors.textPrimary,
+    ...glowShadow,
   },
-  sessionSubtitle: {
-    fontFamily: typography.bodyMuted.fontFamily,
-    fontSize: 12,
-    lineHeight: 17,
-    color: colors.textSecondary,
+  sessionStatLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
   },
-  sessionStatsRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  sessionStat: {
-    fontFamily: typography.bodyMuted.fontFamily,
-    fontSize: 12,
-    color: colors.glow,
-  },
-  emptyCard: {
+  historyButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 32,
+    justifyContent: 'center',
   },
-  emptyText: {
-    fontFamily: typography.bodyMuted.fontFamily,
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
+  sessionAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sessionActionActive: {
+    borderColor: colors.glow,
+    backgroundColor: colors.glowDim,
+  },
+  sessionActionText: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 12,
+    letterSpacing: 1.5,
+    color: colors.textPrimary,
   },
   grid: {
     flexDirection: 'row',
@@ -301,8 +398,29 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     lineHeight: 17,
     color: colors.textSecondary,
   },
+  statDelta: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 10,
+    color: colors.success,
+    letterSpacing: 0.5,
+  },
   card: {
     gap: 12,
+  },
+  trendHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  deltaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  deltaText: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
   alignmentRow: {
     gap: 6,

@@ -20,6 +20,10 @@ type Settings = {
   limitedBeliefsIntroShown: boolean;
   // Same idea, for the mascot's one-time lean-walk-reveal toward Alter-Xtra.
   alterXtraIntroShown: boolean;
+  // Highest active-streak-day milestone (7/30/100/365) already celebrated on
+  // the Growth screen, so crossing it again after a reinstall or on every
+  // visit doesn't re-fire the celebration.
+  celebratedStreakMilestone: number;
 };
 
 const defaultSettings: Settings = {
@@ -32,6 +36,7 @@ const defaultSettings: Settings = {
   showGoalBarOnHome: true,
   limitedBeliefsIntroShown: false,
   alterXtraIntroShown: false,
+  celebratedStreakMilestone: 0,
 };
 
 type SettingsContextValue = {
@@ -45,6 +50,7 @@ type SettingsContextValue = {
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
   setAlterXtraIntroShown: (shown: boolean) => void;
+  setCelebratedStreakMilestone: (days: number) => void;
   resetSettings: () => void;
 };
 
@@ -97,6 +103,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, alterXtraIntroShown: shown }));
   }, []);
 
+  const setCelebratedStreakMilestone = useCallback((days: number) => {
+    setSettings((prev) => ({ ...prev, celebratedStreakMilestone: days }));
+  }, []);
+
   // "Reset All Data" is meant to hand back a genuine beginner's experience —
   // that has to include the once-only onboarding flags, not just app data,
   // or a returning tester (or a real user starting over) never sees them again.
@@ -114,6 +124,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,
+      setCelebratedStreakMilestone,
       resetSettings,
     }),
     [
@@ -125,6 +136,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,
+      setCelebratedStreakMilestone,
       resetSettings,
     ]
   );
