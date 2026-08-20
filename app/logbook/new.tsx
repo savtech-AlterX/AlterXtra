@@ -100,8 +100,8 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     backgroundColor: 'rgba(63, 224, 138, 0.1)',
   },
   toggleMisaligned: {
-    borderColor: colors.danger,
-    backgroundColor: 'rgba(255, 77, 94, 0.1)',
+    borderColor: colors.glow,
+    backgroundColor: colors.glowDim,
   },
   toggleLabel: {
     fontFamily: typography.label.fontFamily,

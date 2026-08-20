@@ -100,6 +100,7 @@ describe('computeGrowthStats', () => {
         totalSeconds: 0,
         todaySessions: 0,
         currentStreakDays: 0,
+        bestStreakDays: 0,
       });
     });
 
@@ -170,6 +171,45 @@ describe('activeStreakDays', () => {
     };
     expect(() => computeGrowthStats(data, NOW)).not.toThrow();
     expect(computeGrowthStats(data, NOW).activeStreakDays).toBe(0);
+  });
+});
+
+describe('bestStreakDays', () => {
+  it('keeps the longest historical streak even after it is broken', () => {
+    const data = {
+      ...emptyAppData,
+      // A 4-day streak (7/1-7/4) well in the past, then a gap, then a
+      // 1-day streak today. Best should stay at 4 even though current is 1.
+      logEntries: [
+        { id: '1', createdAt: '2026-07-01T00:00:00.000Z', aligned: true, proof: '', correction: '' },
+        { id: '2', createdAt: '2026-07-02T00:00:00.000Z', aligned: true, proof: '', correction: '' },
+        { id: '3', createdAt: '2026-07-03T00:00:00.000Z', aligned: true, proof: '', correction: '' },
+        { id: '4', createdAt: '2026-07-04T00:00:00.000Z', aligned: true, proof: '', correction: '' },
+        { id: '5', createdAt: NOW.toISOString(), aligned: true, proof: '', correction: '' },
+      ],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    expect(stats.activeStreakDays).toBe(1);
+    expect(stats.bestStreakDays).toBe(4);
+  });
+
+  it('is 0 when there is no activity at all', () => {
+    expect(computeGrowthStats(emptyAppData, NOW).bestStreakDays).toBe(0);
+  });
+});
+
+describe('correctionsWritten', () => {
+  it('counts log entries with a non-empty correction, aligned or not', () => {
+    const data = {
+      ...emptyAppData,
+      logEntries: [
+        { id: '1', createdAt: 'x', aligned: false, proof: '', correction: 'Go to bed earlier' },
+        { id: '2', createdAt: 'x', aligned: true, proof: '', correction: 'Keep the streak going' },
+        { id: '3', createdAt: 'x', aligned: false, proof: '', correction: '' },
+        { id: '4', createdAt: 'x', aligned: false, proof: '', correction: '   ' },
+      ],
+    };
+    expect(computeGrowthStats(data, NOW).correctionsWritten).toBe(2);
   });
 });
 

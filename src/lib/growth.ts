@@ -38,6 +38,23 @@ function computeStreakDays(activeDayKeys: Set<string>, now: Date): number {
   return streak;
 }
 
+// Longest run of consecutive calendar days anywhere in `activeDayKeys`, not
+// just the one ending today — a broken current streak shouldn't erase the
+// record the user actually set.
+function computeLongestStreak(activeDayKeys: Set<string>): number {
+  if (activeDayKeys.size === 0) return 0;
+  const sortedTimes = Array.from(activeDayKeys)
+    .map((k) => new Date(`${k}T00:00:00.000Z`).getTime())
+    .sort((a, b) => a - b);
+  let longest = 1;
+  let current = 1;
+  for (let i = 1; i < sortedTimes.length; i++) {
+    current = sortedTimes[i] - sortedTimes[i - 1] === DAY_MS ? current + 1 : 1;
+    longest = Math.max(longest, current);
+  }
+  return longest;
+}
+
 function isGoalComplete(goal: Goal) {
   return goal.steps.length > 0 && goal.steps.every((s) => s.done);
 }
@@ -57,10 +74,18 @@ export type GrowthStats = {
   // habit check-in, log entry, or journal entry. Unlike daysSinceStart this
   // actually reflects engagement, not just account age.
   activeStreakDays: number;
+  // The longest streak ever reached, current or not — shown alongside
+  // activeStreakDays so a broken streak still reads as a record kept, not a
+  // loss.
+  bestStreakDays: number;
   beliefsRewired: number;
   habitsReprogrammed: number;
   goalsCompleted: number;
   goalsTotal: number;
+  // Every log entry with a correction actually written, aligned or not —
+  // the constructive output of a "miss," reframed as its own count rather
+  // than folded into a negative "missed target" tally.
+  correctionsWritten: number;
   // Counts from the last 7 days, for the "+N this week" badges on the stat
   // grid. Goals has no completion timestamp in the data model, so there's
   // no equivalent delta for goalsCompleted.
@@ -90,6 +115,7 @@ export type GrowthStats = {
     totalSeconds: number;
     todaySessions: number;
     currentStreakDays: number;
+    bestStreakDays: number;
   };
 };
 
@@ -130,10 +156,12 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
   return {
     daysSinceStart,
     activeStreakDays: computeStreakDays(activeDayKeys, now),
+    bestStreakDays: computeLongestStreak(activeDayKeys),
     beliefsRewired: data.limitedBeliefs.length,
     habitsReprogrammed: data.habitReprograms.length,
     goalsCompleted: data.goals.filter(isGoalComplete).length,
     goalsTotal: data.goals.length,
+    correctionsWritten: data.logEntries.filter((e) => e.correction && e.correction.trim().length > 0).length,
     recentAdds: {
       beliefs: data.limitedBeliefs.filter((b) => new Date(b.createdAt).getTime() >= weekStart.getTime()).length,
       habits: data.habitReprograms.filter((h) => new Date(h.createdAt).getTime() >= weekStart.getTime()).length,
@@ -199,5 +227,6 @@ function computeIdentitySessionStats(sessions: AppData['identitySessions'], now:
     totalSeconds,
     todaySessions: completed.filter((s) => dateKey(s.endedAt as string) === dateKeyOf(now)).length,
     currentStreakDays: computeStreakDays(sessionDayKeys, now),
+    bestStreakDays: computeLongestStreak(sessionDayKeys),
   };
 }

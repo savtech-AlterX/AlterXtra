@@ -30,7 +30,7 @@ export default function LogBook() {
   const router = useRouter();
   const { data, deleteLogEntry } = useAppData();
 
-  const { thisWeekEntries, alignedDays, missedTarget } = useMemo(() => {
+  const { thisWeekEntries, alignedDays, corrections } = useMemo(() => {
     const now = Date.now();
     const weekEntries = data.logEntries.filter(
       (e) => now - new Date(e.createdAt).getTime() <= WEEK_MS
@@ -38,7 +38,7 @@ export default function LogBook() {
     return {
       thisWeekEntries: weekEntries,
       alignedDays: weekEntries.filter((e) => e.aligned).length,
-      missedTarget: weekEntries.filter((e) => !e.aligned).length,
+      corrections: weekEntries.filter((e) => !e.aligned).length,
     };
   }, [data.logEntries]);
 
@@ -64,7 +64,7 @@ export default function LogBook() {
       <GlowCard style={styles.statsRow}>
         <StatBox value={thisWeekEntries.length} label="ENTRIES" />
         <StatBox value={alignedDays} label="ALIGNED DAYS" />
-        <StatBox value={missedTarget} label="MISSED TARGET" />
+        <StatBox value={corrections} label="CORRECTIONS" />
       </GlowCard>
 
       <Text style={typography.label}>RECENT ENTRIES</Text>
@@ -208,7 +208,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     color: colors.success,
   },
   tagMisaligned: {
-    color: colors.danger,
+    color: colors.glow,
   },
   entryProof: {
     fontFamily: typography.body.fontFamily,

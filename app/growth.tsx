@@ -130,6 +130,9 @@ function IdentitySessionCard({
         <View style={styles.sessionStatBlock}>
           <Text style={styles.sessionStatValue}>{session.currentStreakDays}d</Text>
           <Text style={styles.sessionStatLabel}>STREAK</Text>
+          {session.bestStreakDays > session.currentStreakDays && (
+            <Text style={styles.sessionStatBest}>best {session.bestStreakDays}d</Text>
+          )}
         </View>
         <View style={styles.sessionStatBlock}>
           <Text style={styles.sessionStatValue}>{session.todaySessions}</Text>
@@ -198,7 +201,8 @@ export default function Growth() {
     stats.alignment.lastWeek.total > 0 ||
     stats.futureSelf.letters > 0 ||
     stats.futureSelf.videosSealed > 0 ||
-    stats.habitFollowThrough.total > 0;
+    stats.habitFollowThrough.total > 0 ||
+    stats.correctionsWritten > 0;
 
   return (
     <HudScreen>
@@ -210,6 +214,9 @@ export default function Growth() {
       <GlowCard strong style={styles.hero}>
         <Text style={styles.heroValue}>{stats.activeStreakDays}</Text>
         <Text style={styles.heroLabel}>DAY ACTIVE STREAK</Text>
+        {stats.bestStreakDays > stats.activeStreakDays && (
+          <Text style={styles.heroBest}>Personal best: {stats.bestStreakDays} days — keep going to beat it</Text>
+        )}
         {stats.daysSinceStart !== null && (
           <Text style={styles.heroSubtext}>Started {stats.daysSinceStart} days ago</Text>
         )}
@@ -239,6 +246,11 @@ export default function Growth() {
               value={`${stats.futureSelf.videosUnlocked}/${stats.futureSelf.videosSealed}`}
               label="Future Self Unlocked"
               recentAdd={stats.recentAdds.futureSelfUnlocked}
+            />
+            <StatCard
+              icon="construct-outline"
+              value={String(stats.correctionsWritten)}
+              label="Corrections Written"
             />
           </View>
 
@@ -317,6 +329,13 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     letterSpacing: 2,
     marginTop: 4,
   },
+  heroBest: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    color: colors.glow,
+    marginTop: 8,
+    textAlign: 'center',
+  },
   heroSubtext: {
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 12,
@@ -352,6 +371,12 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontSize: 9,
     color: colors.textMuted,
     letterSpacing: 1.5,
+  },
+  sessionStatBest: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 9,
+    color: colors.glow,
+    marginTop: 1,
   },
   historyButton: {
     width: 34,
