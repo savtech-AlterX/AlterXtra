@@ -12,7 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.alterxtra.app",
       "entitlements": {
-        "com.apple.security.application-groups": ["group.com.alterxtra.app"]
+        "com.apple.security.application-groups": [
+          "group.com.alterxtra.app"
+        ]
       }
     },
     "android": {
@@ -73,12 +75,18 @@
           ]
         }
       ],
-      "./plugins/withAndroidWidgetSdkVersions"
+      "./plugins/withAndroidWidgetSdkVersions",
+      "react-native-cloud-storage",
+      "expo-web-browser"
     ],
     "extra": {
       "router": {},
       "eas": {
         "projectId": "38ed9e85-27b8-48c6-afcd-f95aa83eabf8"
+      },
+      "googleDriveClientId": {
+        "ios": "",
+        "android": ""
       }
     },
     "owner": "techsavs-team",

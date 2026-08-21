@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Platform, StyleSheet, Switch, Text, View } from 'react-native';
+import { CloudBackupSection } from '../../src/components/CloudBackupSection';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
@@ -271,8 +272,10 @@ export default function Settings() {
       <GlowCard style={styles.card}>
         <Text style={typography.label}>BACKUP</Text>
         <Text style={styles.lockDesc}>
-          Save your journal, beliefs, habits, goals, and notes to a file so a lost or upgraded phone doesn't
-          erase them. Photos and videos stay device-only and aren't included yet.
+          Your journal, beliefs, habits, goals, and notes are already included if this device backs up to
+          iCloud or Google automatically — that protects you if the phone is lost or reset. Exporting a file
+          below is the only way to move everything to a new device or platform. Photos and videos stay
+          device-only and aren't included yet.
         </Text>
       </GlowCard>
 
@@ -291,6 +294,8 @@ export default function Settings() {
         onPress={handleImport}
         disabled={backupBusy}
       />
+
+      <CloudBackupSection />
 
       <GlowButton
         label="PRIVACY POLICY"
