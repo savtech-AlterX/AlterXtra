@@ -9,7 +9,7 @@ export type BackupFile = {
   data: AppData;
 };
 
-function buildBackup(data: AppData): BackupFile {
+export function buildBackup(data: AppData): BackupFile {
   return { app: 'AlterX', schemaVersion: SCHEMA_VERSION, exportedAt: new Date().toISOString(), data };
 }
 
