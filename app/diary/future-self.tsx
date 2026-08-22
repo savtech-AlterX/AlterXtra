@@ -8,7 +8,9 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
+import { isFutureSelfUnlocked, logEntriesSince } from '../../src/lib/futureSelfUnlock';
 import { useAppData } from '../../src/store/AppDataContext';
+import { FutureSelfVideo, LogEntry } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -17,13 +19,13 @@ function formatDate(iso: string) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function isUnlocked(answerDate: string) {
-  const t = new Date(`${answerDate}T00:00:00`).getTime();
-  // A malformed date should never permanently lock a recording out of
-  // reach — the entry screen now validates this going in, but this is the
-  // fail-open guard for any date that got saved before that check existed.
-  if (Number.isNaN(t)) return true;
-  return t <= Date.now();
+function lockStatusLabel(video: FutureSelfVideo, logEntries: LogEntry[]) {
+  if (video.lockMode === 'consistency') {
+    const target = video.unlockAfterLogEntries ?? 1;
+    const progress = Math.min(logEntriesSince(logEntries, video.createdAt), target);
+    return `LOCKED · ${progress}/${target} LOGS`;
+  }
+  return `LOCKED UNTIL ${video.answerDate}`;
 }
 
 type Mode = 'letters' | 'video';
@@ -144,7 +146,7 @@ function VideoPanel() {
           />
         )}
         {data.futureSelfVideos.map((v) => {
-          const unlocked = isUnlocked(v.answerDate);
+          const unlocked = isFutureSelfUnlocked(v, data.logEntries);
           const completed = !!v.replyVideoUri;
           return (
             <GlowCard key={v.id} style={styles.entry}>
@@ -162,7 +164,7 @@ function VideoPanel() {
                     !completed && unlocked && { color: colors.accentTeal },
                   ]}
                 >
-                  {completed ? 'COMPLETED' : unlocked ? 'READY TO ANSWER' : `LOCKED UNTIL ${v.answerDate}`}
+                  {completed ? 'COMPLETED' : unlocked ? 'READY TO ANSWER' : lockStatusLabel(v, data.logEntries)}
                 </Text>
               </View>
               {!!v.question && <Text style={styles.entryBody}>{v.question}</Text>}

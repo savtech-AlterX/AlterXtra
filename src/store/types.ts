@@ -83,6 +83,12 @@ export type FutureSelfVideo = {
   question: string;
   videoUri: string;
   answerDate: string;
+  // Absent (or 'date') means the original date-only behavior: unlocked once
+  // answerDate has passed. 'consistency' ignores the date for unlocking and
+  // instead requires unlockAfterLogEntries Log Book entries since createdAt
+  // — a payoff earned by showing up, not by the calendar turning over.
+  lockMode?: 'date' | 'consistency';
+  unlockAfterLogEntries?: number;
   replyVideoUri?: string;
   repliedAt?: string;
 };
