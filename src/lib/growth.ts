@@ -68,6 +68,132 @@ function alignmentRate(entries: AppData['logEntries'], from: Date, to: Date) {
   return { aligned, total: inRange.length };
 }
 
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+export const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export type HeatmapCell = { date: string | null; level: number; beforeStart: boolean };
+
+// A GitHub-contributions-style grid: one column per week, oldest to newest,
+// each column 7 cells Sunday->Saturday. Padded to whole weeks at both ends
+// (blank cells before the first Sunday, blank cells after today) so every
+// column is a real calendar week, not a ragged partial one.
+function computeHeatmap(activityCounts: Map<string, number>, startDate: Date | null, now: Date): HeatmapCell[][] {
+  const rangeStart = new Date(now.getTime() - 363 * DAY_MS);
+  const gridStart = new Date(rangeStart);
+  gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+  const gridEnd = new Date(now);
+  gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
+
+  const startOfStartDate = startDate ? new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()) : null;
+
+  const weeks: HeatmapCell[][] = [];
+  let cursor = new Date(gridStart);
+  while (cursor.getTime() <= gridEnd.getTime()) {
+    const week: HeatmapCell[] = [];
+    for (let d = 0; d < 7; d++) {
+      if (cursor.getTime() > now.getTime()) {
+        week.push({ date: null, level: 0, beforeStart: false });
+      } else {
+        const key = dateKeyOf(cursor);
+        const count = activityCounts.get(key) ?? 0;
+        const beforeStart = startOfStartDate ? cursor.getTime() < startOfStartDate.getTime() : false;
+        week.push({ date: key, level: Math.min(4, count), beforeStart });
+      }
+      cursor = new Date(cursor.getTime() + DAY_MS);
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+// Rule-based "digest": a handful of real, computed patterns rather than
+// generic copy — each insight only appears once there's enough of a sample
+// to say something honest about it.
+function computeInsights(data: AppData, now: Date): string[] {
+  const insights: string[] = [];
+
+  const byWeekday = new Map<number, { aligned: number; total: number }>();
+  data.logEntries.forEach((e) => {
+    const t = new Date(e.createdAt);
+    if (Number.isNaN(t.getTime())) return;
+    const bucket = byWeekday.get(t.getDay()) ?? { aligned: 0, total: 0 };
+    bucket.total += 1;
+    if (e.aligned) bucket.aligned += 1;
+    byWeekday.set(t.getDay(), bucket);
+  });
+  let bestWeekday: { wd: number; rate: number } | null = null;
+  byWeekday.forEach((v, wd) => {
+    if (v.total < 3) return;
+    const rate = v.aligned / v.total;
+    if (!bestWeekday || rate > bestWeekday.rate) bestWeekday = { wd, rate };
+  });
+  if (bestWeekday !== null && (bestWeekday as { wd: number; rate: number }).rate >= 0.6) {
+    const b = bestWeekday as { wd: number; rate: number };
+    insights.push(`You're most consistent on ${WEEKDAY_NAMES[b.wd]}s — ${Math.round(b.rate * 100)}% aligned.`);
+  }
+
+  const journalDayKeys = new Set(
+    data.journalEntries.map((e) => dateKey(e.createdAt)).filter((k): k is string => k !== null)
+  );
+  const journalSplit = splitByDayMembership(data.logEntries, journalDayKeys);
+  if (journalSplit) {
+    const diff = Math.round((journalSplit.inRate - journalSplit.outRate) * 100);
+    if (diff >= 10) {
+      insights.push(`You're ${diff}% more likely to log an aligned day when you've also journaled that day.`);
+    }
+  }
+
+  const sessionDayKeys = new Set(
+    data.identitySessions
+      .filter((s) => s.endedAt)
+      .map((s) => dateKey(s.endedAt as string))
+      .filter((k): k is string => k !== null)
+  );
+  const sessionSplit = splitByDayMembership(data.logEntries, sessionDayKeys);
+  if (sessionSplit) {
+    const diff = Math.round((sessionSplit.inRate - sessionSplit.outRate) * 100);
+    if (diff >= 10) {
+      insights.push(`Days you run an identity session, you're ${diff}% more likely to log aligned.`);
+    }
+  }
+
+  const hours = data.identitySessions
+    .map((s) => new Date(s.startedAt).getHours())
+    .filter((h) => !Number.isNaN(h));
+  if (hours.length >= 5) {
+    const morning = hours.filter((h) => h >= 5 && h < 12).length;
+    const afternoon = hours.filter((h) => h >= 12 && h < 17).length;
+    const evening = hours.length - morning - afternoon;
+    const max = Math.max(morning, afternoon, evening);
+    if (max / hours.length >= 0.5) {
+      const label = max === morning ? 'the morning' : max === afternoon ? 'the afternoon' : 'the evening';
+      insights.push(`Most of your identity sessions happen in ${label}.`);
+    }
+  }
+
+  return insights.slice(0, 4);
+}
+
+// Compares the log-entry alignment rate on days a marker event happened
+// (`memberKeys`) vs days it didn't — null if either side doesn't have enough
+// samples to say anything meaningful.
+function splitByDayMembership(entries: AppData['logEntries'], memberKeys: Set<string>) {
+  let inAligned = 0, inTotal = 0, outAligned = 0, outTotal = 0;
+  entries.forEach((e) => {
+    const key = dateKey(e.createdAt);
+    if (!key) return;
+    if (memberKeys.has(key)) {
+      inTotal += 1;
+      if (e.aligned) inAligned += 1;
+    } else {
+      outTotal += 1;
+      if (e.aligned) outAligned += 1;
+    }
+  });
+  if (inTotal < 5 || outTotal < 5) return null;
+  return { inRate: inAligned / inTotal, outRate: outAligned / outTotal };
+}
+
 export type GrowthStats = {
   daysSinceStart: number | null;
   // Consecutive days ending today with any logged activity — a session,
@@ -103,6 +229,15 @@ export type GrowthStats = {
   // 0 for weeks with no entries — total distinguishes "no data" from "0%".
   weeklyTrend: { weekStart: string; aligned: number; total: number; rate: number }[];
   journalThenNow: { then: JournalEntry; now: JournalEntry } | null;
+  // A year-long GitHub-contributions-style grid, oldest week first, for the
+  // long-range "have I actually kept this up" view the 8-week trend can't
+  // show. Days before identity.createdAt are flagged so the UI can render
+  // them as "not started yet" rather than "missed."
+  activityHeatmap: HeatmapCell[][];
+  // Rule-based pattern callouts (best weekday, journaling/session vs
+  // alignment correlation, time-of-day tendency) — each only appears once
+  // there's a real sample to back it, so this can be an empty array.
+  insights: string[];
   futureSelf: {
     letters: number;
     videosSealed: number;
@@ -133,9 +268,12 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
   const journalThenNow = computeJournalThenNow(journalSorted, now);
 
   const activeDayKeys = new Set<string>();
+  const activityCounts = new Map<string, number>();
   const addKey = (iso: string) => {
     const key = dateKey(iso);
-    if (key) activeDayKeys.add(key);
+    if (!key) return;
+    activeDayKeys.add(key);
+    activityCounts.set(key, (activityCounts.get(key) ?? 0) + 1);
   };
   data.identitySessions.forEach((s) => {
     if (s.endedAt) addKey(s.endedAt);
@@ -176,6 +314,8 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
     },
     weeklyTrend,
     journalThenNow,
+    activityHeatmap: computeHeatmap(activityCounts, data.identity?.createdAt ? new Date(data.identity.createdAt) : null, now),
+    insights: computeInsights(data, now),
     futureSelf: {
       letters: data.futureSelfLetters.length,
       videosSealed: data.futureSelfVideos.length,
@@ -229,4 +369,34 @@ function computeIdentitySessionStats(sessions: AppData['identitySessions'], now:
     currentStreakDays: computeStreakDays(sessionDayKeys, now),
     bestStreakDays: computeLongestStreak(sessionDayKeys),
   };
+}
+
+// Plain text rather than a rendered image — there's no image-capture native
+// module in this project, and every other export in the app (backup) already
+// shares as a file/text through the OS share sheet, so this follows the same
+// pattern instead of adding a new native dependency for one feature.
+export function buildShareReport(data: AppData, stats: GrowthStats): string {
+  const lines: string[] = [];
+  const archetype = data.identity?.archetype;
+  lines.push('MY ALTERX GROWTH REPORT');
+  if (stats.daysSinceStart !== null) {
+    lines.push(`${stats.daysSinceStart} days into becoming ${archetype ?? 'who I want to be'}.`);
+  }
+  lines.push('');
+  lines.push(`🔥 ${stats.activeStreakDays}-day active streak (best: ${stats.bestStreakDays})`);
+  lines.push(`💡 ${stats.beliefsRewired} beliefs rewired`);
+  lines.push(`🔁 ${stats.habitsReprogrammed} habits reprogrammed`);
+  lines.push(`🚩 ${stats.goalsCompleted}/${stats.goalsTotal} goals completed`);
+  lines.push(`🛠️ ${stats.correctionsWritten} corrections written`);
+  if (stats.alignment.thisWeek.total > 0) {
+    const pct = Math.round((stats.alignment.thisWeek.aligned / stats.alignment.thisWeek.total) * 100);
+    lines.push(`📈 ${pct}% aligned this week`);
+  }
+  if (stats.insights.length > 0) {
+    lines.push('');
+    lines.push(stats.insights[0]);
+  }
+  lines.push('');
+  lines.push('— via AlterX');
+  return lines.join('\n');
 }
