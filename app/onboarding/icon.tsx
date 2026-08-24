@@ -13,18 +13,27 @@ const OPTIONS: AppIconChoice[] = ['male', 'mystery', 'female'];
 
 // The original icon-choice glyphs: the head silhouette merges into a
 // question mark (same linework as the real app icon), not the plain suit
-// outline used for the identity mark elsewhere in the app.
+// outline used for the identity mark elsewhere in the app. Each renders at
+// a fixed shared width (GLYPH_WIDTH) with its own height computed from its
+// own aspect ratio, rather than a fixed height for both — the two aren't
+// drawn to the same canvas (the female mark's flowing hair makes it taller
+// relative to its width than the male mark), and forcing a shared height
+// squeezed the taller one down narrower than the other, reading as smaller.
+// (react-native-web's Image doesn't derive a resizeMode="contain" box's
+// height from an `aspectRatio` style the way RN does — it renders at the
+// source file's raw pixel height instead — so this computes explicit
+// per-icon width/height rather than relying on that.)
+const GLYPH_WIDTH = 66;
 const ICON_CHOICE_MARKS = {
-  male: require('../../assets/icon-choice-male.png'),
-  female: require('../../assets/icon-choice-female.png'),
+  male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
+  female: { source: require('../../assets/icon-choice-female.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (716 / 362) },
 } as const;
 
 function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
   const styles = useThemedStyles(makeStyles);
   if (option === 'male' || option === 'female') {
-    return (
-      <Image source={ICON_CHOICE_MARKS[option]} style={[styles.glyphImage, { tintColor: tint }]} resizeMode="contain" />
-    );
+    const { source, width, height } = ICON_CHOICE_MARKS[option];
+    return <Image source={source} style={[styles.glyphImage, { tintColor: tint, width, height }]} resizeMode="contain" />;
   }
   return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
 }
@@ -123,7 +132,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   glyphImage: {
     width: 66,
-    height: 66 * 1.67,
   },
   mysteryGlyph: {
     fontFamily: typography.screenTitle.fontFamily,
