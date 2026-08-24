@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { EmptyState } from '../src/components/EmptyState';
 import { HudScreen } from '../src/components/HudScreen';
 import { CloseToHome } from '../src/components/CloseToHome';
 import { MilestoneCelebration } from '../src/components/MilestoneCelebration';
 import { Sparkline } from '../src/components/Sparkline';
-import { computeGrowthStats, formatDurationShort, GrowthStats } from '../src/lib/growth';
+import { buildShareReport, computeGrowthStats, formatDurationShort, GrowthStats, HeatmapCell, MONTH_ABBR } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
 import { useSettings } from '../src/store/SettingsContext';
 import { useWinFlash } from '../src/store/WinFlashContext';
@@ -252,9 +253,87 @@ function IdentitySessionCard({
   );
 }
 
+const HEAT_LEVEL_OPACITY = [0.12, 0.35, 0.55, 0.78, 1];
+
+function HeatmapCellView({ cell }: { cell: HeatmapCell }) {
+  const styles = useThemedStyles(makeStyles);
+  if (!cell.date) return <View style={[styles.heatCell, styles.heatCellEmpty]} />;
+  if (cell.beforeStart) return <View style={[styles.heatCell, styles.heatCellBeforeStart]} />;
+  return <View style={[styles.heatCell, styles.heatCellFilled, { opacity: HEAT_LEVEL_OPACITY[cell.level] }]} />;
+}
+
+function ActivityHeatmap({ weeks }: { weeks: HeatmapCell[][] }) {
+  const styles = useThemedStyles(makeStyles);
+
+  // A month label appears above a column only when that column's first real
+  // day is the first one this screen has seen from that month — mirrors the
+  // GitHub-contributions look without repeating the label every column.
+  let lastMonth = -1;
+  const monthLabels = weeks.map((week) => {
+    const firstDated = week.find((c) => c.date);
+    if (!firstDated?.date) return '';
+    const month = Number(firstDated.date.slice(5, 7)) - 1;
+    if (month === lastMonth) return '';
+    lastMonth = month;
+    return MONTH_ABBR[month];
+  });
+
+  return (
+    <GlowCard style={styles.card}>
+      <Text style={styles.label}>ACTIVITY · PAST YEAR</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View>
+          <View style={styles.heatMonthRow}>
+            {monthLabels.map((label, i) => (
+              <Text key={i} style={styles.heatMonthLabel}>
+                {label}
+              </Text>
+            ))}
+          </View>
+          <View style={styles.heatGrid}>
+            {weeks.map((week, wi) => (
+              <View key={wi} style={styles.heatColumn}>
+                {week.map((cell, di) => (
+                  <HeatmapCellView key={di} cell={cell} />
+                ))}
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+      <View style={styles.heatLegendRow}>
+        <Text style={styles.heatLegendLabel}>LESS</Text>
+        {HEAT_LEVEL_OPACITY.map((opacity, level) => (
+          <View key={level} style={[styles.heatCell, styles.heatCellFilled, { opacity }]} />
+        ))}
+        <Text style={styles.heatLegendLabel}>MORE</Text>
+      </View>
+    </GlowCard>
+  );
+}
+
+function InsightsCard({ insights }: { insights: string[] }) {
+  const { colors, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+  if (insights.length === 0) return null;
+  return (
+    <GlowCard style={styles.card}>
+      <Text style={styles.label}>PATTERNS</Text>
+      <View style={styles.insightsList}>
+        {insights.map((line, i) => (
+          <View key={i} style={styles.insightRow}>
+            <Ionicons name="sparkles-outline" size={14} color={colors.glow} style={iconGlow} />
+            <Text style={styles.insightText}>{line}</Text>
+          </View>
+        ))}
+      </View>
+    </GlowCard>
+  );
+}
+
 export default function Growth() {
   const router = useRouter();
-  const { typography } = useAppTheme();
+  const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const { data, startIdentitySession, stopIdentitySession } = useAppData();
   const { settings, setCelebratedStreakMilestone } = useSettings();
@@ -264,6 +343,10 @@ export default function Growth() {
   function handleStopSession() {
     stopIdentitySession();
     winFlash();
+  }
+
+  function handleShare() {
+    Share.share({ message: buildShareReport(data, stats) }).catch(() => {});
   }
 
   const milestoneToCelebrate = STREAK_MILESTONES.find(
@@ -349,6 +432,10 @@ export default function Growth() {
 
           <MomentumComparison stats={stats} />
 
+          <InsightsCard insights={stats.insights} />
+
+          <ActivityHeatmap weeks={stats.activityHeatmap} />
+
           {stats.journalThenNow && (
             <GlowCard style={styles.card}>
               <Text style={styles.label}>THEN VS NOW</Text>
@@ -370,6 +457,13 @@ export default function Growth() {
               </View>
             </GlowCard>
           )}
+
+          <GlowButton
+            label="SHARE PROGRESS"
+            variant="outline"
+            icon={<Ionicons name="share-outline" size={16} color={colors.glow} style={iconGlow} />}
+            onPress={handleShare}
+          />
         </>
       )}
 
@@ -575,6 +669,68 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontSize: 14,
     color: colors.textPrimary,
     lineHeight: 20,
+  },
+  heatMonthRow: {
+    flexDirection: 'row',
+    marginLeft: 20,
+  },
+  heatMonthLabel: {
+    width: 14,
+    marginRight: 3,
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    color: colors.textMuted,
+  },
+  heatGrid: {
+    flexDirection: 'row',
+  },
+  heatColumn: {
+    marginRight: 3,
+    gap: 3,
+  },
+  heatCell: {
+    width: 11,
+    height: 11,
+    borderRadius: 3,
+  },
+  heatCellEmpty: {
+    backgroundColor: 'transparent',
+  },
+  heatCellFilled: {
+    backgroundColor: colors.glow,
+  },
+  heatCellBeforeStart: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.borderDim,
+  },
+  heatLegendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 10,
+  },
+  heatLegendLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    color: colors.textMuted,
+    letterSpacing: 0.5,
+    marginHorizontal: 2,
+  },
+  insightsList: {
+    gap: 10,
+  },
+  insightRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  insightText: {
+    flex: 1,
+    fontFamily: typography.body.fontFamily,
+    fontSize: 13.5,
+    lineHeight: 19,
+    color: colors.textPrimary,
   },
   momentumRow: {
     flexDirection: 'row',

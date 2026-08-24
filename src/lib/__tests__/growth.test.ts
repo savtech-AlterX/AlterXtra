@@ -1,4 +1,4 @@
-import { computeGrowthStats, formatDurationShort } from '../growth';
+import { buildShareReport, computeGrowthStats, formatDurationShort } from '../growth';
 import { emptyAppData } from '../../store/types';
 
 const NOW = new Date('2026-08-01T12:00:00.000Z');
@@ -210,6 +210,91 @@ describe('correctionsWritten', () => {
       ],
     };
     expect(computeGrowthStats(data, NOW).correctionsWritten).toBe(2);
+  });
+});
+
+describe('activityHeatmap', () => {
+  it('is padded to whole weeks and every cell falls on a real calendar day', () => {
+    const stats = computeGrowthStats(emptyAppData, NOW);
+    stats.activityHeatmap.forEach((week) => {
+      expect(week).toHaveLength(7);
+    });
+    // Every non-future cell's weekday should match its column position (0=Sun..6=Sat).
+    stats.activityHeatmap.forEach((week) => {
+      week.forEach((cell, dayIndex) => {
+        if (!cell.date) return;
+        expect(new Date(`${cell.date}T00:00:00.000Z`).getUTCDay()).toBe(dayIndex);
+      });
+    });
+  });
+
+  it('marks today with the right activity level and leaves future cells null', () => {
+    const data = {
+      ...emptyAppData,
+      logEntries: [
+        { id: '1', createdAt: NOW.toISOString(), aligned: true, proof: '', correction: '' },
+        { id: '2', createdAt: NOW.toISOString(), aligned: false, proof: '', correction: '' },
+      ],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    const lastWeek = stats.activityHeatmap[stats.activityHeatmap.length - 1];
+    const todayKey = NOW.toISOString().slice(0, 10);
+    const todayCell = lastWeek.find((c) => c.date === todayKey);
+    expect(todayCell?.level).toBe(2);
+    const futureCells = stats.activityHeatmap.flat().filter((c) => c.date && c.date > todayKey);
+    expect(futureCells).toHaveLength(0);
+  });
+
+  it('flags days before the identity was created', () => {
+    const data = {
+      ...emptyAppData,
+      identity: { archetype: 'Warrior', icon: 'male' as const, name: 'Sav', createdAt: NOW.toISOString() },
+    };
+    const stats = computeGrowthStats(data, NOW);
+    const allCells = stats.activityHeatmap.flat().filter((c) => c.date);
+    const beforeStartCells = allCells.filter((c) => c.beforeStart);
+    const todayKey = NOW.toISOString().slice(0, 10);
+    expect(beforeStartCells.every((c) => c.date! < todayKey)).toBe(true);
+    expect(allCells.find((c) => c.date === todayKey)?.beforeStart).toBe(false);
+  });
+});
+
+describe('insights', () => {
+  it('is empty with no data', () => {
+    expect(computeGrowthStats(emptyAppData, NOW).insights).toEqual([]);
+  });
+
+  it('surfaces a journaling-vs-alignment correlation once there is enough sample on both sides', () => {
+    const logEntries = [];
+    // 6 days journaled + aligned, 6 days not journaled + not aligned — a clean split.
+    const journalEntries = [];
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(NOW.getTime() - (i + 1) * 24 * 60 * 60 * 1000).toISOString();
+      logEntries.push({ id: `j${i}`, createdAt: d, aligned: true, proof: '', correction: '' });
+      journalEntries.push({ id: `je${i}`, createdAt: d, date: '', body: 'x' });
+    }
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(NOW.getTime() - (i + 20) * 24 * 60 * 60 * 1000).toISOString();
+      logEntries.push({ id: `n${i}`, createdAt: d, aligned: false, proof: '', correction: '' });
+    }
+    const data = { ...emptyAppData, logEntries, journalEntries };
+    const insights = computeGrowthStats(data, NOW).insights;
+    expect(insights.some((s) => s.includes('journaled'))).toBe(true);
+  });
+});
+
+describe('buildShareReport', () => {
+  it('includes the streak, key counts, and a closing signature', () => {
+    const data = {
+      ...emptyAppData,
+      identity: { archetype: 'The Visionary', icon: 'male' as const, name: 'Sav', createdAt: '2026-06-01T00:00:00.000Z' },
+      limitedBeliefs: [{ id: '1', createdAt: 'x', belief: 'x', origin: 'x', replacement: 'x' }],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    const report = buildShareReport(data, stats);
+    expect(report).toContain('The Visionary');
+    expect(report).toContain('1 beliefs rewired');
+    expect(report).toContain('— via AlterX');
   });
 });
 

@@ -30,6 +30,26 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
     title: 'Different Colours',
     body: 'Customize Alter-X with beautiful neon color themes.',
   },
+  {
+    icon: 'calendar-outline',
+    title: 'Full-Year Activity Map',
+    body: 'See your whole journey at a glance with a year-long activity heatmap, not just the last few weeks.',
+  },
+  {
+    icon: 'sparkles-outline',
+    title: 'Personal Insights',
+    body: 'Real patterns pulled from your own data — your most consistent days, and what actually correlates with staying aligned.',
+  },
+  {
+    icon: 'flame-outline',
+    title: 'Personal-Best Streaks',
+    body: 'Your all-time best streak is tracked alongside your current one, so a bad day never erases the record you set.',
+  },
+  {
+    icon: 'share-social-outline',
+    title: 'Shareable Progress Reports',
+    body: 'Export a snapshot of your growth anytime — streaks, beliefs rewired, goals hit — to share or keep.',
+  },
 ];
 
 export default function AlterXtra() {
