@@ -19,9 +19,7 @@ type Props = {
 /**
  * Full-screen "you did it" moment, in the spirit of an arcade high-score
  * screen: radiating rays, a big headline, and the user's own avatar centre
- * stage. Shared by GoalCelebration (a finished goal) and MilestoneCelebration
- * (a streak milestone) — the ray/pop/fade mechanics and avatar framing are
- * identical, only the two lines of copy differ.
+ * stage. Used by MilestoneCelebration for streak milestones.
  */
 export function CelebrationOverlay({ kicker, body, onDismiss }: Props) {
   const styles = useThemedStyles(makeStyles);
