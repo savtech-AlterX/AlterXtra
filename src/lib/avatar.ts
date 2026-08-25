@@ -24,7 +24,7 @@ const MARKS = {
     smile: { source: require('../../assets/icon-choice-male-smile.png'), aspect: 368 / 633 },
   },
   female: {
-    neutral: { source: require('../../assets/icon-choice-female.png'), aspect: 292 / 481 },
+    neutral: { source: require('../../assets/icon-choice-female.png'), aspect: 362 / 716 },
     smile: { source: require('../../assets/icon-choice-female-smile.png'), aspect: 292 / 481 },
   },
   mystery: {
