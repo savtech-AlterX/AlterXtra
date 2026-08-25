@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Local iOS signing credentials — never commit these (private key + provisioning profiles).
+credentials/
+credentials.json
+

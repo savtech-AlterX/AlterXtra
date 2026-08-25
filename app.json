@@ -11,10 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alterxtra.app",
-      "entitlements": {
-        "com.apple.security.application-groups": [
-          "group.com.alterxtra.app"
-        ]
+      "appleTeamId": "TWG36YAH5A",
+      "entitlements": {},
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

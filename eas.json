@@ -16,7 +16,10 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "credentialsSource": "local"
+      }
     }
   },
   "submit": {
