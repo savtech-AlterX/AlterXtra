@@ -82,7 +82,7 @@ export function AlterXtraIntro() {
     // A Modal, not an inline card in Home's scroll — the previous version sat
     // after all seven grid cards, well below the fold, so it was reachable
     // only by scrolling. This docks to the bottom of the actual viewport
-    // instead, the same way GoalCelebration and LimitedBeliefsIntro sit above
+    // instead, the same way MilestoneCelebration and LimitedBeliefsIntro sit above
     // whatever Home's scroll position happens to be.
     <Modal visible transparent animationType="none" statusBarTranslucent onRequestClose={dismiss}>
       <View style={styles.wrap} pointerEvents="box-none">
