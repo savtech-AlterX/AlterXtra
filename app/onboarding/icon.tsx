@@ -9,7 +9,15 @@ import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
-const OPTIONS: AppIconChoice[] = ['male', 'mystery', 'female'];
+// Two rows of two hairstyle variants around a centered 'mystery' card,
+// matching the 5-card reference layout — not the original single row of
+// three, now that there are hairstyle options to show alongside the plain
+// male/female marks.
+const OPTIONS: AppIconChoice[][] = [
+  ['male', 'male-mohawk'],
+  ['mystery'],
+  ['female', 'female-curly'],
+];
 
 // The original icon-choice glyphs: the head silhouette merges into a
 // question mark (same linework as the real app icon), not the plain suit
@@ -26,16 +34,18 @@ const OPTIONS: AppIconChoice[] = ['male', 'mystery', 'female'];
 const GLYPH_WIDTH = 66;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
+  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (307 / 236) },
   female: { source: require('../../assets/icon-choice-female.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (716 / 362) },
+  'female-curly': { source: require('../../assets/icon-choice-female-curly.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (309 / 229) },
 } as const;
 
 function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
   const styles = useThemedStyles(makeStyles);
-  if (option === 'male' || option === 'female') {
-    const { source, width, height } = ICON_CHOICE_MARKS[option];
-    return <Image source={source} style={[styles.glyphImage, { tintColor: tint, width, height }]} resizeMode="contain" />;
+  if (option === 'mystery') {
+    return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
   }
-  return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
+  const { source, width, height } = ICON_CHOICE_MARKS[option];
+  return <Image source={source} style={[styles.glyphImage, { tintColor: tint, width, height }]} resizeMode="contain" />;
 }
 
 export default function ChooseIcon() {
@@ -48,35 +58,39 @@ export default function ChooseIcon() {
   const [selected, setSelected] = useState<AppIconChoice>(data.onboardingDraft?.icon ?? 'mystery');
 
   return (
-    <HudScreen scroll={false}>
+    <HudScreen>
       <View style={styles.header}>
         <Text style={[typography.screenTitle, styles.title]}>
           CHOOSE AN ICON{'\n'}FOR YOUR APP
         </Text>
       </View>
 
-      <View style={styles.row}>
-        {OPTIONS.map((opt) => {
-          const isSelected = selected === opt;
-          const tint = isSelected ? colors.glowStrong : colors.glow;
-          return (
-            <View key={opt} style={styles.cardWrap}>
-              <Pressable
-                onPress={() => {
-                  setSelected(opt);
-                  setOnboardingDraft({ icon: opt });
-                }}
-                style={[styles.box, isSelected && styles.boxSelected]}
-                accessibilityRole="button"
-                accessibilityLabel={`${opt} icon`}
-                accessibilityState={{ selected: isSelected }}
-              >
-                <IconGlyph option={opt} tint={tint} />
-              </Pressable>
-              <View style={[styles.reflection, { backgroundColor: tint, opacity: isSelected ? 0.9 : 0.45 }]} />
-            </View>
-          );
-        })}
+      <View style={styles.grid}>
+        {OPTIONS.map((rowOptions, i) => (
+          <View key={i} style={styles.row}>
+            {rowOptions.map((opt) => {
+              const isSelected = selected === opt;
+              const tint = isSelected ? colors.glowStrong : colors.glow;
+              return (
+                <View key={opt} style={styles.cardWrap}>
+                  <Pressable
+                    onPress={() => {
+                      setSelected(opt);
+                      setOnboardingDraft({ icon: opt });
+                    }}
+                    style={[styles.box, isSelected && styles.boxSelected]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${opt} icon`}
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <IconGlyph option={opt} tint={tint} />
+                  </Pressable>
+                  <View style={[styles.reflection, { backgroundColor: tint, opacity: isSelected ? 0.9 : 0.45 }]} />
+                </View>
+              );
+            })}
+          </View>
+        ))}
       </View>
 
       <View style={styles.footer}>
@@ -102,11 +116,15 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   title: {
     textAlign: 'center',
   },
+  grid: {
+    gap: 20,
+    marginTop: 32,
+    marginBottom: 24,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 14,
-    marginTop: 40,
   },
   cardWrap: {
     alignItems: 'center',

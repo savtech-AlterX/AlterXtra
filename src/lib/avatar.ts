@@ -23,9 +23,15 @@ const MARKS = {
     neutral: { source: require('../../assets/icon-choice-male.png'), aspect: 368 / 633 },
     smile: { source: require('../../assets/icon-choice-male-smile.png'), aspect: 368 / 633 },
   },
+  'male-mohawk': {
+    neutral: { source: require('../../assets/icon-choice-male-mohawk.png'), aspect: 236 / 307 },
+  },
   female: {
     neutral: { source: require('../../assets/icon-choice-female.png'), aspect: 362 / 716 },
     smile: { source: require('../../assets/icon-choice-female-smile.png'), aspect: 292 / 481 },
+  },
+  'female-curly': {
+    neutral: { source: require('../../assets/icon-choice-female-curly.png'), aspect: 229 / 309 },
   },
   mystery: {
     neutral: { source: require('../../assets/identity-mark-mystery.png'), aspect: 290 / 480 },
@@ -197,19 +203,22 @@ export type MarkExpression = 'neutral' | 'smile' | 'wink';
 
 const WORDMARK = require('../../assets/wordmark.png');
 
-// 'mystery' has no artwork of its own yet, so it falls back to the male figure.
-const figureKey = (icon: AppIconChoice | undefined) => (icon === 'female' ? 'female' : 'male');
+// 'mystery' has no artwork of its own yet, so it falls back to the male
+// figure. The hairstyle variants ('male-mohawk', 'female-curly') have their
+// own mark art (see MARKS below) but no bespoke full-body avatar, walk
+// cycle, or throw animation — those fall back to their base figure.
+const figureKey = (icon: AppIconChoice | undefined) =>
+  icon === 'female' || icon === 'female-curly' ? 'female' : 'male';
 
 export function avatarSource(icon: AppIconChoice | undefined) {
   return AVATARS[figureKey(icon)];
 }
 
 export function markSource(icon: AppIconChoice | undefined, expression: MarkExpression = 'neutral') {
-  // Unlike figureKey (which collapses 'mystery' to the male body for the
-  // full-figure mascot, since 'mystery' isn't a real avatar to walk around
-  // as), the mark has its own dedicated art — a question-mark glyph, not a
-  // fallback face — so it's looked up directly rather than through figureKey.
-  const variants = MARKS[icon === 'female' ? 'female' : icon === 'mystery' ? 'mystery' : 'male'];
+  // Unlike figureKey (which collapses 'mystery' and the hairstyle variants
+  // down to a base full-figure body), every AppIconChoice has its own mark
+  // art, so this is looked up directly rather than through figureKey.
+  const variants = MARKS[icon ?? 'male'];
   return (variants as Partial<Record<MarkExpression, { source: number; aspect: number }>>)[expression] ?? variants.neutral;
 }
 
