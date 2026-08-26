@@ -20,7 +20,8 @@ import {
   QuickNote,
 } from './types';
 import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
-import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt } from '../lib/sessionWidgetBridge';
+import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt, writeWidgetStreak } from '../lib/sessionWidgetBridge';
+import { computeActiveStreakDays } from '../lib/growth';
 
 const STORAGE_KEY = 'alterx:appData:v1';
 
@@ -342,6 +343,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     });
     return () => sub.remove();
   }, [isLoaded, reconcileFromWidget]);
+
+  // Keeps the home screen widget's streak display current — cheap enough to
+  // recompute on every data change since it only walks the day-key sets, not
+  // the full growth screen.
+  useEffect(() => {
+    if (!isLoaded) return;
+    writeWidgetStreak(computeActiveStreakDays(data));
+  }, [isLoaded, data]);
 
   const resetAll = useCallback(() => {
     setData(emptyAppData);

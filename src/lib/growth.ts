@@ -224,6 +224,31 @@ function activeDayCounts(activeDayKeys: Set<string>, to: Date, windowDays: numbe
   return { thisWindow, lastWindow };
 }
 
+// Shared by computeGrowthStats and computeActiveStreakDays so both agree on
+// what counts as "active" — a session, habit check-in, log entry, or journal
+// entry — without computing the rest of GrowthStats just for the streak.
+function buildActiveDayKeys(data: AppData): Set<string> {
+  const activeDayKeys = new Set<string>();
+  const addKey = (iso: string) => {
+    const key = dateKey(iso);
+    if (key) activeDayKeys.add(key);
+  };
+  data.identitySessions.forEach((s) => {
+    if (s.endedAt) addKey(s.endedAt);
+  });
+  data.habitCheckIns.forEach((c) => addKey(c.createdAt));
+  data.logEntries.forEach((e) => addKey(e.createdAt));
+  data.journalEntries.forEach((e) => addKey(e.createdAt));
+  return activeDayKeys;
+}
+
+// Cheap standalone version of GrowthStats.activeStreakDays — mirrored to the
+// home screen widget, which only needs the one number, not the rest of the
+// growth screen's computation.
+export function computeActiveStreakDays(data: AppData, now: Date = new Date()): number {
+  return computeStreakDays(buildActiveDayKeys(data), now);
+}
+
 export type GrowthStats = {
   daysSinceStart: number | null;
   // Consecutive days ending today with any logged activity — a session,
@@ -311,20 +336,18 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
   );
   const journalThenNow = computeJournalThenNow(journalSorted, now);
 
-  const activeDayKeys = new Set<string>();
+  const activeDayKeys = buildActiveDayKeys(data);
   const activityCounts = new Map<string, number>();
-  const addKey = (iso: string) => {
+  const addActivityCount = (iso: string) => {
     const key = dateKey(iso);
-    if (!key) return;
-    activeDayKeys.add(key);
-    activityCounts.set(key, (activityCounts.get(key) ?? 0) + 1);
+    if (key) activityCounts.set(key, (activityCounts.get(key) ?? 0) + 1);
   };
   data.identitySessions.forEach((s) => {
-    if (s.endedAt) addKey(s.endedAt);
+    if (s.endedAt) addActivityCount(s.endedAt);
   });
-  data.habitCheckIns.forEach((c) => addKey(c.createdAt));
-  data.logEntries.forEach((e) => addKey(e.createdAt));
-  data.journalEntries.forEach((e) => addKey(e.createdAt));
+  data.habitCheckIns.forEach((c) => addActivityCount(c.createdAt));
+  data.logEntries.forEach((e) => addActivityCount(e.createdAt));
+  data.journalEntries.forEach((e) => addActivityCount(e.createdAt));
 
   const momentumActiveDays = activeDayCounts(activeDayKeys, now, 30);
 

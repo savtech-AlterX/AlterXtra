@@ -6,6 +6,7 @@ import WidgetKit
 // actually share data instead of silently reading/writing two separate stores.
 private let appGroupId = "group.com.alterxtra.app"
 private let startedAtKey = "identitySession.startedAt"
+private let streakDaysKey = "identitySession.activeStreakDays"
 
 public class SessionWidgetBridgeModule: Module {
   public func definition() -> ModuleDefinition {
@@ -22,6 +23,14 @@ public class SessionWidgetBridgeModule: Module {
       } else {
         defaults?.removeObject(forKey: startedAtKey)
       }
+    }
+
+    AsyncFunction("getActiveStreakDays") { () -> Int in
+      UserDefaults(suiteName: appGroupId)?.integer(forKey: streakDaysKey) ?? 0
+    }
+
+    AsyncFunction("setActiveStreakDays") { (days: Int) in
+      UserDefaults(suiteName: appGroupId)?.set(days, forKey: streakDaysKey)
     }
 
     AsyncFunction("reloadWidgets") {
