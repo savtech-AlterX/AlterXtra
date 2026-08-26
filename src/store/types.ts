@@ -1,4 +1,9 @@
-export type AppIconChoice = 'male' | 'female' | 'mystery';
+// 'male-mohawk' and 'female-curly' are hairstyle variants of the same two
+// figures — they get their own choose-icon glyph and identity mark, but
+// reuse the male/female full-body avatar, walk cycle, and throw-animation
+// art (see figureKey in src/lib/avatar.ts), since bespoke full-body art for
+// each hairstyle doesn't exist.
+export type AppIconChoice = 'male' | 'male-mohawk' | 'female' | 'female-curly' | 'mystery';
 
 export type Identity = {
   archetype: string;
