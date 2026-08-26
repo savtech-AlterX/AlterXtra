@@ -76,7 +76,6 @@
         }
       ],
       "./plugins/withAndroidWidgetSdkVersions",
-      "react-native-cloud-storage",
       "expo-web-browser"
     ],
     "extra": {
