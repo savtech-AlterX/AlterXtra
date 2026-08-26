@@ -1,14 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AVATAR_ASPECT, avatarSource } from '../lib/avatar';
 import { useAppData } from '../store/AppDataContext';
-import { useThemeControls } from '../theme/ThemeContext';
-import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
+import { useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
 const RAY_COUNT = 16;
-const AVATAR_WIDTH = 150;
 
 type Props = {
   kicker: string;
@@ -18,14 +15,12 @@ type Props = {
 
 /**
  * Full-screen "you did it" moment, in the spirit of an arcade high-score
- * screen: radiating rays, a big headline, and the user's own avatar centre
- * stage. Used by MilestoneCelebration for streak milestones.
+ * screen: radiating rays and a big headline. Used by MilestoneCelebration
+ * for streak milestones.
  */
 export function CelebrationOverlay({ kicker, body, onDismiss }: Props) {
   const styles = useThemedStyles(makeStyles);
-  const { colors } = useAppTheme();
   const { data } = useAppData();
-  const { theme } = useThemeControls();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -96,12 +91,6 @@ export function CelebrationOverlay({ kicker, body, onDismiss }: Props) {
               {body}
             </Text>
 
-            <Image
-              source={avatarSource(data.identity?.icon)}
-              style={[styles.avatar, { tintColor: colors.glow }]}
-              resizeMode="contain"
-            />
-
             <Text style={styles.identityLine}>
               {(data.identity?.archetype ?? 'YOU').toUpperCase()}
             </Text>
@@ -165,10 +154,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     textAlign: 'center',
     marginTop: 2,
     marginBottom: 10,
-  },
-  avatar: {
-    width: AVATAR_WIDTH,
-    height: AVATAR_WIDTH * AVATAR_ASPECT,
   },
   identityLine: {
     fontFamily: typography.cardTitle.fontFamily,

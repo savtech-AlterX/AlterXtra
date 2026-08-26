@@ -42,7 +42,6 @@ export default function Settings() {
     settings,
     setAppLockEnabled,
     setDailyReminder,
-    setMascotEnabled,
     setShowGoalBarOnHome,
     setAlterXtraIntroShown,
     resetSettings,
@@ -238,11 +237,6 @@ export default function Settings() {
           )}
         </GlowCard>
       )}
-
-      {/* The mascot is held off for now (see app/_layout.tsx) — this toggle
-          would just do nothing with it unmounted, which reads as more
-          broken than not having the setting at all. Bring it back
-          alongside re-enabling <MascotCompanion />. */}
 
       <GlowButton
         label="REPLAY ALTER-XTRA INTRO"
