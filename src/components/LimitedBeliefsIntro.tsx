@@ -15,7 +15,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlowButton } from './GlowButton';
 import { LimitedBeliefFields } from './LimitedBeliefFields';
 import { useAppData } from '../store/AppDataContext';
-import { useMascotCue } from '../store/MascotCueContext';
 import { useSettings } from '../store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
@@ -26,8 +25,7 @@ const BURST_IN_MS = 260;
 const BURST_OUT_MS = 340;
 // Panel starts rising once the burst has peaked — if both ran together, the
 // panel's own 88%-height body would cover the burst's position almost
-// immediately (it sits low, near the mascot's floor line), and the "this
-// came from the avatar" gesture would never actually be seen.
+// immediately, and the light-burst gesture would never actually be seen.
 const PANEL_START_MS = 220;
 
 /**
@@ -36,11 +34,6 @@ const PANEL_START_MS = 220;
  * the app. It's surfaced here instead: a panel that rises over most of Home
  * a few seconds after your first arrival, so there's at least a homepage
  * behind you before this question shows up.
- *
- * The entrance is a plain fade-and-rise for now. The brief is for this to
- * eventually read as the avatar projecting the panel, but that needs its own
- * movement reference art, which is a separate piece of work — this is the
- * mechanism and the layout, not the choreography.
  */
 export function LimitedBeliefsIntro() {
   const { colors, typography, iconGlow } = useAppTheme();
@@ -49,14 +42,12 @@ export function LimitedBeliefsIntro() {
   const { width } = useWindowDimensions();
   const { data, addLimitedBelief } = useAppData();
   const { settings, isLoaded, setLimitedBeliefsIntroShown } = useSettings();
-  const { xRef, presentRef } = useMascotCue();
 
   // Two phases: the gesture plays alone, against the still-fully-visible
   // Home screen, then the panel rises. gestureActive covers both — it's what
   // keeps the Modal mounted from the moment the burst starts.
   const [gestureActive, setGestureActive] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [burstX, setBurstX] = useState<number | null>(null);
   const [belief, setBelief] = useState('');
   const [origin, setOrigin] = useState('');
   const [replacement, setReplacement] = useState('');
@@ -69,10 +60,6 @@ export function LimitedBeliefsIntro() {
   useEffect(() => {
     if (!eligible) return;
     const openTimer = setTimeout(() => {
-      // Cue the mascot and grab where it actually is on screen right now, so
-      // the burst starts from the figure rather than a fixed point.
-      presentRef.current?.();
-      setBurstX(xRef.current);
       setGestureActive(true);
       Animated.sequence([
         Animated.timing(burst, { toValue: 1, duration: BURST_IN_MS, easing: Easing.out(Easing.quad), useNativeDriver: false }),
@@ -80,7 +67,7 @@ export function LimitedBeliefsIntro() {
       ]).start();
     }, DELAY_MS);
     return () => clearTimeout(openTimer);
-  }, [eligible, presentRef, xRef, burst]);
+  }, [eligible, burst]);
 
   useEffect(() => {
     if (!gestureActive) return;
@@ -121,14 +108,14 @@ export function LimitedBeliefsIntro() {
   const translateY = rise.interpolate({ inputRange: [0, 1], outputRange: [60, 0] });
   const burstOpacity = burst.interpolate({ inputRange: [0, 1], outputRange: [0, 0.9] });
   const burstScale = burst.interpolate({ inputRange: [0, 1], outputRange: [0.4, 2.6] });
-  const burstLeft = burstX == null ? width / 2 - BURST_SIZE / 2 : Math.max(0, Math.min(width - BURST_SIZE, burstX - BURST_SIZE / 2));
+  const burstLeft = width / 2 - BURST_SIZE / 2;
 
   return (
     <Modal visible transparent animationType="none" statusBarTranslucent onRequestClose={skip}>
-      {/* The gesture: a burst of light from wherever the mascot actually was
-          when this triggered. Rendered — and fully visible, nothing drawn
-          over it yet — before the panel exists at all, so it reads as the
-          panel's source rather than something the panel immediately buries. */}
+      {/* The gesture: a burst of light from the bottom-center of the screen.
+          Rendered — and fully visible, nothing drawn over it yet — before
+          the panel exists at all, so it reads as the panel's source rather
+          than something the panel immediately buries. */}
       <Animated.View
         pointerEvents="none"
         style={[

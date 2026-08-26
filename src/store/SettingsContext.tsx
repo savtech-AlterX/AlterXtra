@@ -12,13 +12,12 @@ type Settings = {
   // WEEKLY trigger convention) — kept in that convention end-to-end so no
   // translation layer is needed between here and notifications.ts.
   dailyReminderDays: number[];
-  mascotEnabled: boolean;
   showGoalBarOnHome: boolean;
-  // Limited Beliefs no longer sits in the onboarding stack — the avatar
-  // surfaces it on Home instead, once. This tracks whether that's happened
-  // yet, independent of whether the user actually filled anything in.
+  // Limited Beliefs no longer sits in the onboarding stack — it's surfaced
+  // on Home instead, once. This tracks whether that's happened yet,
+  // independent of whether the user actually filled anything in.
   limitedBeliefsIntroShown: boolean;
-  // Same idea, for the mascot's one-time lean-walk-reveal toward Alter-Xtra.
+  // Same idea, for the one-time Alter-Xtra teaser panel on Home.
   alterXtraIntroShown: boolean;
   // Highest active-streak-day milestone (7/30/100/365) already celebrated on
   // the Growth screen, so crossing it again after a reinstall or on every
@@ -32,7 +31,6 @@ const defaultSettings: Settings = {
   dailyReminderHour: 19,
   dailyReminderMinute: 0,
   dailyReminderDays: [1, 2, 3, 4, 5, 6, 7],
-  mascotEnabled: true,
   showGoalBarOnHome: true,
   limitedBeliefsIntroShown: false,
   alterXtraIntroShown: false,
@@ -48,7 +46,6 @@ type SettingsContextValue = {
   setDailyReminder: (
     partial: Partial<Pick<Settings, 'dailyReminderEnabled' | 'dailyReminderHour' | 'dailyReminderMinute' | 'dailyReminderDays'>>
   ) => void;
-  setMascotEnabled: (enabled: boolean) => void;
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
   setAlterXtraIntroShown: (shown: boolean) => void;
@@ -98,10 +95,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  const setMascotEnabled = useCallback((enabled: boolean) => {
-    setSettings((prev) => ({ ...prev, mascotEnabled: enabled }));
-  }, []);
-
   const setShowGoalBarOnHome = useCallback((enabled: boolean) => {
     setSettings((prev) => ({ ...prev, showGoalBarOnHome: enabled }));
   }, []);
@@ -133,7 +126,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       retrySave,
       setAppLockEnabled,
       setDailyReminder,
-      setMascotEnabled,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,
@@ -147,7 +139,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       retrySave,
       setAppLockEnabled,
       setDailyReminder,
-      setMascotEnabled,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,

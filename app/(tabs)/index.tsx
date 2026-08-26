@@ -12,9 +12,9 @@ import { IdentityVoiceNudge } from '../../src/components/IdentityVoiceNudge';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { LimitedBeliefsIntro } from '../../src/components/LimitedBeliefsIntro';
 
-// Off for now — the mascot's lean-walk-reveal toward Alter-Xtra took its
-// place on Home so the two don't compete for the same moment. Flip back to
-// true to restore it; nothing else needs to change.
+// Off for now — the Alter-Xtra teaser panel took its place on Home so the
+// two don't compete for the same moment. Flip back to true to restore it;
+// nothing else needs to change.
 const LIMITED_BELIEFS_INTRO_ENABLED = false;
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
