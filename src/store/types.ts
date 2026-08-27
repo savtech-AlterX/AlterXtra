@@ -137,6 +137,11 @@ export type AppData = {
   habitCheckIns: HabitCheckIn[];
   quickNotes: QuickNote[];
   identitySessions: IdentitySession[];
+  // Timestamps of app opens, newest first — powers the "when do you actually
+  // open this" stat on Growth. Capped at MAX_APP_OPENS (see AppDataContext)
+  // so years of daily use don't grow this unboundedly; recency is what the
+  // stat needs, not full history.
+  appOpens: string[];
 };
 
 export const emptyAppData: AppData = {
@@ -153,4 +158,5 @@ export const emptyAppData: AppData = {
   habitCheckIns: [],
   quickNotes: [],
   identitySessions: [],
+  appOpens: [],
 };

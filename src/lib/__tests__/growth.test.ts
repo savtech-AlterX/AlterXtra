@@ -153,6 +153,85 @@ describe('computeGrowthStats', () => {
   });
 });
 
+describe('appActivity', () => {
+  it('reports zeroed stats when the app has never been opened', () => {
+    const stats = computeGrowthStats(emptyAppData, NOW);
+    expect(stats.appActivity).toEqual({
+      totalOpens: 0,
+      opensToday: 0,
+      opensThisWeek: 0,
+      mostActiveTimeOfDay: null,
+      currentStreakDays: 0,
+      recentOpens: [],
+    });
+  });
+
+  it('counts total opens, opens today, and opens this week', () => {
+    const data = {
+      ...emptyAppData,
+      appOpens: [
+        '2026-08-01T09:00:00.000Z', // today
+        '2026-07-30T09:00:00.000Z', // this week
+        '2026-07-01T09:00:00.000Z', // outside this week
+      ],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    expect(stats.appActivity.totalOpens).toBe(3);
+    expect(stats.appActivity.opensToday).toBe(1);
+    expect(stats.appActivity.opensThisWeek).toBe(2);
+  });
+
+  it('names a dominant time of day only once at least half of a 5+ sample agrees', () => {
+    const few = computeGrowthStats(
+      { ...emptyAppData, appOpens: ['2026-08-01T20:00:00.000Z', '2026-07-31T21:00:00.000Z'] },
+      NOW
+    ).appActivity.mostActiveTimeOfDay;
+    expect(few).toBeNull();
+
+    const evenings = {
+      ...emptyAppData,
+      appOpens: [
+        '2026-08-01T20:00:00.000Z',
+        '2026-07-31T21:00:00.000Z',
+        '2026-07-30T19:00:00.000Z',
+        '2026-07-29T22:00:00.000Z',
+        '2026-07-28T18:00:00.000Z',
+      ],
+    };
+    expect(computeGrowthStats(evenings, NOW).appActivity.mostActiveTimeOfDay).toBe('the evening');
+  });
+
+  it('counts the current open streak back from today, resetting once a day is skipped', () => {
+    const consecutive = {
+      ...emptyAppData,
+      appOpens: ['2026-08-01T09:00:00.000Z', '2026-07-31T09:00:00.000Z', '2026-07-30T09:00:00.000Z'],
+    };
+    expect(computeGrowthStats(consecutive, NOW).appActivity.currentStreakDays).toBe(3);
+
+    const gap = {
+      ...emptyAppData,
+      appOpens: ['2026-08-01T09:00:00.000Z', '2026-07-20T09:00:00.000Z'],
+    };
+    expect(computeGrowthStats(gap, NOW).appActivity.currentStreakDays).toBe(1);
+  });
+
+  it('surfaces the 5 most recent opens in stored (newest-first) order', () => {
+    const data = {
+      ...emptyAppData,
+      appOpens: [
+        '2026-08-01T09:00:00.000Z',
+        '2026-07-31T09:00:00.000Z',
+        '2026-07-30T09:00:00.000Z',
+        '2026-07-29T09:00:00.000Z',
+        '2026-07-28T09:00:00.000Z',
+        '2026-07-27T09:00:00.000Z',
+      ],
+    };
+    const stats = computeGrowthStats(data, NOW);
+    expect(stats.appActivity.recentOpens).toEqual(data.appOpens.slice(0, 5));
+  });
+});
+
 describe('activeStreakDays', () => {
   it('counts a streak from mixed activity types, not just sessions', () => {
     const data = {
