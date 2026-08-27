@@ -156,6 +156,13 @@ export default function Settings() {
         onPress={() => router.push('/onboarding/identity')}
       />
 
+      <GlowButton
+        label="ADD WIDGET"
+        variant="outline"
+        icon={<Ionicons name="apps-outline" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push('/add-widget')}
+      />
+
       {Platform.OS !== 'web' && (
         <GlowCard style={styles.lockCard}>
           <View style={styles.lockText}>
