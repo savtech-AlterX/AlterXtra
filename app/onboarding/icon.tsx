@@ -32,7 +32,7 @@ const OPTIONS: AppIconChoice[][] = [
 // height from an `aspectRatio` style the way RN does — it renders at the
 // source file's raw pixel height instead — so this computes explicit
 // per-icon width/height rather than relying on that.)
-const GLYPH_WIDTH = 46;
+const GLYPH_WIDTH = 58;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
   'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (307 / 236) },
@@ -136,11 +136,15 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
   },
+  // Not flex:1 + centered — that filled all the leftover space between the
+  // header and the button and centered the rows inside it, which read as a
+  // big empty gap above and below the cards on anything taller than the
+  // smallest target device. The reference packs the cards right under the
+  // title instead, with the button pinned to the bottom by the footer's
+  // own marginTop: 'auto'.
   grid: {
     alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    gap: 8,
+    gap: 10,
   },
   row: {
     flexDirection: 'row',
@@ -151,9 +155,9 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     alignItems: 'center',
   },
   box: {
-    width: 72,
-    height: 122,
-    borderRadius: 12,
+    width: 90,
+    height: 152,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.borderDim,
     backgroundColor: colors.panelSolid,
@@ -174,21 +178,22 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   mysteryGlyph: {
     fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 44,
+    fontSize: 54,
     ...glowShadow,
-    textShadowRadius: 12,
+    textShadowRadius: 14,
   },
   reflection: {
-    width: 38,
-    height: 3,
+    width: 46,
+    height: 4,
     borderRadius: 2,
-    marginTop: 5,
+    marginTop: 6,
     shadowColor: colors.glow,
     shadowOpacity: 0.9,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
   },
   footer: {
+    marginTop: 'auto',
     gap: 16,
   },
 });
