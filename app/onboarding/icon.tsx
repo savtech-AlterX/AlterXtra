@@ -32,7 +32,7 @@ const OPTIONS: AppIconChoice[][] = [
 // height from an `aspectRatio` style the way RN does — it renders at the
 // source file's raw pixel height instead — so this computes explicit
 // per-icon width/height rather than relying on that.)
-const GLYPH_WIDTH = 66;
+const GLYPH_WIDTH = 46;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
   'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (307 / 236) },
@@ -59,7 +59,7 @@ export default function ChooseIcon() {
   const [selected, setSelected] = useState<AppIconChoice>(data.onboardingDraft?.icon ?? 'mystery');
 
   return (
-    <HudScreen>
+    <HudScreen scroll={false}>
       <View style={styles.header}>
         <Text style={styles.title}>
           choose an icon{'\n'}for your app
@@ -108,10 +108,14 @@ export default function ChooseIcon() {
   );
 }
 
+// Sized to fit five cards plus the title and continue button on one screen
+// with no scrolling, down to a 667pt-tall device (iPhone SE) — the original
+// single-row sizing (104x176 cards, 66pt glyphs) was tuned for three cards
+// and ran well past the fold once there were five, forcing a scroll the
+// reference design doesn't show.
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
   header: {
-    marginTop: 24,
     alignItems: 'center',
   },
   // LCD-Bold (screenTitle's usual font, used everywhere else in the app) is
@@ -124,30 +128,32 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   title: {
     textAlign: 'center',
     fontFamily: fonts.bodyMedium,
-    fontSize: 20,
+    fontSize: 16,
+    lineHeight: 20,
     letterSpacing: 1,
     color: colors.glow,
     textShadowColor: colors.glow,
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 12,
+    textShadowRadius: 10,
   },
   grid: {
-    gap: 20,
-    marginTop: 32,
-    marginBottom: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    gap: 8,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 14,
+    gap: 10,
   },
   cardWrap: {
     alignItems: 'center',
   },
   box: {
-    width: 104,
-    height: 176,
-    borderRadius: 18,
+    width: 72,
+    height: 122,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.borderDim,
     backgroundColor: colors.panelSolid,
@@ -159,31 +165,30 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     borderColor: colors.glowStrong,
     shadowColor: colors.glow,
     shadowOpacity: 0.7,
-    shadowRadius: 16,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 0 },
     elevation: 8,
   },
   glyphImage: {
-    width: 66,
+    width: GLYPH_WIDTH,
   },
   mysteryGlyph: {
     fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 64,
+    fontSize: 44,
     ...glowShadow,
-    textShadowRadius: 16,
+    textShadowRadius: 12,
   },
   reflection: {
-    width: 56,
-    height: 5,
-    borderRadius: 3,
-    marginTop: 10,
+    width: 38,
+    height: 3,
+    borderRadius: 2,
+    marginTop: 5,
     shadowColor: colors.glow,
     shadowOpacity: 0.9,
-    shadowRadius: 8,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
   },
   footer: {
-    marginTop: 'auto',
     gap: 16,
   },
 });
