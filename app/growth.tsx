@@ -239,12 +239,6 @@ function IdentitySessionCard({
         accessibilityRole="button"
         accessibilityLabel={session.active ? 'Stop identity session' : 'Start identity session'}
       >
-        <Ionicons
-          name={session.active ? 'stop-circle-outline' : 'play-circle-outline'}
-          size={24}
-          color={colors.glow}
-          style={iconGlow}
-        />
         <Text style={styles.sessionActionText}>
           {session.active ? `IN IDENTITY · ${formatDurationShort(elapsedSeconds)} · TAP TO STOP` : 'START SESSION'}
         </Text>
