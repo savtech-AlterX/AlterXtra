@@ -20,9 +20,18 @@ import {
   QuickNote,
 } from './types';
 import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
-import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt } from '../lib/sessionWidgetBridge';
+import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt, writeWidgetStreak } from '../lib/sessionWidgetBridge';
+import { computeActiveStreakDays } from '../lib/growth';
 
 const STORAGE_KEY = 'alterx:appData:v1';
+
+// A foreground within this many ms of the last recorded open is treated as
+// the same "sitting down with the app," not a separate open — otherwise a
+// notification banner or a quick app-switch would inflate the open count.
+const APP_OPEN_DEDUPE_MS = 15 * 60 * 1000;
+// Recency, not full lifetime history, is what the open-activity stat needs —
+// this caps local storage growth for someone who's had the app for years.
+const MAX_APP_OPENS = 500;
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -316,6 +325,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     dataRef.current = data;
   }, [data]);
 
+  const logAppOpen = useCallback(() => {
+    const last = dataRef.current.appOpens[0];
+    const now = Date.now();
+    if (last && now - new Date(last).getTime() < APP_OPEN_DEDUPE_MS) return;
+    const timestamp = new Date(now).toISOString();
+    setData((prev) => ({ ...prev, appOpens: [timestamp, ...prev.appOpens].slice(0, MAX_APP_OPENS) }));
+  }, []);
+
   const reconcileFromWidget = useCallback(async () => {
     const widgetStartedAt = await readWidgetSessionStartedAt();
     const current = dataRef.current;
@@ -337,11 +354,23 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded) return;
     reconcileFromWidget();
+    logAppOpen();
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
-      if (state === 'active') reconcileFromWidget();
+      if (state === 'active') {
+        reconcileFromWidget();
+        logAppOpen();
+      }
     });
     return () => sub.remove();
-  }, [isLoaded, reconcileFromWidget]);
+  }, [isLoaded, reconcileFromWidget, logAppOpen]);
+
+  // Keeps the home screen widget's streak display current — cheap enough to
+  // recompute on every data change since it only walks the day-key sets, not
+  // the full growth screen.
+  useEffect(() => {
+    if (!isLoaded) return;
+    writeWidgetStreak(computeActiveStreakDays(data));
+  }, [isLoaded, data]);
 
   const resetAll = useCallback(() => {
     setData(emptyAppData);

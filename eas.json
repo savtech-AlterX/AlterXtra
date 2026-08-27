@@ -16,10 +16,20 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "credentialsSource": "local"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6805454241",
+        "ascApiKeyPath": "credentials/ios/AuthKey_M8939JB9HT.p8",
+        "ascApiKeyId": "M8939JB9HT",
+        "ascApiKeyIssuerId": "e814a789-3a51-4350-b3c5-d9675371fca6"
+      }
+    }
   }
 }

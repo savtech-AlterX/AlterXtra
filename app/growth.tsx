@@ -253,6 +253,46 @@ function IdentitySessionCard({
   );
 }
 
+function AppActivityCard({ activity }: { activity: GrowthStats['appActivity'] }) {
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <GlowCard style={styles.card}>
+      <Text style={styles.label}>APP ACTIVITY</Text>
+      <View style={styles.activityStatsRow}>
+        <View style={styles.activityStatBlock}>
+          <Text style={styles.activityStatValue}>{activity.totalOpens}</Text>
+          <Text style={styles.activityStatLabel}>TOTAL OPENS</Text>
+        </View>
+        <View style={styles.activityStatBlock}>
+          <Text style={styles.activityStatValue}>{activity.opensThisWeek}</Text>
+          <Text style={styles.activityStatLabel}>THIS WEEK</Text>
+        </View>
+        <View style={styles.activityStatBlock}>
+          <Text style={styles.activityStatValue}>{activity.currentStreakDays}d</Text>
+          <Text style={styles.activityStatLabel}>OPEN STREAK</Text>
+        </View>
+      </View>
+      {activity.mostActiveTimeOfDay && (
+        <Text style={styles.activityHint}>You mostly open AlterX in {activity.mostActiveTimeOfDay}.</Text>
+      )}
+      {activity.recentOpens.length > 0 && (
+        <View style={styles.activityRecentList}>
+          <Text style={styles.activityRecentLabel}>RECENT</Text>
+          {activity.recentOpens.map((iso, i) => {
+            const d = new Date(iso);
+            return (
+              <Text key={i} style={styles.activityRecentRow}>
+                {d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} ·{' '}
+                {d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+              </Text>
+            );
+          })}
+        </View>
+      )}
+    </GlowCard>
+  );
+}
+
 const HEAT_LEVEL_OPACITY = [0.12, 0.35, 0.55, 0.78, 1];
 
 function HeatmapCellView({ cell }: { cell: HeatmapCell }) {
@@ -390,6 +430,8 @@ export default function Growth() {
         onStop={handleStopSession}
         onViewHistory={() => router.push('/calendar')}
       />
+
+      <AppActivityCard activity={stats.appActivity} />
 
       {!hasAnyProgress ? (
         <EmptyState
@@ -750,5 +792,45 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 11,
     color: colors.textMuted,
+  },
+  activityStatsRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  activityStatBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  activityStatValue: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 17,
+    color: colors.textPrimary,
+    ...glowShadow,
+  },
+  activityStatLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+  },
+  activityHint: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
+  },
+  activityRecentList: {
+    gap: 4,
+  },
+  activityRecentLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+  },
+  activityRecentRow: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    color: colors.textSecondary,
   },
 });

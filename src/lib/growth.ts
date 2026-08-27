@@ -158,21 +158,29 @@ function computeInsights(data: AppData, now: Date): string[] {
     }
   }
 
-  const hours = data.identitySessions
+  const sessionHours = data.identitySessions
     .map((s) => new Date(s.startedAt).getHours())
     .filter((h) => !Number.isNaN(h));
-  if (hours.length >= 5) {
-    const morning = hours.filter((h) => h >= 5 && h < 12).length;
-    const afternoon = hours.filter((h) => h >= 12 && h < 17).length;
-    const evening = hours.length - morning - afternoon;
-    const max = Math.max(morning, afternoon, evening);
-    if (max / hours.length >= 0.5) {
-      const label = max === morning ? 'the morning' : max === afternoon ? 'the afternoon' : 'the evening';
-      insights.push(`Most of your identity sessions happen in ${label}.`);
-    }
+  const sessionTimeOfDay = dominantTimeOfDay(sessionHours, 5);
+  if (sessionTimeOfDay) {
+    insights.push(`Most of your identity sessions happen in ${sessionTimeOfDay}.`);
   }
 
   return insights.slice(0, 4);
+}
+
+// Buckets hours-of-day into morning/afternoon/evening and names the bucket
+// only once it holds at least half of a sample large enough to say something
+// honest about — used for both the identity-session and app-open timing
+// patterns.
+function dominantTimeOfDay(hours: number[], minSample: number): string | null {
+  if (hours.length < minSample) return null;
+  const morning = hours.filter((h) => h >= 5 && h < 12).length;
+  const afternoon = hours.filter((h) => h >= 12 && h < 17).length;
+  const evening = hours.length - morning - afternoon;
+  const max = Math.max(morning, afternoon, evening);
+  if (max / hours.length < 0.5) return null;
+  return max === morning ? 'the morning' : max === afternoon ? 'the afternoon' : 'the evening';
 }
 
 // Compares the log-entry alignment rate on days a marker event happened
@@ -222,6 +230,31 @@ function activeDayCounts(activeDayKeys: Set<string>, to: Date, windowDays: numbe
     cursor = new Date(cursor.getTime() - DAY_MS);
   }
   return { thisWindow, lastWindow };
+}
+
+// Shared by computeGrowthStats and computeActiveStreakDays so both agree on
+// what counts as "active" — a session, habit check-in, log entry, or journal
+// entry — without computing the rest of GrowthStats just for the streak.
+function buildActiveDayKeys(data: AppData): Set<string> {
+  const activeDayKeys = new Set<string>();
+  const addKey = (iso: string) => {
+    const key = dateKey(iso);
+    if (key) activeDayKeys.add(key);
+  };
+  data.identitySessions.forEach((s) => {
+    if (s.endedAt) addKey(s.endedAt);
+  });
+  data.habitCheckIns.forEach((c) => addKey(c.createdAt));
+  data.logEntries.forEach((e) => addKey(e.createdAt));
+  data.journalEntries.forEach((e) => addKey(e.createdAt));
+  return activeDayKeys;
+}
+
+// Cheap standalone version of GrowthStats.activeStreakDays — mirrored to the
+// home screen widget, which only needs the one number, not the rest of the
+// growth screen's computation.
+export function computeActiveStreakDays(data: AppData, now: Date = new Date()): number {
+  return computeStreakDays(buildActiveDayKeys(data), now);
 }
 
 export type GrowthStats = {
@@ -294,6 +327,21 @@ export type GrowthStats = {
     currentStreakDays: number;
     bestStreakDays: number;
   };
+  // How often, and roughly when, the app actually gets opened — distinct
+  // from activeStreakDays, which tracks days with real activity logged, not
+  // just a launch.
+  appActivity: {
+    totalOpens: number;
+    opensToday: number;
+    opensThisWeek: number;
+    // A time-of-day label (e.g. "the evening") only once there's enough of a
+    // sample to say something honest about it — same 50%-of-a-≥5-sample bar
+    // computeInsights uses for the identity-session version of this.
+    mostActiveTimeOfDay: string | null;
+    currentStreakDays: number;
+    // Newest-first, for a short "recent opens" list in the UI.
+    recentOpens: string[];
+  };
 };
 
 export function computeGrowthStats(data: AppData, now: Date = new Date()): GrowthStats {
@@ -311,20 +359,18 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
   );
   const journalThenNow = computeJournalThenNow(journalSorted, now);
 
-  const activeDayKeys = new Set<string>();
+  const activeDayKeys = buildActiveDayKeys(data);
   const activityCounts = new Map<string, number>();
-  const addKey = (iso: string) => {
+  const addActivityCount = (iso: string) => {
     const key = dateKey(iso);
-    if (!key) return;
-    activeDayKeys.add(key);
-    activityCounts.set(key, (activityCounts.get(key) ?? 0) + 1);
+    if (key) activityCounts.set(key, (activityCounts.get(key) ?? 0) + 1);
   };
   data.identitySessions.forEach((s) => {
-    if (s.endedAt) addKey(s.endedAt);
+    if (s.endedAt) addActivityCount(s.endedAt);
   });
-  data.habitCheckIns.forEach((c) => addKey(c.createdAt));
-  data.logEntries.forEach((e) => addKey(e.createdAt));
-  data.journalEntries.forEach((e) => addKey(e.createdAt));
+  data.habitCheckIns.forEach((c) => addActivityCount(c.createdAt));
+  data.logEntries.forEach((e) => addActivityCount(e.createdAt));
+  data.journalEntries.forEach((e) => addActivityCount(e.createdAt));
 
   const momentumActiveDays = activeDayCounts(activeDayKeys, now, 30);
 
@@ -380,6 +426,7 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
       total: data.habitCheckIns.length,
     },
     identitySession: computeIdentitySessionStats(data.identitySessions, now),
+    appActivity: computeAppActivityStats(data.appOpens, now),
   };
 }
 
@@ -404,6 +451,22 @@ export function formatDurationShort(totalSeconds: number): string {
   if (hours > 0) return `${hours}h ${minutes}m`;
   if (minutes > 0) return `${minutes}m`;
   return `${seconds}s`;
+}
+
+function computeAppActivityStats(appOpens: string[], now: Date): GrowthStats['appActivity'] {
+  const todayKey = dateKeyOf(now);
+  const weekStart = new Date(now.getTime() - WEEK_MS);
+  const openDayKeys = new Set(appOpens.map((iso) => dateKey(iso)).filter((k): k is string => k !== null));
+  const hours = appOpens.map((iso) => new Date(iso).getHours()).filter((h) => !Number.isNaN(h));
+  return {
+    totalOpens: appOpens.length,
+    opensToday: appOpens.filter((iso) => dateKey(iso) === todayKey).length,
+    opensThisWeek: appOpens.filter((iso) => new Date(iso).getTime() >= weekStart.getTime()).length,
+    mostActiveTimeOfDay: dominantTimeOfDay(hours, 5),
+    currentStreakDays: computeStreakDays(openDayKeys, now),
+    // appOpens is stored newest-first (see AppDataContext.logAppOpen).
+    recentOpens: appOpens.slice(0, 5),
+  };
 }
 
 function computeIdentitySessionStats(sessions: AppData['identitySessions'], now: Date) {

@@ -3,6 +3,8 @@ import { requireOptionalNativeModule } from 'expo-modules-core';
 export type SessionWidgetBridgeModuleType = {
   getActiveStartedAt(): Promise<string | null>;
   setActiveStartedAt(startedAt: string | null): Promise<void>;
+  getActiveStreakDays(): Promise<number>;
+  setActiveStreakDays(days: number): Promise<void>;
   reloadWidgets(): Promise<void>;
 };
 

@@ -19,8 +19,13 @@ async function widgetTaskHandler({ widgetAction, clickAction, renderWidget }: Wi
   }
 
   const startedAt = (await SessionWidgetBridge?.getActiveStartedAt()) ?? null;
+  const streakDays = (await SessionWidgetBridge?.getActiveStreakDays()) ?? 0;
   renderWidget(
-    <IdentitySessionWidget active={!!startedAt} subtitle={startedAt ? 'In identity' : 'Tap to start'} />
+    <IdentitySessionWidget
+      active={!!startedAt}
+      subtitle={startedAt ? 'In identity' : 'Tap to start'}
+      streakDays={streakDays}
+    />
   );
 }
 

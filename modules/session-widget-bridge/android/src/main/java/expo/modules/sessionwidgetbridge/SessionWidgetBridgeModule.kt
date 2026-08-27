@@ -9,6 +9,7 @@ import expo.modules.kotlin.modules.ModuleDefinition
 // state instead of silently reading/writing two separate stores.
 private const val PREFS_NAME = "session_widget_bridge"
 private const val STARTED_AT_KEY = "startedAt"
+private const val STREAK_DAYS_KEY = "activeStreakDays"
 
 class SessionWidgetBridgeModule : Module() {
   private val prefs
@@ -25,6 +26,14 @@ class SessionWidgetBridgeModule : Module() {
       prefs.edit().apply {
         if (startedAt != null) putString(STARTED_AT_KEY, startedAt) else remove(STARTED_AT_KEY)
       }.apply()
+    }
+
+    AsyncFunction("getActiveStreakDays") {
+      prefs.getInt(STREAK_DAYS_KEY, 0)
+    }
+
+    AsyncFunction("setActiveStreakDays") { days: Int ->
+      prefs.edit().putInt(STREAK_DAYS_KEY, days).apply()
     }
 
     AsyncFunction("reloadWidgets") {

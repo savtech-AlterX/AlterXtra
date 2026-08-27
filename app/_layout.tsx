@@ -7,11 +7,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppDataProvider } from '../src/store/AppDataContext';
 import { SettingsProvider } from '../src/store/SettingsContext';
 import { AppLockGate } from '../src/components/AppLockGate';
-import { MascotCompanion } from '../src/components/MascotCompanion';
 import { SaveErrorBanner } from '../src/components/SaveErrorBanner';
 import { WinFlashOverlay } from '../src/components/WinFlashOverlay';
 import { Platform, View } from 'react-native';
-import { MascotCueProvider } from '../src/store/MascotCueContext';
 import { WinFlashProvider } from '../src/store/WinFlashContext';
 import { ThemeProvider } from '../src/theme/ThemeContext';
 import { useAppTheme } from '../src/theme/useAppTheme';
@@ -24,24 +22,17 @@ function ThemedApp() {
       <AppDataProvider>
         <StatusBar style="light" />
         <AppLockGate>
-          <MascotCueProvider>
-            <WinFlashProvider>
-              <SaveErrorBanner />
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: colors.background },
-                  animation: 'fade',
-                }}
-              />
-              {/* Held off for now — plan is to bring the avatar/mascot
-                  companion back after the app is published. Everything it
-                  depends on (MascotCueContext, the Alter-Xtra present
-                  sequence, the art) is left in place; this is the only line
-                  that needs to come back to re-enable it. */}
-              <WinFlashOverlay />
-            </WinFlashProvider>
-          </MascotCueProvider>
+          <WinFlashProvider>
+            <SaveErrorBanner />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.background },
+                animation: 'fade',
+              }}
+            />
+            <WinFlashOverlay />
+          </WinFlashProvider>
         </AppLockGate>
       </AppDataProvider>
     </SettingsProvider>

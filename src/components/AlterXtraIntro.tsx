@@ -5,7 +5,6 @@ import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlowButton } from './GlowButton';
 import { useAppData } from '../store/AppDataContext';
-import { useMascotCue } from '../store/MascotCueContext';
 import { useSettings } from '../store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
@@ -15,11 +14,10 @@ const DELAY_MS = 2000;
 const TEASER_POINTS = ['Unlimited identities', 'Unlimited habits', 'Weekly reports', 'Every neon theme'];
 
 /**
- * The mascot's one-time nudge toward Alter-Xtra: it leans, walks to the edge
- * of the screen, holds the reveal pose (see MascotCompanion), and this panel
- * rises once that's done. Same rising-panel mechanism as
- * LimitedBeliefsIntro, condensed — a teaser and a link to the real screen,
- * not the whole page crammed into a sheet.
+ * A one-time nudge toward Alter-Xtra, shown a few seconds after arriving on
+ * Home. Same rising-panel mechanism as LimitedBeliefsIntro, condensed — a
+ * teaser and a link to the real screen, not the whole page crammed into a
+ * sheet.
  *
  * Currently the only thing on Home that triggers on arrival — Limited
  * Beliefs is switched off for now (see index.tsx) so the two don't compete
@@ -32,7 +30,6 @@ export function AlterXtraIntro() {
   const router = useRouter();
   const { data } = useAppData();
   const { settings, isLoaded, setAlterXtraIntroShown } = useSettings();
-  const { alterXtraPresentRef, resumeIdleRef } = useMascotCue();
 
   const [visible, setVisible] = useState(false);
   const rise = useRef(new Animated.Value(0)).current;
@@ -41,19 +38,9 @@ export function AlterXtraIntro() {
 
   useEffect(() => {
     if (!eligible) return;
-    const timer = setTimeout(() => {
-      // The mascot is held off for now (see _layout.tsx) — when there's no
-      // present sequence to wait for, show the panel directly instead of
-      // never showing it at all, since this teaser is the actual point,
-      // the mascot animation was only ever the lead-in to it.
-      if (alterXtraPresentRef.current) {
-        alterXtraPresentRef.current(() => setVisible(true));
-      } else {
-        setVisible(true);
-      }
-    }, DELAY_MS);
+    const timer = setTimeout(() => setVisible(true), DELAY_MS);
     return () => clearTimeout(timer);
-  }, [eligible, alterXtraPresentRef]);
+  }, [eligible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -63,10 +50,6 @@ export function AlterXtraIntro() {
   function dismiss() {
     setAlterXtraIntroShown(true);
     setVisible(false);
-    // The mascot has been sitting there faded out since the panel rose —
-    // this is what actually hands it back, not a fixed timer that can't
-    // know whether the panel is still on screen.
-    resumeIdleRef.current?.();
   }
 
   function viewAlterXtra() {
@@ -82,7 +65,7 @@ export function AlterXtraIntro() {
     // A Modal, not an inline card in Home's scroll — the previous version sat
     // after all seven grid cards, well below the fold, so it was reachable
     // only by scrolling. This docks to the bottom of the actual viewport
-    // instead, the same way GoalCelebration and LimitedBeliefsIntro sit above
+    // instead, the same way MilestoneCelebration and LimitedBeliefsIntro sit above
     // whatever Home's scroll position happens to be.
     <Modal visible transparent animationType="none" statusBarTranslucent onRequestClose={dismiss}>
       <View style={styles.wrap} pointerEvents="box-none">

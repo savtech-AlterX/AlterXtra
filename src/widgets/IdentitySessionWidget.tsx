@@ -5,7 +5,15 @@ import { FlexWidget, TextWidget } from 'react-native-android-widget';
 // (targets/widget/IdentitySessionWidget.swift) — same start/stop concept,
 // rendered as RemoteViews via react-native-android-widget instead of
 // SwiftUI/WidgetKit.
-export function IdentitySessionWidget({ active, subtitle }: { active: boolean; subtitle: string }) {
+export function IdentitySessionWidget({
+  active,
+  subtitle,
+  streakDays,
+}: {
+  active: boolean;
+  subtitle: string;
+  streakDays: number;
+}) {
   return (
     <FlexWidget
       clickAction="TOGGLE_SESSION"
@@ -25,6 +33,12 @@ export function IdentitySessionWidget({ active, subtitle }: { active: boolean; s
         style={{ fontSize: 16, fontWeight: 'bold', color: active ? '#ff5470' : '#3da8f5' }}
       />
       <TextWidget text={subtitle} style={{ fontSize: 11, color: '#9a9a9a', marginTop: 2 }} />
+      {streakDays > 0 ? (
+        <TextWidget
+          text={`🔥 ${streakDays}-day streak`}
+          style={{ fontSize: 11, color: '#f5a623', marginTop: 6 }}
+        />
+      ) : null}
     </FlexWidget>
   );
 }

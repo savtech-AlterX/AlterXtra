@@ -7,6 +7,8 @@ import AppIntents
 // to actually share data instead of silently reading/writing two separate stores.
 private let appGroupId = "group.com.alterxtra.app"
 private let startedAtKey = "identitySession.startedAt"
+private let streakDaysKey = "identitySession.activeStreakDays"
+private let brandBlue = Color(red: 0x3d / 255, green: 0xa8 / 255, blue: 0xf5 / 255)
 
 private func isoFormatter() -> ISO8601DateFormatter {
     let formatter = ISO8601DateFormatter()
@@ -19,26 +21,32 @@ private func readStartedAt() -> Date? {
     return isoFormatter().date(from: raw)
 }
 
+private func readStreakDays() -> Int {
+    UserDefaults(suiteName: appGroupId)?.integer(forKey: streakDaysKey) ?? 0
+}
+
 struct IdentitySessionEntry: TimelineEntry {
     let date: Date
     let startedAt: Date?
+    let streakDays: Int
 }
 
 struct IdentitySessionProvider: TimelineProvider {
     func placeholder(in context: Context) -> IdentitySessionEntry {
-        IdentitySessionEntry(date: .now, startedAt: nil)
+        IdentitySessionEntry(date: .now, startedAt: nil, streakDays: 0)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (IdentitySessionEntry) -> Void) {
-        completion(IdentitySessionEntry(date: .now, startedAt: readStartedAt()))
+        completion(IdentitySessionEntry(date: .now, startedAt: readStartedAt(), streakDays: readStreakDays()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<IdentitySessionEntry>) -> Void) {
-        let entry = IdentitySessionEntry(date: .now, startedAt: readStartedAt())
+        let entry = IdentitySessionEntry(date: .now, startedAt: readStartedAt(), streakDays: readStreakDays())
         // No scheduled reloads needed: the app and ToggleIdentitySessionIntent
         // both call WidgetCenter.shared.reloadAllTimelines() the moment a
-        // session actually starts or stops, and the elapsed-time text below
-        // updates live on its own via Text(_, style: .timer).
+        // session actually starts/stops or the streak count changes, and the
+        // elapsed-time text below updates live on its own via
+        // Text(_, style: .timer).
         completion(Timeline(entries: [entry], policy: .never))
     }
 }
@@ -111,6 +119,71 @@ struct IdentitySessionWidgetEntryView: View {
                 }
             }
 
+        case .systemSmall:
+            Button(intent: ToggleIdentitySessionIntent()) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Image(systemName: entry.startedAt != nil ? "stop.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(entry.startedAt != nil ? .red : brandBlue)
+                    Spacer(minLength: 0)
+                    Text(entry.startedAt != nil ? "In identity" : "Start session")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    if let startedAt = entry.startedAt {
+                        Text(startedAt, style: .timer)
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    } else {
+                        Text("Tap to begin")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    }
+                    if entry.streakDays > 0 {
+                        Label("\(entry.streakDays)-day streak", systemImage: "flame.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+
+        case .systemMedium:
+            Button(intent: ToggleIdentitySessionIntent()) {
+                HStack(spacing: 16) {
+                    Image(systemName: entry.startedAt != nil ? "stop.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundStyle(entry.startedAt != nil ? .red : brandBlue)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(entry.startedAt != nil ? "In identity" : "Start session")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                        if let startedAt = entry.startedAt {
+                            Text(startedAt, style: .timer)
+                                .font(.subheadline)
+                                .foregroundStyle(.gray)
+                        } else {
+                            Text("Tap to begin your identity session")
+                                .font(.subheadline)
+                                .foregroundStyle(.gray)
+                        }
+                    }
+                    Spacer()
+                    if entry.streakDays > 0 {
+                        VStack(spacing: 2) {
+                            Text("\(entry.streakDays)")
+                                .font(.title2.bold())
+                                .foregroundStyle(.orange)
+                            Text(entry.streakDays == 1 ? "day" : "days")
+                                .font(.caption2)
+                                .foregroundStyle(.gray)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+
         default:
             Text("Unsupported")
         }
@@ -126,7 +199,10 @@ struct IdentitySessionWidget: Widget {
                 .containerBackground(.black, for: .widget)
         }
         .configurationDisplayName("Identity Session")
-        .description("Start or stop practicing your identity right from your Lock Screen.")
-        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .description("Start or stop practicing your identity, and see your streak, from your Lock Screen or Home Screen.")
+        .supportedFamilies([
+            .accessoryCircular, .accessoryRectangular, .accessoryInline,
+            .systemSmall, .systemMedium,
+        ])
     }
 }
