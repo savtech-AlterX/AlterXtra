@@ -32,7 +32,7 @@ const OPTIONS: AppIconChoice[][] = [
 // height from an `aspectRatio` style the way RN does — it renders at the
 // source file's raw pixel height instead — so this computes explicit
 // per-icon width/height rather than relying on that.)
-const GLYPH_WIDTH = 58;
+const GLYPH_WIDTH = 88;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
   'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (307 / 236) },
@@ -59,7 +59,7 @@ export default function ChooseIcon() {
   const [selected, setSelected] = useState<AppIconChoice>(data.onboardingDraft?.icon ?? 'mystery');
 
   return (
-    <HudScreen scroll={false}>
+    <HudScreen style={styles.screen}>
       <View style={styles.header}>
         <Text style={styles.title}>
           choose an icon{'\n'}for your app
@@ -108,13 +108,20 @@ export default function ChooseIcon() {
   );
 }
 
-// Sized to fit five cards plus the title and continue button on one screen
-// with no scrolling, down to a 667pt-tall device (iPhone SE) — the original
-// single-row sizing (104x176 cards, 66pt glyphs) was tuned for three cards
-// and ran well past the fold once there were five, forcing a scroll the
-// reference design doesn't show.
+// Card size is scaled off the reference design (see the `box` comment
+// below) rather than shrunk to guarantee no scrolling on every device —
+// on a typical modern phone (390-430pt wide) this still fits without
+// scrolling, and the screen falls back to scrolling rather than clipping
+// on anything smaller.
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  // Trims HudScreen's default 40pt bottom padding and 16pt inter-block gap
+  // (sized for shorter screens) down to what these three larger blocks
+  // actually need, to keep a typical phone from needing to scroll at all.
+  screen: {
+    gap: 10,
+    paddingBottom: 20,
+  },
   header: {
     alignItems: 'center',
   },
@@ -128,20 +135,19 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   title: {
     textAlign: 'center',
     fontFamily: fonts.bodyMedium,
-    fontSize: 16,
-    lineHeight: 20,
+    fontSize: 22,
+    lineHeight: 27,
     letterSpacing: 1,
     color: colors.glow,
     textShadowColor: colors.glow,
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    textShadowRadius: 12,
   },
-  // Not flex:1 + centered — that filled all the leftover space between the
-  // header and the button and centered the rows inside it, which read as a
-  // big empty gap above and below the cards on anything taller than the
-  // smallest target device. The reference packs the cards right under the
-  // title instead, with the button pinned to the bottom by the footer's
-  // own marginTop: 'auto'.
+  // Packed right under the title at their natural size (not flex:1 +
+  // centered, which splits the leftover space into a gap above the cards
+  // and another below) — the button just follows after, with normal flow
+  // spacing rather than being force-pinned to the bottom, since the screen
+  // scrolls now if a smaller device needs it.
   grid: {
     alignItems: 'center',
     gap: 10,
@@ -149,15 +155,20 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
+    gap: 16,
   },
   cardWrap: {
     alignItems: 'center',
   },
+  // Card size and aspect measured directly off the reference image (a card
+  // there is ~36% of the design's width, at a ~1:1.49 width:height ratio) —
+  // scaled to this screen's own width rather than picking an arbitrary size,
+  // which is what made earlier passes look noticeably smaller/daintier than
+  // the reference despite matching its layout structure.
   box: {
-    width: 90,
-    height: 152,
-    borderRadius: 14,
+    width: 138,
+    height: 206,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.borderDim,
     backgroundColor: colors.panelSolid,
@@ -169,7 +180,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     borderColor: colors.glowStrong,
     shadowColor: colors.glow,
     shadowOpacity: 0.7,
-    shadowRadius: 12,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 0 },
     elevation: 8,
   },
@@ -178,22 +189,22 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   mysteryGlyph: {
     fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 54,
+    fontSize: 74,
     ...glowShadow,
-    textShadowRadius: 14,
+    textShadowRadius: 16,
   },
   reflection: {
-    width: 46,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 6,
+    width: 62,
+    height: 5,
+    borderRadius: 3,
+    marginTop: 8,
     shadowColor: colors.glow,
     shadowOpacity: 0.9,
-    shadowRadius: 6,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
   },
   footer: {
-    marginTop: 'auto',
+    marginTop: 4,
     gap: 16,
   },
 });
