@@ -37,7 +37,13 @@ export type MarkExpression = 'neutral' | 'smile' | 'wink';
 const WORDMARK = require('../../assets/wordmark.png');
 
 export function markSource(icon: AppIconChoice | undefined, expression: MarkExpression = 'neutral') {
-  const variants = MARKS[icon ?? 'male'];
+  // Falls back to 'male' for any icon value that isn't a real MARKS key —
+  // not just undefined. A value can reach here that predates a later rename
+  // of the choice-icon options (persisted in an existing identity or
+  // onboarding draft from before the rename), and MARKS[icon] would then be
+  // undefined, crashing every screen that renders the identity mark (home
+  // hero, splash, app-lock) on the next line's `.neutral` access.
+  const variants = MARKS[icon as keyof typeof MARKS] ?? MARKS.male;
   return (variants as Partial<Record<MarkExpression, { source: number; aspect: number }>>)[expression] ?? variants.neutral;
 }
 
