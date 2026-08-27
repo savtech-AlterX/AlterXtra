@@ -8,6 +8,7 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
+import { fonts } from '../../src/theme/typography';
 
 // Two rows of two hairstyle variants around a centered 'mystery' card,
 // matching the 5-card reference layout — not the original single row of
@@ -31,7 +32,7 @@ const OPTIONS: AppIconChoice[][] = [
 // height from an `aspectRatio` style the way RN does — it renders at the
 // source file's raw pixel height instead — so this computes explicit
 // per-icon width/height rather than relying on that.)
-const GLYPH_WIDTH = 66;
+const GLYPH_WIDTH = 58;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
   'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (307 / 236) },
@@ -49,7 +50,7 @@ function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
 }
 
 export default function ChooseIcon() {
-  const { colors, typography } = useAppTheme();
+  const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, setOnboardingDraft } = useAppData();
@@ -58,10 +59,10 @@ export default function ChooseIcon() {
   const [selected, setSelected] = useState<AppIconChoice>(data.onboardingDraft?.icon ?? 'mystery');
 
   return (
-    <HudScreen>
+    <HudScreen scroll={false}>
       <View style={styles.header}>
-        <Text style={[typography.screenTitle, styles.title]}>
-          CHOOSE AN ICON{'\n'}FOR YOUR APP
+        <Text style={styles.title}>
+          choose an icon{'\n'}for your app
         </Text>
       </View>
 
@@ -107,32 +108,56 @@ export default function ChooseIcon() {
   );
 }
 
+// Sized to fit five cards plus the title and continue button on one screen
+// with no scrolling, down to a 667pt-tall device (iPhone SE) — the original
+// single-row sizing (104x176 cards, 66pt glyphs) was tuned for three cards
+// and ran well past the fold once there were five, forcing a scroll the
+// reference design doesn't show.
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
   header: {
-    marginTop: 24,
     alignItems: 'center',
   },
+  // LCD-Bold (screenTitle's usual font, used everywhere else in the app) is
+  // a segmented-display face with no real lowercase forms — feeding it
+  // lowercase text just renders as caps, silently undoing the point of this
+  // one screen matching the reference's lowercase title. Chakra Petch (the
+  // app's other, "reading voice" font) has real lowercase, so this title
+  // uses that instead, with the glow added by hand since body text normally
+  // has none.
   title: {
     textAlign: 'center',
+    fontFamily: fonts.bodyMedium,
+    fontSize: 16,
+    lineHeight: 20,
+    letterSpacing: 1,
+    color: colors.glow,
+    textShadowColor: colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
+  // Not flex:1 + centered — that filled all the leftover space between the
+  // header and the button and centered the rows inside it, which read as a
+  // big empty gap above and below the cards on anything taller than the
+  // smallest target device. The reference packs the cards right under the
+  // title instead, with the button pinned to the bottom by the footer's
+  // own marginTop: 'auto'.
   grid: {
-    gap: 20,
-    marginTop: 32,
-    marginBottom: 24,
+    alignItems: 'center',
+    gap: 10,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 14,
+    gap: 10,
   },
   cardWrap: {
     alignItems: 'center',
   },
   box: {
-    width: 104,
-    height: 176,
-    borderRadius: 18,
+    width: 90,
+    height: 152,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.borderDim,
     backgroundColor: colors.panelSolid,
@@ -144,27 +169,27 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     borderColor: colors.glowStrong,
     shadowColor: colors.glow,
     shadowOpacity: 0.7,
-    shadowRadius: 16,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 0 },
     elevation: 8,
   },
   glyphImage: {
-    width: 66,
+    width: GLYPH_WIDTH,
   },
   mysteryGlyph: {
     fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 64,
+    fontSize: 54,
     ...glowShadow,
-    textShadowRadius: 16,
+    textShadowRadius: 14,
   },
   reflection: {
-    width: 56,
-    height: 5,
-    borderRadius: 3,
-    marginTop: 10,
+    width: 46,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 6,
     shadowColor: colors.glow,
     shadowOpacity: 0.9,
-    shadowRadius: 8,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
   },
   footer: {

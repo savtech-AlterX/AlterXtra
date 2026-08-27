@@ -158,21 +158,29 @@ function computeInsights(data: AppData, now: Date): string[] {
     }
   }
 
-  const hours = data.identitySessions
+  const sessionHours = data.identitySessions
     .map((s) => new Date(s.startedAt).getHours())
     .filter((h) => !Number.isNaN(h));
-  if (hours.length >= 5) {
-    const morning = hours.filter((h) => h >= 5 && h < 12).length;
-    const afternoon = hours.filter((h) => h >= 12 && h < 17).length;
-    const evening = hours.length - morning - afternoon;
-    const max = Math.max(morning, afternoon, evening);
-    if (max / hours.length >= 0.5) {
-      const label = max === morning ? 'the morning' : max === afternoon ? 'the afternoon' : 'the evening';
-      insights.push(`Most of your identity sessions happen in ${label}.`);
-    }
+  const sessionTimeOfDay = dominantTimeOfDay(sessionHours, 5);
+  if (sessionTimeOfDay) {
+    insights.push(`Most of your identity sessions happen in ${sessionTimeOfDay}.`);
   }
 
   return insights.slice(0, 4);
+}
+
+// Buckets hours-of-day into morning/afternoon/evening and names the bucket
+// only once it holds at least half of a sample large enough to say something
+// honest about — used for both the identity-session and app-open timing
+// patterns.
+function dominantTimeOfDay(hours: number[], minSample: number): string | null {
+  if (hours.length < minSample) return null;
+  const morning = hours.filter((h) => h >= 5 && h < 12).length;
+  const afternoon = hours.filter((h) => h >= 12 && h < 17).length;
+  const evening = hours.length - morning - afternoon;
+  const max = Math.max(morning, afternoon, evening);
+  if (max / hours.length < 0.5) return null;
+  return max === morning ? 'the morning' : max === afternoon ? 'the afternoon' : 'the evening';
 }
 
 // Compares the log-entry alignment rate on days a marker event happened
@@ -319,6 +327,21 @@ export type GrowthStats = {
     currentStreakDays: number;
     bestStreakDays: number;
   };
+  // How often, and roughly when, the app actually gets opened — distinct
+  // from activeStreakDays, which tracks days with real activity logged, not
+  // just a launch.
+  appActivity: {
+    totalOpens: number;
+    opensToday: number;
+    opensThisWeek: number;
+    // A time-of-day label (e.g. "the evening") only once there's enough of a
+    // sample to say something honest about it — same 50%-of-a-≥5-sample bar
+    // computeInsights uses for the identity-session version of this.
+    mostActiveTimeOfDay: string | null;
+    currentStreakDays: number;
+    // Newest-first, for a short "recent opens" list in the UI.
+    recentOpens: string[];
+  };
 };
 
 export function computeGrowthStats(data: AppData, now: Date = new Date()): GrowthStats {
@@ -403,6 +426,7 @@ export function computeGrowthStats(data: AppData, now: Date = new Date()): Growt
       total: data.habitCheckIns.length,
     },
     identitySession: computeIdentitySessionStats(data.identitySessions, now),
+    appActivity: computeAppActivityStats(data.appOpens, now),
   };
 }
 
@@ -427,6 +451,22 @@ export function formatDurationShort(totalSeconds: number): string {
   if (hours > 0) return `${hours}h ${minutes}m`;
   if (minutes > 0) return `${minutes}m`;
   return `${seconds}s`;
+}
+
+function computeAppActivityStats(appOpens: string[], now: Date): GrowthStats['appActivity'] {
+  const todayKey = dateKeyOf(now);
+  const weekStart = new Date(now.getTime() - WEEK_MS);
+  const openDayKeys = new Set(appOpens.map((iso) => dateKey(iso)).filter((k): k is string => k !== null));
+  const hours = appOpens.map((iso) => new Date(iso).getHours()).filter((h) => !Number.isNaN(h));
+  return {
+    totalOpens: appOpens.length,
+    opensToday: appOpens.filter((iso) => dateKey(iso) === todayKey).length,
+    opensThisWeek: appOpens.filter((iso) => new Date(iso).getTime() >= weekStart.getTime()).length,
+    mostActiveTimeOfDay: dominantTimeOfDay(hours, 5),
+    currentStreakDays: computeStreakDays(openDayKeys, now),
+    // appOpens is stored newest-first (see AppDataContext.logAppOpen).
+    recentOpens: appOpens.slice(0, 5),
+  };
 }
 
 function computeIdentitySessionStats(sessions: AppData['identitySessions'], now: Date) {

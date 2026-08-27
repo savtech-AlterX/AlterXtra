@@ -50,6 +50,11 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
     title: 'Shareable Progress Reports',
     body: 'Export a snapshot of your growth anytime — streaks, beliefs rewired, goals hit — to share or keep.',
   },
+  {
+    icon: 'time-outline',
+    title: 'App Open Activity',
+    body: 'See exactly when and how often you open AlterX — total opens, this week’s count, your open streak, and your most active time of day.',
+  },
 ];
 
 export default function AlterXtra() {
