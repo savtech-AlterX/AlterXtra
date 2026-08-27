@@ -17,7 +17,10 @@ const AVATARS = {
 // drawn-on smirk composited onto the jaw/mouth area — same white line style
 // and glow as the rest of the mark, not a separate face. 'mystery' has no
 // expression variants (it's an abstract "?" glyph, not a profile with a
-// mouth), so it only ever resolves to its one neutral image.
+// mouth), so it only ever resolves to its one neutral image. 'afro' and
+// 'curly' are two more hairstyle glyphs on the same linework — each has its
+// own head art here, but no full-figure/animation art of its own yet (see
+// figureKey below), so 'smile' is left unset and falls back to neutral.
 const MARKS = {
   male: {
     neutral: { source: require('../../assets/icon-choice-male.png'), aspect: 368 / 633 },
@@ -29,6 +32,12 @@ const MARKS = {
   },
   mystery: {
     neutral: { source: require('../../assets/identity-mark-mystery.png'), aspect: 290 / 480 },
+  },
+  afro: {
+    neutral: { source: require('../../assets/icon-choice-afro.png'), aspect: 279 / 443 },
+  },
+  curly: {
+    neutral: { source: require('../../assets/icon-choice-curly.png'), aspect: 247 / 450 },
   },
 } as const;
 
@@ -197,19 +206,29 @@ export type MarkExpression = 'neutral' | 'smile' | 'wink';
 
 const WORDMARK = require('../../assets/wordmark.png');
 
-// 'mystery' has no artwork of its own yet, so it falls back to the male figure.
-const figureKey = (icon: AppIconChoice | undefined) => (icon === 'female' ? 'female' : 'male');
+// Only 'male' and 'female' have full-figure/animation art (avatar, mascot
+// poses, walk cycle, throw cycle) — 'mystery' isn't a real avatar to walk
+// around as, and 'afro'/'curly' are icon-choice glyphs only, with no source
+// footage of their own to build a matching figure from. All three borrow the
+// nearer of the two real figures for everything below the icon-choice glyph.
+const BODY_KEY: Record<AppIconChoice, 'male' | 'female'> = {
+  male: 'male',
+  mystery: 'male',
+  afro: 'male',
+  female: 'female',
+  curly: 'female',
+};
+const figureKey = (icon: AppIconChoice | undefined) => (icon ? BODY_KEY[icon] : 'male');
 
 export function avatarSource(icon: AppIconChoice | undefined) {
   return AVATARS[figureKey(icon)];
 }
 
 export function markSource(icon: AppIconChoice | undefined, expression: MarkExpression = 'neutral') {
-  // Unlike figureKey (which collapses 'mystery' to the male body for the
-  // full-figure mascot, since 'mystery' isn't a real avatar to walk around
-  // as), the mark has its own dedicated art — a question-mark glyph, not a
-  // fallback face — so it's looked up directly rather than through figureKey.
-  const variants = MARKS[icon === 'female' ? 'female' : icon === 'mystery' ? 'mystery' : 'male'];
+  // Unlike figureKey (which collapses every icon down to the male or female
+  // body for the full-figure mascot), the mark has its own dedicated art per
+  // icon — so it's looked up directly rather than through figureKey.
+  const variants = MARKS[icon ?? 'male'];
   return (variants as Partial<Record<MarkExpression, { source: number; aspect: number }>>)[expression] ?? variants.neutral;
 }
 

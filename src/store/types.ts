@@ -1,4 +1,4 @@
-export type AppIconChoice = 'male' | 'female' | 'mystery';
+export type AppIconChoice = 'male' | 'female' | 'mystery' | 'afro' | 'curly';
 
 export type Identity = {
   archetype: string;
