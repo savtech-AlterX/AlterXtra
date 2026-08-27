@@ -36,7 +36,7 @@ function IconBox({
   const styles = useThemedStyles(makeStyles);
   return (
     <Pressable style={styles.iconBox} onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
-      <Ionicons name={icon} size={20} color={colors.glow} style={iconGlow} />
+      <Ionicons name={icon} size={17} color={colors.glow} style={iconGlow} />
       <Text style={styles.iconBoxLabel}>{label}</Text>
     </Pressable>
   );
@@ -57,7 +57,7 @@ function GridCard({
   const styles = useThemedStyles(makeStyles);
   return (
     <GlowCard containerStyle={styles.gridCardContainer} style={styles.gridCard} onPress={onPress}>
-      <Ionicons name={icon} size={26} color={colors.glow} style={iconGlow} />
+      <Ionicons name={icon} size={18} color={colors.glow} style={iconGlow} />
       <Text style={styles.gridTitle}>{title}</Text>
       {/* Two lines are reserved whether or not they're used, so cards sitting
           side by side in the wrapped grid always line up. */}
@@ -80,7 +80,7 @@ export default function Home() {
   const primaryGoal = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
 
   return (
-    <HudScreen>
+    <HudScreen style={styles.screen}>
       <View style={styles.topRow}>
         <IconBox icon="create-outline" label="QUICK NOTES" onPress={() => router.push('/quick-notes')} />
         <View style={styles.wordmarkBlock}>
@@ -94,7 +94,7 @@ export default function Home() {
             accessibilityRole="button"
             accessibilityLabel="Limited Beliefs"
           >
-            <Ionicons name="bulb-outline" size={18} color={colors.glow} style={iconGlow} />
+            <Ionicons name="bulb-outline" size={16} color={colors.glow} style={iconGlow} />
             <Text style={styles.iconBoxLabel}>LB</Text>
           </Pressable>
           <Pressable
@@ -103,7 +103,7 @@ export default function Home() {
             accessibilityRole="button"
             accessibilityLabel="Alter-Xtra"
           >
-            <MaterialCommunityIcons name="crown-outline" size={18} color={colors.glow} style={iconGlow} />
+            <MaterialCommunityIcons name="crown-outline" size={16} color={colors.glow} style={iconGlow} />
             <Text style={styles.iconBoxLabel}>XTRA</Text>
           </Pressable>
         </View>
@@ -133,7 +133,7 @@ export default function Home() {
           end={{ x: 1, y: 0 }}
           style={styles.heroAccentLine}
         />
-        <IdentityMarkRing size={130} style={styles.heroIcon} />
+        <IdentityMarkRing size={60} style={styles.heroIcon} />
         <Text style={[typography.cardTitle, styles.heroTitle]}>LIFESTYLE{'\n'}REPROGRAMMING</Text>
         <Text style={styles.heroTagline}>build your reality</Text>
         <Pressable
@@ -142,7 +142,7 @@ export default function Home() {
           accessibilityRole="button"
           accessibilityLabel="Open Habit Reprogramming"
         >
-          <Ionicons name="arrow-forward" size={20} color={colors.glow} style={iconGlow} />
+          <Ionicons name="arrow-forward" size={16} color={colors.glow} style={iconGlow} />
         </Pressable>
       </GlowCard>
 
@@ -203,23 +203,39 @@ export default function Home() {
   );
 }
 
+// Sized to fit the header, hero card, and all 8 grid cards on one screen
+// with no scrolling, down to a 667pt-tall device (iPhone SE) — the
+// original sizing (32pt hero padding, 130pt identity ring, 16pt grid
+// titles, HudScreen's default 16pt gap between every block) added up to
+// well past a phone's fold, forcing a scroll the reference design doesn't
+// show.
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  // Overrides HudScreen's default 16pt gap between top-level blocks (topRow,
+  // welcome text, hero, grid) — with four of those on one screen, the
+  // default gap alone was costing 48pt of the fold. Also trims HudScreen's
+  // default 40pt bottom padding (sized for shorter, scrolling screens) down
+  // to what a fixed non-scrolling screen actually needs.
+  screen: {
+    gap: 8,
+    paddingTop: 12,
+    paddingBottom: 14,
+  },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: 4,
   },
   iconBox: {
-    width: 58,
-    height: 54,
-    borderRadius: 12,
+    width: 50,
+    height: 44,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 3,
     paddingHorizontal: 4,
   },
   rightIcons: {
@@ -227,14 +243,14 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     gap: 6,
   },
   iconBoxSmall: {
-    width: 46,
-    height: 54,
-    borderRadius: 12,
+    width: 40,
+    height: 44,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 3,
   },
   iconBoxLabel: {
     fontFamily: typography.label.fontFamily,
@@ -247,27 +263,28 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     gap: 2,
   },
   wordmarkImage: {
-    width: 150,
-    height: 29,
+    width: 120,
+    height: 23,
   },
   wordmarkSubtitle: {
     fontFamily: typography.label.fontFamily,
-    fontSize: 9,
+    fontSize: 8,
     color: colors.glowStrong,
-    letterSpacing: 3,
+    letterSpacing: 2,
   },
   welcome: {
     fontFamily: typography.body.fontFamily,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 18,
     color: colors.glow,
   },
   archetype: {
-    marginTop: 2,
+    fontSize: 15,
+    marginTop: 1,
   },
   hero: {
     alignItems: 'center',
-    paddingVertical: 32,
+    padding: 10,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -279,24 +296,25 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     height: 2,
   },
   heroIcon: {
-    marginBottom: 18,
+    marginBottom: 6,
   },
   heroTitle: {
     textAlign: 'center',
-    fontSize: 24,
-    lineHeight: 30,
+    fontSize: 15,
+    lineHeight: 18,
   },
   heroTagline: {
     fontFamily: typography.body.fontFamily,
     fontStyle: 'italic',
+    fontSize: 12,
     color: colors.accentTeal,
-    marginTop: 8,
-    marginBottom: 20,
+    marginTop: 2,
+    marginBottom: 5,
   },
   heroArrow: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 9,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
@@ -305,26 +323,27 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 14,
+    gap: 6,
   },
   gridCardContainer: {
     width: '47%',
   },
   gridCard: {
-    gap: 6,
+    gap: 2,
+    padding: 8,
   },
   gridTitle: {
     fontFamily: typography.cardTitle.fontFamily,
-    fontSize: 16,
+    fontSize: 12,
     color: colors.textPrimary,
-    marginTop: 4,
+    marginTop: 1,
     ...glowShadow,
   },
   gridSubtitle: {
     fontFamily: typography.bodyMuted.fontFamily,
-    fontSize: 12,
-    lineHeight: 17,
-    height: 34, // exactly two lines — the grid's alignment depends on it
+    fontSize: 10,
+    lineHeight: 12,
+    height: 24, // exactly two lines — the grid's alignment depends on it
     color: colors.textSecondary,
   },
 });
