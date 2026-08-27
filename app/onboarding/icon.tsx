@@ -11,13 +11,13 @@ import type { AppTheme } from '../../src/theme/useAppTheme';
 import { fonts } from '../../src/theme/typography';
 
 // Two rows of two hairstyle variants around a centered 'mystery' card,
-// matching the 5-card reference layout — not the original single row of
-// three, now that there are hairstyle options to show alongside the plain
-// male/female marks.
+// matching the 5-card reference layout exactly — including its left-to-right
+// order, which puts the curly style before the flowing-hair one on the
+// bottom row.
 const OPTIONS: AppIconChoice[][] = [
   ['male', 'male-mohawk'],
   ['mystery'],
-  ['female', 'female-curly'],
+  ['female-curly', 'female'],
 ];
 
 // The original icon-choice glyphs: the head silhouette merges into a
@@ -67,31 +67,35 @@ export default function ChooseIcon() {
       </View>
 
       <View style={styles.grid}>
-        {OPTIONS.map((rowOptions, i) => (
-          <View key={i} style={styles.row}>
-            {rowOptions.map((opt) => {
-              const isSelected = selected === opt;
-              const tint = isSelected ? colors.glowStrong : colors.glow;
-              return (
-                <View key={opt} style={styles.cardWrap}>
+        {OPTIONS.map((rowOptions, i) => {
+          const isMysteryRow = rowOptions.length === 1 && rowOptions[0] === 'mystery';
+          return (
+            <View key={i} style={styles.row}>
+              {rowOptions.map((opt) => {
+                const isSelected = selected === opt;
+                const tint = isSelected ? colors.glowStrong : colors.glow;
+                return (
                   <Pressable
+                    key={opt}
                     onPress={() => {
                       setSelected(opt);
                       setOnboardingDraft({ icon: opt });
                     }}
-                    style={[styles.box, isSelected && styles.boxSelected]}
+                    style={[
+                      isMysteryRow ? styles.mysteryBox : styles.box,
+                      isSelected && styles.boxSelected,
+                    ]}
                     accessibilityRole="button"
                     accessibilityLabel={`${opt} icon`}
                     accessibilityState={{ selected: isSelected }}
                   >
                     <IconGlyph option={opt} tint={tint} />
                   </Pressable>
-                  <View style={[styles.reflection, { backgroundColor: tint, opacity: isSelected ? 0.9 : 0.45 }]} />
-                </View>
-              );
-            })}
-          </View>
-        ))}
+                );
+              })}
+            </View>
+          );
+        })}
       </View>
 
       <View style={styles.footer}>
@@ -157,20 +161,36 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     justifyContent: 'center',
     gap: 16,
   },
-  cardWrap: {
-    alignItems: 'center',
-  },
   // Card size and aspect measured directly off the reference image (a card
   // there is ~36% of the design's width, at a ~1:1.49 width:height ratio) —
   // scaled to this screen's own width rather than picking an arbitrary size,
   // which is what made earlier passes look noticeably smaller/daintier than
-  // the reference despite matching its layout structure.
+  // the reference despite matching its layout structure. The border is a
+  // uniform bright `border` on every card, not a dim one that only lights up
+  // once selected — the reference shows all five cards equally glowing;
+  // `boxSelected` layers on the extra shadow and full-strength border that
+  // mark the actual choice.
   box: {
     width: 138,
     height: 206,
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.borderDim,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    backgroundColor: colors.panelSolid,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  // The reference's middle card isn't the same size as the other four — it's
+  // noticeably shorter and a touch narrower (~82% of the row cards' height,
+  // ~96% of their width), which is what makes it read as sitting "between"
+  // the two rows rather than just another card in a taller stack.
+  mysteryBox: {
+    width: 132,
+    height: 169,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     backgroundColor: colors.panelSolid,
     alignItems: 'center',
     justifyContent: 'center',
@@ -192,16 +212,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontSize: 74,
     ...glowShadow,
     textShadowRadius: 16,
-  },
-  reflection: {
-    width: 62,
-    height: 5,
-    borderRadius: 3,
-    marginTop: 8,
-    shadowColor: colors.glow,
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
   },
   footer: {
     marginTop: 4,
