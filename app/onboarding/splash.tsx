@@ -23,7 +23,7 @@ export default function Splash() {
         <Text style={styles.subtitle}>IDENTITY TRANSFORMATION</Text>
       </View>
 
-      <GlowButton label="BEGIN" onPress={() => router.push('/onboarding/account')} />
+      <GlowButton label="BEGIN" onPress={() => router.push('/onboarding/icon')} />
     </HudScreen>
   );
 }
