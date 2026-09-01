@@ -21,14 +21,15 @@ export default function PrivacyPolicy() {
   return (
     <HudScreen>
       <StackHeader title="PRIVACY POLICY" />
-      <Text style={styles.updated}>LAST UPDATED JULY 2026</Text>
+      <Text style={styles.updated}>LAST UPDATED SEPTEMBER 2026</Text>
 
       <Section title="Data Storage">
-        All of your content stays on your device. Everything you create in AlterX — your identity, diary
-        entries, future-self letters and videos, goals, habit-reprogramming entries, limited beliefs, log book
-        entries, quick notes, and photos/videos — is stored locally only. AlterX has no server or account
-        system, and never uploads, syncs, or transmits your personal content anywhere. The only network
-        activity is checking for app updates, which does not include your personal content.
+        All of your content stays on your device by default. Everything you create in AlterX — your identity,
+        diary entries, future-self letters and videos, goals, habit-reprogramming entries, limited beliefs, log
+        book entries, quick notes, and photos/videos — is stored locally only. AlterX has no server or account
+        system, and never uploads, syncs, or transmits your personal content anywhere unless you turn on Cloud
+        Backup below. The only network activity AlterX performs on its own is checking for app updates, which
+        does not include your personal content.
       </Section>
 
       <Section title="Permissions">
@@ -37,14 +38,27 @@ export default function PrivacyPolicy() {
         accesses files you specifically select.
       </Section>
 
+      <Section title="Optional Cloud Backup">
+        Settings → Cloud Backup is off by default. If you turn it on, your identity, diary, goals, habits, log
+        book, and quick notes (text only — not photos or videos) are written to a private, app-only area of
+        your own iCloud account and/or your own Google Drive (via Google's drive.appdata scope, which only
+        lets AlterX see its own hidden folder). This goes directly from your device to your own account;
+        AlterX and its developer never see or hold a copy. It's governed by Apple's and Google's own privacy
+        policies, and AlterX's use of Google Drive access complies with the Google API Services User Data
+        Policy, including its Limited Use requirements.
+      </Section>
+
       <Section title="Third-Party Services">
         AlterX does not use any third-party analytics, advertising, or tracking services, and does not sell
-        or share your data, because it is never collected on a server in the first place.
+        or share your data. The only third parties AlterX ever talks to are Expo (app updates) and — only if
+        you enable it — Apple iCloud and/or Google Drive, acting purely as your own personal storage.
       </Section>
 
       <Section title="Data Deletion">
-        Delete all app data anytime via Settings → Reset All Data. Uninstalling the app permanently deletes
-        all associated data from your device.
+        Delete all app data — including saved photos and videos, not just the entries referencing them — at
+        any time via Settings → Reset All Data. Uninstalling the app permanently deletes everything from your
+        device. Resetting does not delete a cloud backup you previously made — clear that from your iCloud or
+        Google Drive account, or overwrite it from Settings → Cloud Backup, if you want it gone too.
       </Section>
 
       <Section title="If You Need Support">
