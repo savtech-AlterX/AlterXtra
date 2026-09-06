@@ -44,4 +44,4 @@ We may update these terms as AlterX changes. Continued use of the app after an u
 
 ## Contact
 
-If you have questions about these terms, contact: **[ADD YOUR CONTACT EMAIL HERE]**
+If you have questions about these terms, contact: **savannahgiddings1234@icloud.com**
