@@ -53,6 +53,15 @@ Not wired up (not requested): ad conversion tracking and an A/B testing
 platform. If you start running ads or want experiments, PostHog covers both
 in one SDK and is the easiest next addition.
 
+## Canary token
+
+`app/api/canary/[token]/route.ts` is the trigger for a canary token — a
+decoy secrets file at the repo root (`../.env.production`) that alerts you
+if anyone ever opens the "rotate now" link in it. See `../SECURITY.md` for
+the full explanation and incident-response steps. To turn on alerts, set
+`CANARY_ALERT_WEBHOOK_URL` to a Slack/Discord/Zapier webhook; left unset,
+a trigger is only logged server-side (check your hosting provider's logs).
+
 ## Deploying
 
 Any Next.js host works; the path of least resistance is
