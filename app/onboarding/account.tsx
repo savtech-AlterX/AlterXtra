@@ -51,7 +51,12 @@ export default function CreateAccount() {
       <Text style={styles.subtitle}>Your transformation starts here.</Text>
 
       <Text style={typography.label}>FULL NAME</Text>
-      <HudTextInput placeholder="Your name" value={fullName} onChangeText={updateFullName} />
+      <HudTextInput
+        placeholder="Your name"
+        value={fullName}
+        onChangeText={updateFullName}
+        accessibilityLabel="Full name"
+      />
 
       <Text style={[typography.label, styles.spacer]}>EMAIL (OPTIONAL)</Text>
       <HudTextInput
@@ -60,13 +65,20 @@ export default function CreateAccount() {
         onChangeText={updateEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        accessibilityLabel="Email, optional"
       />
       <Text style={styles.note}>
         This profile is stored locally on your device. No account is created, no password is required, and no
         data is transmitted to a server.
       </Text>
 
-      <Pressable style={styles.checkboxRow} onPress={() => setConsent((v) => !v)}>
+      <Pressable
+        style={styles.checkboxRow}
+        onPress={() => setConsent((v) => !v)}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: consent }}
+        accessibilityLabel="I understand my data is stored only on this device"
+      >
         <View style={[styles.checkbox, consent && styles.checkboxChecked]}>
           {consent && <Ionicons name="checkmark" size={16} color={colors.background} style={iconGlow} />}
         </View>

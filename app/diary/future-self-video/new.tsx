@@ -124,6 +124,7 @@ export default function RecordFutureSelfVideo() {
         value={question}
         onChangeText={setQuestion}
         multiline
+        accessibilityLabel="Question, optional"
       />
 
       <Text style={[typography.label, styles.spacer]}>YOUR VIDEO</Text>

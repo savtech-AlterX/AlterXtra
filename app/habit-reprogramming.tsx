@@ -135,16 +135,27 @@ export default function HabitReprogramming() {
             <StackHeader title="HABIT REPROGRAMMING" />
 
             <Text style={typography.label}>TRIGGER</Text>
-            <HudTextInput placeholder="e.g. Feeling stressed after work" value={trigger} onChangeText={setTrigger} />
+            <HudTextInput
+              placeholder="e.g. Feeling stressed after work"
+              value={trigger}
+              onChangeText={setTrigger}
+              accessibilityLabel="Trigger"
+            />
 
             <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
-            <HudTextInput placeholder="e.g. Doom-scrolling for hours" value={oldHabit} onChangeText={setOldHabit} />
+            <HudTextInput
+              placeholder="e.g. Doom-scrolling for hours"
+              value={oldHabit}
+              onChangeText={setOldHabit}
+              accessibilityLabel="Old habit"
+            />
 
             <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
             <HudTextInput
               placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
               value={replacement}
               onChangeText={setReplacement}
+              accessibilityLabel="Replacement"
             />
 
             <Text style={[typography.label, styles.spacer]}>REWARD</Text>
@@ -152,6 +163,7 @@ export default function HabitReprogramming() {
               placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
               value={reward}
               onChangeText={setReward}
+              accessibilityLabel="Reward"
             />
 
             <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
@@ -159,6 +171,7 @@ export default function HabitReprogramming() {
               placeholder="e.g. I follow through on what I commit to."
               value={identityStatement}
               onChangeText={setIdentityStatement}
+              accessibilityLabel="Identity statement"
             />
 
             <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />

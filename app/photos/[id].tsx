@@ -72,7 +72,9 @@ export default function AlbumDetail() {
         numColumns={3}
         columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.gridContent}
-        renderItem={({ item }) => <Image source={{ uri: item }} style={styles.gridImage} />}
+        renderItem={({ item, index }) => (
+          <Image source={{ uri: item }} style={styles.gridImage} accessibilityLabel={`Photo ${index + 1}`} />
+        )}
         ListEmptyComponent={
           <EmptyState
             icon="images-outline"

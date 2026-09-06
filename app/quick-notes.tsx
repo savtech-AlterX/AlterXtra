@@ -80,6 +80,7 @@ export default function QuickNotes() {
               value={note.title}
               onChangeText={(t) => updateQuickNote(note.id, t, note.body)}
               style={styles.titleInput}
+              accessibilityLabel="Note title"
             />
             <Text style={styles.pageIndicator}>
               {index + 1}/{data.quickNotes.length}
@@ -91,6 +92,7 @@ export default function QuickNotes() {
             onChangeText={(t) => updateQuickNote(note.id, note.title, t)}
             multiline
             style={styles.bodyInput}
+            accessibilityLabel="Note body"
           />
         </View>
       )}

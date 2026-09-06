@@ -53,11 +53,18 @@ export default function ChooseIdentity() {
         placeholder="Search archetypes..."
         value={query}
         onChangeText={setQuery}
+        accessibilityLabel="Search archetypes"
       />
 
       <View style={styles.grid}>
         {filtered.map((a) => (
-          <Pressable key={a.id} style={styles.archetypeCard} onPress={() => embody(a.label)}>
+          <Pressable
+            key={a.id}
+            style={styles.archetypeCard}
+            onPress={() => embody(a.label)}
+            accessibilityRole="button"
+            accessibilityLabel={`Choose ${a.label} identity`}
+          >
             <View style={styles.archetypeIcon}>
               <Ionicons name={a.icon} size={18} color={colors.glow} style={iconGlow} />
             </View>
@@ -72,6 +79,7 @@ export default function ChooseIdentity() {
         placeholder="e.g. Elite Founder"
         value={customName}
         onChangeText={updateCustomName}
+        accessibilityLabel="Create your own identity"
       />
 
       <GlowButton

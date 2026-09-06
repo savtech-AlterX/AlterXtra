@@ -61,6 +61,7 @@ export default function NewLogEntry() {
         value={proof}
         onChangeText={setProof}
         multiline
+        accessibilityLabel="Proof"
       />
 
       <Text style={[typography.label, styles.spacer]}>CORRECTION</Text>
@@ -69,6 +70,7 @@ export default function NewLogEntry() {
         value={correction}
         onChangeText={setCorrection}
         multiline
+        accessibilityLabel="Correction"
       />
 
       <GlowButton

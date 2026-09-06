@@ -59,7 +59,12 @@ export default function PhotoAlbums() {
       {creating && (
         <GlowCard style={styles.createCard}>
           <Text style={typography.label}>ALBUM NAME</Text>
-          <HudTextInput placeholder="e.g. World Champion" value={title} onChangeText={setTitle} />
+          <HudTextInput
+            placeholder="e.g. World Champion"
+            value={title}
+            onChangeText={setTitle}
+            accessibilityLabel="Album name"
+          />
           <GlowButton label="CREATE" onPress={createAlbum} />
           <GlowButton label="CANCEL" variant="outline" onPress={() => setCreating(false)} />
         </GlowCard>
@@ -69,10 +74,17 @@ export default function PhotoAlbums() {
         <Pressable
           key={album.id}
           onPress={() => router.push({ pathname: '/photos/[id]', params: { id: album.id } })}
+          accessibilityRole="button"
+          accessibilityLabel={`${album.title}, ${album.photoUris.length} items`}
         >
           <GlowCard style={styles.albumRow}>
             {album.photoUris[0] ? (
-              <Image source={{ uri: album.photoUris[0] }} style={styles.thumb} />
+              <Image
+                source={{ uri: album.photoUris[0] }}
+                style={styles.thumb}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              />
             ) : (
               <View style={styles.thumbPlaceholder}>
                 <Ionicons name="image" size={22} color={colors.glow} style={iconGlow} />

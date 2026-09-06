@@ -19,7 +19,13 @@ export default function Splash() {
     <HudScreen scroll={false}>
       <View style={styles.center}>
         <IdentityMarkRing size={140} />
-        <Image source={wordmarkSource()} style={[styles.wordmark, { tintColor: colors.glow }]} resizeMode="contain" />
+        <Image
+          source={wordmarkSource()}
+          style={[styles.wordmark, { tintColor: colors.glow }]}
+          resizeMode="contain"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
         <Text style={styles.subtitle}>IDENTITY TRANSFORMATION</Text>
       </View>
 

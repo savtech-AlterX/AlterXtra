@@ -84,7 +84,13 @@ export default function Home() {
       <View style={styles.topRow}>
         <IconBox icon="create-outline" label="QUICK NOTES" onPress={() => router.push('/quick-notes')} />
         <View style={styles.wordmarkBlock}>
-          <Image source={wordmarkSource()} style={[styles.wordmarkImage, { tintColor: colors.glow }]} resizeMode="contain" />
+          <Image
+            source={wordmarkSource()}
+            style={[styles.wordmarkImage, { tintColor: colors.glow }]}
+            resizeMode="contain"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
           <Text style={styles.wordmarkSubtitle}>IDENTITY TRANSFORMATION</Text>
         </View>
         <View style={styles.rightIcons}>

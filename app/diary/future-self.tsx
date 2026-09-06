@@ -37,12 +37,16 @@ function ModeToggle({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
       <Pressable
         style={[styles.toggleButton, mode === 'letters' && styles.toggleButtonActive]}
         onPress={() => onChange('letters')}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: mode === 'letters' }}
       >
         <Text style={[styles.toggleLabel, mode === 'letters' && styles.toggleLabelActive]}>LETTERS</Text>
       </Pressable>
       <Pressable
         style={[styles.toggleButton, mode === 'video' && styles.toggleButtonActive]}
         onPress={() => onChange('video')}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: mode === 'video' }}
       >
         <Text style={[styles.toggleLabel, mode === 'video' && styles.toggleLabelActive]}>VIDEO</Text>
       </Pressable>
@@ -74,7 +78,12 @@ function LettersPanel() {
   return (
     <>
       <Text style={typography.label}>LETTER TITLE (OPTIONAL)</Text>
-      <HudTextInput placeholder="e.g. One year from now..." value={title} onChangeText={setTitle} />
+      <HudTextInput
+        placeholder="e.g. One year from now..."
+        value={title}
+        onChangeText={setTitle}
+        accessibilityLabel="Letter title, optional"
+      />
 
       <Text style={[typography.label, styles.spacer]}>YOUR LETTER</Text>
       <HudTextInput
@@ -82,6 +91,7 @@ function LettersPanel() {
         value={body}
         onChangeText={setBody}
         multiline
+        accessibilityLabel="Your letter"
       />
 
       <GlowButton

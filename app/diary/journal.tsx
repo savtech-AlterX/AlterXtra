@@ -106,10 +106,20 @@ export default function Journal() {
             {composing && (
               <View style={styles.composer}>
                 <Text style={typography.label}>DATE</Text>
-                <HudTextInput value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
+                <HudTextInput
+                  value={date}
+                  onChangeText={setDate}
+                  placeholder="YYYY-MM-DD"
+                  accessibilityLabel="Date"
+                />
 
                 <Text style={[typography.label, styles.spacer]}>TITLE (OPTIONAL)</Text>
-                <HudTextInput placeholder="Give your entry a title..." value={title} onChangeText={setTitle} />
+                <HudTextInput
+                  placeholder="Give your entry a title..."
+                  value={title}
+                  onChangeText={setTitle}
+                  accessibilityLabel="Title, optional"
+                />
 
                 <Text style={[typography.label, styles.spacer]}>YOUR ENTRY</Text>
                 <HudTextInput
@@ -117,6 +127,7 @@ export default function Journal() {
                   value={body}
                   onChangeText={setBody}
                   multiline
+                  accessibilityLabel="Your entry"
                 />
 
                 <GlowButton label="SAVE ENTRY" onPress={save} disabled={!body.trim()} style={styles.spacer} />

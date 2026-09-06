@@ -108,7 +108,13 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
         style={styles.button}
       />
       {failedAttempts >= ESCAPE_HATCH_AFTER_ATTEMPTS && (
-        <Pressable onPress={disableLock} hitSlop={8} style={styles.escapeHatch}>
+        <Pressable
+          onPress={disableLock}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Turn off App Lock"
+          style={styles.escapeHatch}
+        >
           <Text style={styles.escapeHatchText}>Can't authenticate? Turn off App Lock</Text>
         </Pressable>
       )}

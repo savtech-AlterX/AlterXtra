@@ -16,6 +16,7 @@ export function StackHeader({ title, right }: { title: string; right?: React.Rea
         onPress={() => router.back()}
         accessibilityRole="button"
         accessibilityLabel="Go back"
+        hitSlop={2}
       >
         <Ionicons name="chevron-back" size={22} color={colors.glow} style={iconGlow} />
       </Pressable>

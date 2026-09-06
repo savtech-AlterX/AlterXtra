@@ -12,9 +12,14 @@ type Props = {
   containerStyle?: ViewStyle;
   onPress?: () => void;
   strong?: boolean;
+  // Overrides what a screen reader announces for the whole card — without
+  // it, VoiceOver/TalkBack falls back to concatenating the text of every
+  // child, which is usually fine (icon + title + subtitle reads sensibly)
+  // but isn't always the clearest wording.
+  accessibilityLabel?: string;
 };
 
-export function GlowCard({ children, style, containerStyle, onPress, strong }: Props) {
+export function GlowCard({ children, style, containerStyle, onPress, strong, accessibilityLabel }: Props) {
   const styles = useThemedStyles(makeStyles);
   const card = <View style={[styles.card, strong && styles.strong, style]}>{children}</View>;
 
@@ -25,6 +30,8 @@ export function GlowCard({ children, style, containerStyle, onPress, strong }: P
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [containerStyle, pressed && styles.pressed]}
     >
       {card}

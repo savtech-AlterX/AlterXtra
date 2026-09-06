@@ -13,9 +13,22 @@ type Props = {
   style?: ViewStyle;
   disabled?: boolean;
   labelColor?: string;
+  // Overrides what a screen reader announces — defaults to the visible
+  // label, which is right for plain text buttons but wrong for ones whose
+  // label is decorative or ambiguous without more context.
+  accessibilityLabel?: string;
 };
 
-export function GlowButton({ label, onPress, variant = 'solid', icon, style, disabled, labelColor }: Props) {
+export function GlowButton({
+  label,
+  onPress,
+  variant = 'solid',
+  icon,
+  style,
+  disabled,
+  labelColor,
+  accessibilityLabel,
+}: Props) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   if (variant === 'outline') {
@@ -23,6 +36,9 @@ export function GlowButton({ label, onPress, variant = 'solid', icon, style, dis
       <Pressable
         onPress={onPress}
         disabled={disabled}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ?? label}
+        accessibilityState={{ disabled: !!disabled }}
         style={({ pressed }) => [
           styles.outline,
           style,
@@ -39,6 +55,9 @@ export function GlowButton({ label, onPress, variant = 'solid', icon, style, dis
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled: !!disabled }}
       style={({ pressed }) => [style, (pressed || disabled) && styles.pressed]}
     >
       <LinearGradient

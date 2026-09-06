@@ -58,7 +58,11 @@ export function IdentityMarkRing({ size = 130, style, icon, expression = 'neutra
 
   if (!playAnimation) {
     return (
-      <View style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}>
+      <View
+        style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
         <Animated.Image
           source={target.source}
           style={{ width: markWidth, height: markWidth / target.aspect, tintColor: colors.glow }}
@@ -69,7 +73,11 @@ export function IdentityMarkRing({ size = 130, style, icon, expression = 'neutra
   }
 
   return (
-    <View style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}>
+    <View
+        style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
       <Animated.Image
         source={neutral.source}
         style={{
