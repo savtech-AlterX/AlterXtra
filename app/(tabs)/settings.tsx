@@ -306,6 +306,13 @@ export default function Settings() {
       />
 
       <GlowButton
+        label="TERMS OF SERVICE"
+        variant="outline"
+        icon={<Ionicons name="document-text-outline" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push('/terms-of-service')}
+      />
+
+      <GlowButton
         label="RESET ALL DATA"
         variant="outline"
         icon={<Ionicons name="trash" size={16} color={colors.danger} />}

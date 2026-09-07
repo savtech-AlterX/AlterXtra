@@ -55,7 +55,7 @@ If AlterX later introduces optional subscriptions (Alter-Xtra), any payment proc
 
 ## Contact
 
-If you have questions about this privacy policy, contact: **[ADD YOUR CONTACT EMAIL HERE]**
+If you have questions about this privacy policy, contact: **savannahgiddings1234@icloud.com**
 
 ---
 
