@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --panel: rgba(0, 0, 0, 0.82);
+  --foreground: #f1f2f3;
+  --text-secondary: #8fa3b8;
+  --text-muted: #6b7a8c;
+  --glow: #3da8f5;
+  --glow-strong: #88cbfc;
+  --border: rgba(61, 168, 245, 0.5);
+  --border-dim: rgba(61, 168, 245, 0.22);
+  --success: #3fe08a;
+  --danger: #ff4d5e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-panel: var(--panel);
+  --color-foreground: var(--foreground);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-glow: var(--glow);
+  --color-glow-strong: var(--glow-strong);
+  --color-border: var(--border);
+  --color-border-dim: var(--border-dim);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-display: var(--font-chakra-petch);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-chakra-petch), Arial, Helvetica, sans-serif;
+}
+
+.glow-text {
+  text-shadow: 0 0 12px rgba(61, 168, 245, 0.45);
+}
+
+.glow-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 0 24px rgba(61, 168, 245, 0.08);
+}

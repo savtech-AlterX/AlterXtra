@@ -22,6 +22,7 @@ import {
 import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
 import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt, writeWidgetStreak } from '../lib/sessionWidgetBridge';
 import { computeActiveStreakDays } from '../lib/growth';
+import { deleteAllLocalMedia } from '../lib/localMedia';
 
 const STORAGE_KEY = 'alterx:appData:v1';
 
@@ -373,8 +374,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [isLoaded, data]);
 
   const resetAll = useCallback(() => {
+    deleteAllLocalMedia(data).catch(() => {});
     setData(emptyAppData);
-  }, []);
+  }, [data]);
 
   const restoreAll = useCallback((incoming: unknown, fromVersion: number) => {
     setData(migrate(incoming, fromVersion));
