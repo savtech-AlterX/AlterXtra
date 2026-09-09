@@ -105,13 +105,13 @@ export function CelebrationOverlay({ kicker, body, onDismiss }: Props) {
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     // Solid ground; the fade-in is driven by the animated opacity above.
     backgroundColor: colors.background,
     zIndex: 200,
   },
   rayLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -122,7 +122,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   // Each slot spans the full field and is rotated about its own centre, so the
   // bar inside it sweeps out from the middle like a spoke.
   raySlot: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
   },
   ray: {
