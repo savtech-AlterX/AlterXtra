@@ -319,6 +319,8 @@ export default function Settings() {
         style={styles.dangerButton}
         onPress={confirmReset}
       />
+
+      <Text style={styles.copyright}>© 2026 Savannah Giddings. All rights reserved.</Text>
     </HudScreen>
   );
 }
@@ -400,5 +402,12 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   dangerButton: {
     borderColor: colors.danger,
+  },
+  copyright: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 11,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

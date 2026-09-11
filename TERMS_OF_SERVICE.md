@@ -14,6 +14,12 @@ AlterX helps you define an identity/archetype you're working toward and track yo
 
 AlterX is a self-guided personal development tool. It is not therapy, counseling, or medical advice, and it is not a substitute for professional mental health support. If you're in crisis or need to talk to someone, please reach out to a local emergency service or a crisis line in your country — for example, in the US and Canada, call or text **988** (Suicide & Crisis Lifeline); in the UK, call **116 123** (Samaritans).
 
+## Intellectual Property
+
+AlterX — including its source code, design, user interface, branding, and the names "AlterX" and "Alter-Xtra" — is the proprietary property of its developer and is protected by copyright and other intellectual property laws. See the [LICENSE](./LICENSE) file for the full terms. Using the app gives you a limited, personal, non-transferable license to run it on your own device for your own use — it does not give you any right to the underlying software itself.
+
+You may not copy, decompile, reverse-engineer, modify, redistribute, sublicense, or create derivative or competing works from AlterX's code, design, or branding, except where applicable law gives you that right despite this restriction.
+
 ## Your Content
 
 Everything you create in AlterX — journal entries, letters, videos, photos, and everything else — is yours. AlterX doesn't claim any ownership over it, and since it's stored only on your device, we never see it. You're responsible for keeping your own backups (via the app's export feature or your device's iCloud/Google backup) — if your device is lost, damaged, or reset without a backup, that content cannot be recovered.
