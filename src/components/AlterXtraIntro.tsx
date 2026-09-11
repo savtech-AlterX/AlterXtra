@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlowButton } from './GlowButton';
+import { MascotReveal } from './MascotReveal';
 import { useAppData } from '../store/AppDataContext';
 import { useSettings } from '../store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
@@ -32,15 +33,19 @@ export function AlterXtraIntro() {
   const { settings, isLoaded, setAlterXtraIntroShown } = useSettings();
 
   const [visible, setVisible] = useState(false);
+  const [mascotDone, setMascotDone] = useState(false);
   const rise = useRef(new Animated.Value(0)).current;
 
   const eligible = isLoaded && !settings.alterXtraIntroShown && !!data.identity;
+  // The mascot is a lead-in, not a gate: if it's off (or there's somehow no
+  // icon to show), the panel just appears on its own timer as before.
+  const showMascot = eligible && settings.mascotEnabled && !!data.identity?.icon && !mascotDone;
 
   useEffect(() => {
-    if (!eligible) return;
+    if (!eligible || showMascot) return;
     const timer = setTimeout(() => setVisible(true), DELAY_MS);
     return () => clearTimeout(timer);
-  }, [eligible]);
+  }, [eligible, showMascot]);
 
   useEffect(() => {
     if (!visible) return;
@@ -55,6 +60,10 @@ export function AlterXtraIntro() {
   function viewAlterXtra() {
     dismiss();
     router.push('/alter-xtra');
+  }
+
+  if (showMascot) {
+    return <MascotReveal icon={data.identity!.icon} onDone={() => setMascotDone(true)} />;
   }
 
   if (!visible) return null;

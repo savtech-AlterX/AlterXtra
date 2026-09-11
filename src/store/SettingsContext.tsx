@@ -19,6 +19,9 @@ type Settings = {
   limitedBeliefsIntroShown: boolean;
   // Same idea, for the one-time Alter-Xtra teaser panel on Home.
   alterXtraIntroShown: boolean;
+  // Off by default — the mascot reveal's art is still placeholder reference
+  // material, not final assets. Flip on once real art is in.
+  mascotEnabled: boolean;
   // Highest active-streak-day milestone (7/30/100/365) already celebrated on
   // the Growth screen, so crossing it again after a reinstall or on every
   // visit doesn't re-fire the celebration.
@@ -34,6 +37,7 @@ const defaultSettings: Settings = {
   showGoalBarOnHome: true,
   limitedBeliefsIntroShown: false,
   alterXtraIntroShown: false,
+  mascotEnabled: false,
   celebratedStreakMilestone: 0,
 };
 
@@ -49,6 +53,7 @@ type SettingsContextValue = {
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
   setAlterXtraIntroShown: (shown: boolean) => void;
+  setMascotEnabled: (enabled: boolean) => void;
   setCelebratedStreakMilestone: (days: number) => void;
   resetSettings: () => void;
 };
@@ -107,6 +112,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, alterXtraIntroShown: shown }));
   }, []);
 
+  const setMascotEnabled = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, mascotEnabled: enabled }));
+  }, []);
+
   const setCelebratedStreakMilestone = useCallback((days: number) => {
     setSettings((prev) => ({ ...prev, celebratedStreakMilestone: days }));
   }, []);
@@ -129,6 +138,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,
+      setMascotEnabled,
       setCelebratedStreakMilestone,
       resetSettings,
     }),
@@ -142,6 +152,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,
+      setMascotEnabled,
       setCelebratedStreakMilestone,
       resetSettings,
     ]

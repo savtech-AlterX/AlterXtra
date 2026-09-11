@@ -44,6 +44,7 @@ export default function Settings() {
     setDailyReminder,
     setShowGoalBarOnHome,
     setAlterXtraIntroShown,
+    setMascotEnabled,
     resetSettings,
   } = useSettings();
   const { resetTheme } = useThemeControls();
@@ -254,6 +255,21 @@ export default function Settings() {
           router.replace('/(tabs)');
         }}
       />
+
+      <GlowCard style={styles.lockCard}>
+        <View style={styles.lockText}>
+          <Text style={typography.label}>MASCOT INTRO</Text>
+          <Text style={styles.lockDesc}>
+            Play a short animated lead-in before the Alter-Xtra intro. Placeholder art for now.
+          </Text>
+        </View>
+        <Switch
+          value={settings.mascotEnabled}
+          onValueChange={setMascotEnabled}
+          trackColor={{ false: colors.borderDim, true: colors.glow }}
+          thumbColor={colors.textPrimary}
+        />
+      </GlowCard>
 
       <GlowCard style={styles.lockCard}>
         <View style={styles.lockText}>
