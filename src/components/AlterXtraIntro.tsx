@@ -5,6 +5,7 @@ import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlowButton } from './GlowButton';
 import { MascotReveal } from './MascotReveal';
+import { hasMascotPlayedThisSession, markMascotPlayedThisSession } from '../lib/mascotCharacters';
 import { useAppData } from '../store/AppDataContext';
 import { useSettings } from '../store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
@@ -33,7 +34,11 @@ export function AlterXtraIntro() {
   const { settings, isLoaded, setAlterXtraIntroShown } = useSettings();
 
   const [visible, setVisible] = useState(false);
-  const [mascotDone, setMascotDone] = useState(false);
+  // Seeded from module state, not just false — component state alone doesn't
+  // survive Home unmounting and remounting (e.g. switching tabs and back)
+  // before alterXtraIntroShown gets set, which used to replay the whole
+  // mascot sequence on every return trip to Home.
+  const [mascotDone, setMascotDone] = useState(hasMascotPlayedThisSession);
   const rise = useRef(new Animated.Value(0)).current;
 
   const eligible = isLoaded && !settings.alterXtraIntroShown && !!data.identity;
@@ -63,7 +68,15 @@ export function AlterXtraIntro() {
   }
 
   if (showMascot) {
-    return <MascotReveal icon={data.identity!.icon} onDone={() => setMascotDone(true)} />;
+    return (
+      <MascotReveal
+        icon={data.identity!.icon}
+        onDone={() => {
+          markMascotPlayedThisSession();
+          setMascotDone(true);
+        }}
+      />
+    );
   }
 
   if (!visible) return null;

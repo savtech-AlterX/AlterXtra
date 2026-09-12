@@ -45,16 +45,36 @@ const FRAMES: Record<MascotCharacterKey, number[]> = {
 
 // Placeholder pairing between the chosen identity icon and which mascot
 // character plays for it — swap these four lines once the real mapping is
-// decided. 'mystery' has no defined hair/gender in the icon set, so it falls
-// back to male-bald rather than leaving the reveal with nothing to show.
-const ICON_TO_CHARACTER: Record<AppIconChoice, MascotCharacterKey> = {
+// decided. 'mystery' has no matching character (none of the four designs are
+// gender-neutral) and is deliberately left unmapped rather than forced onto
+// whichever character happens to be the fallback — see framesForIcon.
+const ICON_TO_CHARACTER: Partial<Record<AppIconChoice, MascotCharacterKey>> = {
   male: 'male-bald',
   'male-mohawk': 'male-curly',
   female: 'female-straight',
   'female-curly': 'female-curly',
-  mystery: 'male-bald',
 };
 
-export function framesForIcon(icon: AppIconChoice) {
-  return FRAMES[ICON_TO_CHARACTER[icon]];
+// Empty for an icon with no matching character (currently just 'mystery') —
+// callers treat a zero-length result as "skip the reveal, there's nothing to
+// show," not an error.
+export function framesForIcon(icon: AppIconChoice): number[] {
+  const character = ICON_TO_CHARACTER[icon];
+  return character ? FRAMES[character] : [];
+}
+
+// Whether the mascot has already played once in this app session (JS module
+// state, not persisted) — separate from settings.alterXtraIntroShown, which
+// only gets set once the user actually dismisses or opens the Alter-Xtra
+// panel. Without this, leaving Home before that happens (e.g. switching tabs
+// and back) would remount AlterXtraIntro and replay the whole sequence, since
+// component state alone doesn't survive the unmount.
+let playedThisSession = false;
+
+export function hasMascotPlayedThisSession(): boolean {
+  return playedThisSession;
+}
+
+export function markMascotPlayedThisSession(): void {
+  playedThisSession = true;
 }
