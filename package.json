@@ -47,7 +47,7 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "node -r ./raf-polyfill.cjs ./node_modules/.bin/expo start --web",
+    "web": "expo start --web",
     "test": "jest"
   },
   "private": true,
