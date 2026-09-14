@@ -34,6 +34,10 @@ AlterX is provided "as is," without warranties of any kind, express or implied. 
 
 To the fullest extent permitted by law, AlterX and its developers are not liable for any indirect, incidental, or consequential damages arising from your use of the app, including loss of data not backed up by you.
 
+## Dispute Resolution
+
+If a disagreement about these terms or the app can't be resolved informally by contacting us first, you and AlterX agree to resolve it through **binding individual arbitration** rather than in court, except that either party may bring a qualifying claim in small claims court instead. This means no jury trial, and — importantly — no class actions or class arbitrations; disputes are handled one-on-one. This section survives even if you stop using the app.
+
 ## Termination
 
 You may stop using AlterX at any time by uninstalling it, which permanently deletes all associated data from your device (nothing is stored elsewhere to delete). We may update or discontinue the app at any time.

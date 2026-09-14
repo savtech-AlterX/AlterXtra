@@ -66,6 +66,14 @@ export default function TermsOfService() {
         backed up by you.
       </Section>
 
+      <Section title="Dispute Resolution">
+        If a disagreement about these terms or the app can't be resolved informally by contacting us first,
+        you and AlterX agree to resolve it through binding individual arbitration rather than in court, except
+        that either party may bring a qualifying claim in small claims court instead. No jury trial, and no
+        class actions or class arbitrations — disputes are handled one-on-one. This section survives even if
+        you stop using the app.
+      </Section>
+
       <Section title="Termination">
         You may stop using AlterX anytime by uninstalling it, which permanently deletes all associated data
         from your device. We may update or discontinue the app at any time.
