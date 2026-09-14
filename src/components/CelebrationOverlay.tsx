@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { playMilestoneFanfare } from '../lib/sound';
 import { useAppData } from '../store/AppDataContext';
+import { useSettings } from '../store/SettingsContext';
 import { useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 
@@ -21,6 +23,7 @@ type Props = {
 export function CelebrationOverlay({ kicker, body, onDismiss }: Props) {
   const styles = useThemedStyles(makeStyles);
   const { data } = useAppData();
+  const { settings } = useSettings();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -29,6 +32,13 @@ export function CelebrationOverlay({ kicker, body, onDismiss }: Props) {
   const fade = useRef(new Animated.Value(0)).current;
 
   const rayFieldSize = Math.max(width, height) * 1.6;
+
+  useEffect(() => {
+    if (settings.soundEffectsEnabled) playMilestoneFanfare();
+    // Fires once per mount, on purpose — settings.soundEffectsEnabled is read
+    // fresh each time this overlay is (re)mounted, not tracked live.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     Animated.parallel([

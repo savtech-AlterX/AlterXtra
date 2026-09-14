@@ -53,7 +53,10 @@
       [
         "expo-notifications",
         {
-          "color": "#3da8f5"
+          "color": "#3da8f5",
+          "sounds": [
+            "./assets/sounds/notification.wav"
+          ]
         }
       ],
       "@bacons/apple-targets",

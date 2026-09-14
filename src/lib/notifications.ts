@@ -27,16 +27,20 @@ export async function enableDailyReminder(
   // A daily trigger only fires exactly once every 24h from a single rule, so
   // every day selected still needs its own weekly trigger — except the
   // all-7-days case, where the plain DAILY trigger is equivalent and cheaper.
+  // Must match the filename bundled via the expo-notifications config
+  // plugin's `sounds` array in app.json.
+  const sound = 'notification.wav';
+
   if (days.length === 7) {
     await Notifications.scheduleNotificationAsync({
-      content: { title: REMINDER_TITLE, body: REMINDER_BODY },
+      content: { title: REMINDER_TITLE, body: REMINDER_BODY, sound },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute },
     });
   } else {
     await Promise.all(
       days.map((weekday) =>
         Notifications.scheduleNotificationAsync({
-          content: { title: REMINDER_TITLE, body: REMINDER_BODY },
+          content: { title: REMINDER_TITLE, body: REMINDER_BODY, sound },
           trigger: { type: Notifications.SchedulableTriggerInputTypes.WEEKLY, weekday, hour, minute },
         })
       )

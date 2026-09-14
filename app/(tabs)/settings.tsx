@@ -44,6 +44,8 @@ export default function Settings() {
     setDailyReminder,
     setShowGoalBarOnHome,
     setAlterXtraIntroShown,
+    setSoundEffectsEnabled,
+    setAmbientSoundEnabled,
     resetSettings,
   } = useSettings();
   const { resetTheme } = useThemeControls();
@@ -271,6 +273,36 @@ export default function Settings() {
       </GlowCard>
 
       <GlowCard style={styles.card}>
+        <Text style={typography.label}>SOUND</Text>
+
+        <View style={styles.lockCard}>
+          <View style={styles.lockText}>
+            <Text style={styles.soundLabel}>Sound effects</Text>
+            <Text style={styles.lockDesc}>A chime on habit check-ins, log entries, and streak milestones.</Text>
+          </View>
+          <Switch
+            value={settings.soundEffectsEnabled}
+            onValueChange={setSoundEffectsEnabled}
+            trackColor={{ false: colors.borderDim, true: colors.glow }}
+            thumbColor={colors.textPrimary}
+          />
+        </View>
+
+        <View style={[styles.lockCard, styles.soundRow]}>
+          <View style={styles.lockText}>
+            <Text style={styles.soundLabel}>Ambient background</Text>
+            <Text style={styles.lockDesc}>A soft background tone while AlterX is open.</Text>
+          </View>
+          <Switch
+            value={settings.ambientSoundEnabled}
+            onValueChange={setAmbientSoundEnabled}
+            trackColor={{ false: colors.borderDim, true: colors.glow }}
+            thumbColor={colors.textPrimary}
+          />
+        </View>
+      </GlowCard>
+
+      <GlowCard style={styles.card}>
         <Text style={typography.label}>BACKUP</Text>
         <Text style={styles.lockDesc}>
           Your journal, beliefs, habits, goals, and notes are already included if this device backs up to
@@ -347,6 +379,17 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontSize: 12,
     lineHeight: 17,
     color: colors.textSecondary,
+  },
+  soundLabel: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  soundRow: {
+    marginTop: 2,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderDim,
   },
   timeRow: {
     flexDirection: 'row',

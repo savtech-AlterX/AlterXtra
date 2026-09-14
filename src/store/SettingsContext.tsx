@@ -23,6 +23,10 @@ type Settings = {
   // the Growth screen, so crossing it again after a reinstall or on every
   // visit doesn't re-fire the celebration.
   celebratedStreakMilestone: number;
+  // Win-flash chime + milestone fanfare.
+  soundEffectsEnabled: boolean;
+  // The soft background loop that plays app-wide while AlterX is open.
+  ambientSoundEnabled: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -35,6 +39,8 @@ const defaultSettings: Settings = {
   limitedBeliefsIntroShown: false,
   alterXtraIntroShown: false,
   celebratedStreakMilestone: 0,
+  soundEffectsEnabled: true,
+  ambientSoundEnabled: true,
 };
 
 type SettingsContextValue = {
@@ -50,6 +56,8 @@ type SettingsContextValue = {
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
   setAlterXtraIntroShown: (shown: boolean) => void;
   setCelebratedStreakMilestone: (days: number) => void;
+  setSoundEffectsEnabled: (enabled: boolean) => void;
+  setAmbientSoundEnabled: (enabled: boolean) => void;
   resetSettings: () => void;
 };
 
@@ -111,6 +119,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, celebratedStreakMilestone: days }));
   }, []);
 
+  const setSoundEffectsEnabled = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, soundEffectsEnabled: enabled }));
+  }, []);
+
+  const setAmbientSoundEnabled = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, ambientSoundEnabled: enabled }));
+  }, []);
+
   // "Reset All Data" is meant to hand back a genuine beginner's experience —
   // that has to include the once-only onboarding flags, not just app data,
   // or a returning tester (or a real user starting over) never sees them again.
@@ -130,6 +146,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,
       setCelebratedStreakMilestone,
+      setSoundEffectsEnabled,
+      setAmbientSoundEnabled,
       resetSettings,
     }),
     [
@@ -143,6 +161,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setLimitedBeliefsIntroShown,
       setAlterXtraIntroShown,
       setCelebratedStreakMilestone,
+      setSoundEffectsEnabled,
+      setAmbientSoundEnabled,
       resetSettings,
     ]
   );

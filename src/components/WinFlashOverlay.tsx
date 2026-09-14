@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet } from 'react-native';
+import { playWinChime } from '../lib/sound';
+import { useSettings } from '../store/SettingsContext';
 import { useWinFlashRegistration } from '../store/WinFlashContext';
 import { useAppTheme } from '../theme/useAppTheme';
 
@@ -15,9 +17,12 @@ const FLASH_OUT_MS = 500;
  */
 export function WinFlashOverlay() {
   const { colors } = useAppTheme();
+  const { settings } = useSettings();
   const flashRef = useWinFlashRegistration();
   const opacity = useRef(new Animated.Value(0)).current;
   const reducedMotionRef = useRef(false);
+  const soundEnabledRef = useRef(settings.soundEffectsEnabled);
+  soundEnabledRef.current = settings.soundEffectsEnabled;
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled?.().then((enabled) => {
@@ -27,6 +32,7 @@ export function WinFlashOverlay() {
 
   useEffect(() => {
     flashRef.current = () => {
+      if (soundEnabledRef.current) playWinChime();
       if (reducedMotionRef.current) {
         // A plain held glow rather than an animated pulse respects the same
         // intent without the motion.
