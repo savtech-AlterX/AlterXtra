@@ -1,0 +1,386 @@
+<title>Agent Roster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f6fb;
+    --bg-grid: rgba(11,116,201,0.05);
+    --panel: #ffffff;
+    --panel-soft: #eef3fa;
+    --glow: #0b74c9;
+    --glow-strong: #054e8c;
+    --glow-dim: rgba(11,116,201,0.10);
+    --border: rgba(11,116,201,0.28);
+    --border-dim: rgba(11,116,201,0.14);
+    --text-primary: #0c1622;
+    --text-secondary: #47586e;
+    --text-muted: #7488a0;
+    --success: #157a4a;
+    --success-dim: rgba(21,122,74,0.12);
+    --warning: #a15e05;
+    --warning-dim: rgba(161,94,5,0.12);
+    --muted-chip: #5c6e82;
+    --muted-chip-dim: rgba(92,110,130,0.12);
+    --font-display: 'Orbitron', 'Segoe UI', sans-serif;
+    --font-body: 'Chakra Petch', 'Segoe UI', sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #030507;
+      --bg-grid: rgba(61,168,245,0.05);
+      --panel: #0a0f14;
+      --panel-soft: #0e1620;
+      --glow: #3da8f5;
+      --glow-strong: #88cbfc;
+      --glow-dim: rgba(61,168,245,0.14);
+      --border: rgba(61,168,245,0.38);
+      --border-dim: rgba(61,168,245,0.16);
+      --text-primary: #eef3f9;
+      --text-secondary: #8fa3b8;
+      --text-muted: #5c6e82;
+      --success: #3fe08a;
+      --success-dim: rgba(63,224,138,0.14);
+      --warning: #ffb648;
+      --warning-dim: rgba(255,182,72,0.14);
+      --muted-chip: #7c8ba0;
+      --muted-chip-dim: rgba(124,139,160,0.14);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #030507;
+    --bg-grid: rgba(61,168,245,0.05);
+    --panel: #0a0f14;
+    --panel-soft: #0e1620;
+    --glow: #3da8f5;
+    --glow-strong: #88cbfc;
+    --glow-dim: rgba(61,168,245,0.14);
+    --border: rgba(61,168,245,0.38);
+    --border-dim: rgba(61,168,245,0.16);
+    --text-primary: #eef3f9;
+    --text-secondary: #8fa3b8;
+    --text-muted: #5c6e82;
+    --success: #3fe08a;
+    --success-dim: rgba(63,224,138,0.14);
+    --warning: #ffb648;
+    --warning-dim: rgba(255,182,72,0.14);
+    --muted-chip: #7c8ba0;
+    --muted-chip-dim: rgba(124,139,160,0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 100% 28px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 28px 100%,
+      var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding-inline: 20px;
+    padding-block: 36px 56px;
+  }
+
+  .sheet {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-dim);
+    padding-bottom: 18px;
+  }
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: var(--glow);
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(26px, 5vw, 36px);
+    letter-spacing: 0.05em;
+    margin: 0;
+    text-wrap: balance;
+    text-shadow: 0 0 20px var(--glow-dim);
+  }
+  .summary-line {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .summary-line b { color: var(--text-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .as-of {
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  .roster {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card.archived { opacity: 0.6; }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .card-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    color: var(--text-primary);
+  }
+
+  .chip {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 5px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .chip.working { background: var(--glow-dim); color: var(--glow-strong); }
+  .chip.needs-you { background: var(--warning-dim); color: var(--warning); }
+  .chip.done { background: var(--success-dim); color: var(--success); }
+  .chip.archived { background: var(--muted-chip-dim); color: var(--muted-chip); }
+
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+  .chip.working .dot { animation: pulse 1.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .chip.working .dot { animation: none; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .card-note {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .meta-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  code {
+    font-family: 'Chakra Petch', monospace;
+    background: var(--panel-soft);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 12px;
+    color: var(--glow);
+  }
+  .last-active {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .open-link {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--glow);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+  }
+  .open-link:hover { background: var(--glow-dim); }
+  .open-link:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+
+  footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+    padding-top: 4px;
+  }
+</style>
+
+<div class="sheet">
+
+  <div class="masthead">
+    <div class="eyebrow">AlterXtra &middot; Agent Roster</div>
+    <h1>Who's Doing What</h1>
+    <div class="summary-line">
+      <span><b id="count-working">0</b> working</span>
+      <span><b id="count-needs">0</b> need you</span>
+      <span><b id="count-done">0</b> idle / done</span>
+    </div>
+    <span class="as-of" id="as-of"></span>
+  </div>
+
+  <div class="roster" id="roster"></div>
+
+  <footer>Snapshot from your session list &mdash; ask Claude to refresh this any time you want it current again.</footer>
+
+</div>
+
+<script>
+  const SNAPSHOT_AT = "2026-09-14T21:25:14Z";
+
+  const agents = [
+    {
+      name: "Agent 1",
+      status: "working",
+      repo: "AlterXtra",
+      branch: "claude/agent-linking-bu7s2z",
+      note: "Building this dashboard — privacy policy, marketing site, canary token, mascot revival, and the archetype list all shipped on this branch so far.",
+      updatedAt: "2026-09-14T21:25:11Z",
+      sessionId: "session_01Mc6socynkoq2SmFoAFudhN",
+    },
+    {
+      name: "Alter X agent 2",
+      status: "working",
+      repo: "AlterXtra",
+      branch: "claude/alter-x-age-branch-7ymzia",
+      note: "Deploying a sound feature — syncing branches and testing right now.",
+      updatedAt: "2026-09-14T21:25:14Z",
+      sessionId: "session_01Dt3jLcxMDU7K1kkcu6cA9d",
+    },
+    {
+      name: "Alter X agent 3",
+      status: "needs-you",
+      repo: "AlterXtra",
+      branch: "claude/alter-xtra-qr-code-vjix2v",
+      note: "Rebuilt gh-pages (fixed unprefixed asset paths) and it's ready — waiting on you to approve pushing it live.",
+      updatedAt: "2026-09-14T21:24:47Z",
+      sessionId: "session_011nJo9nzmQf8cVnM81BL5Rj",
+    },
+    {
+      name: "Agent 4",
+      status: "done",
+      repo: "AlterXtra",
+      branch: "claude/agent-linking-hkijhk",
+      note: "Finished walking through the “brutally honest” section with you. Nothing pending.",
+      updatedAt: "2026-09-14T21:19:24Z",
+      sessionId: "session_01JeG2NQ5YGnCeyhKP8KFVsR",
+    },
+    {
+      name: "GitHub setup for multiple apps",
+      status: "done",
+      repo: "AlterXtra",
+      branch: "claude/github-multiple-apps-rdorr3",
+      note: "5 features built, tested, and committed. Already published an EAS Update with a QR code once — this is the one that can do it again.",
+      updatedAt: "2026-08-06T01:51:10Z",
+      sessionId: "session_018r2gwMSZuzNpEHJtnyYCbd",
+    },
+    {
+      name: "Social app for climate news",
+      status: "needs-you",
+      repo: "eco",
+      branch: "claude/climate-good-news-social-app-3excqk",
+      note: "Stalled since the start — waiting on you to approve push access to the eco repo.",
+      updatedAt: "2026-08-06T01:42:50Z",
+      sessionId: "session_01GdLy7irwZP82vN1bMrsoEG",
+    },
+    {
+      name: "Alter X agent 1",
+      status: "archived",
+      repo: "AlterXtra",
+      branch: "claude/hello-46bydk",
+      note: "Archived. Its last open question (a ChatGPT-membership check) was never answered.",
+      updatedAt: "2026-08-29T18:07:39Z",
+      sessionId: "session_011HgvjhyTaZo3656XwuHkgy",
+    },
+  ];
+
+  const STATUS_LABEL = { working: "Working", "needs-you": "Needs you", done: "Idle", archived: "Archived" };
+
+  function relativeTime(iso) {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const mins = Math.round(diffMs / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return mins + "m ago";
+    const hours = Math.round(mins / 60);
+    if (hours < 24) return hours + "h ago";
+    const days = Math.round(hours / 24);
+    return days + "d ago";
+  }
+
+  const roster = document.getElementById("roster");
+  let working = 0, needsYou = 0, done = 0;
+
+  for (const a of agents) {
+    if (a.status === "working") working++;
+    else if (a.status === "needs-you") needsYou++;
+    else if (a.status === "done") done++;
+
+    const card = document.createElement("div");
+    card.className = "card" + (a.status === "archived" ? " archived" : "");
+
+    const dot = a.status === "working" ? '<span class="dot"></span>' : "";
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="card-name">${a.name}</span>
+        <span class="chip ${a.status}">${dot}${STATUS_LABEL[a.status]}</span>
+      </div>
+      <p class="card-note">${a.note}</p>
+      <div class="card-bottom">
+        <div class="meta-left">
+          <code>${a.repo} → ${a.branch}</code>
+          <span class="last-active">${relativeTime(a.updatedAt)}</span>
+        </div>
+        <a class="open-link" href="https://claude.ai/code/${a.sessionId}" target="_blank" rel="noopener">Open</a>
+      </div>
+    `;
+    roster.appendChild(card);
+  }
+
+  document.getElementById("count-working").textContent = working;
+  document.getElementById("count-needs").textContent = needsYou;
+  document.getElementById("count-done").textContent = done;
+  document.getElementById("as-of").textContent = "Snapshot taken " + relativeTime(SNAPSHOT_AT);
+</script>
