@@ -4,6 +4,14 @@ import { useState } from "react";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
+// The static GitHub Pages build has no server, so /api/subscribe (which
+// needs one) isn't there to hit. Set this to a Formspree-style endpoint
+// (https://formspree.io/f/xxxxxxxx — free, accepts a JSON POST straight
+// from the browser) at build time and the form posts there directly
+// instead. Left unset, this falls back to the real /api/subscribe route,
+// which only exists on a dynamically hosted deploy (e.g. Vercel).
+const FORM_ENDPOINT = process.env.NEXT_PUBLIC_FORM_ENDPOINT;
+
 export function EmailCaptureForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -14,13 +22,22 @@ export function EmailCaptureForm() {
     setStatus("submitting");
     setError(null);
     try {
-      const res = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error ?? "Something went wrong.");
+      if (FORM_ENDPOINT) {
+        const res = await fetch(FORM_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (!res.ok) throw new Error("Could not save your email right now. Please try again.");
+      } else {
+        const res = await fetch("/api/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error ?? "Something went wrong.");
+      }
       setStatus("success");
       if (typeof window !== "undefined" && window.gtag) {
         window.gtag("event", "email_signup");
