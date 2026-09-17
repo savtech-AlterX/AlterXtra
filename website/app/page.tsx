@@ -3,6 +3,13 @@ import Link from "next/link";
 import { EmailCaptureForm } from "@/components/EmailCaptureForm";
 import { ReviewsSection } from "@/components/ReviewsSection";
 
+const MASCOTS = [
+  { src: "/mascots/male-bald.png", alt: "AlterX mascot — male, bald" },
+  { src: "/mascots/male-curly.png", alt: "AlterX mascot — male, curly hair" },
+  { src: "/mascots/female-straight.png", alt: "AlterX mascot — female, straight hair" },
+  { src: "/mascots/female-curly.png", alt: "AlterX mascot — female, curly hair" },
+];
+
 const FEATURES = [
   {
     title: "Pick an identity",
@@ -50,7 +57,24 @@ export default function Home() {
             AlterX is a private, on-device identity-transformation app — habits, journaling, belief work, and
             messages to your future self. No account, no server, no tracking.
           </p>
+          <p className="text-xs tracking-widest text-glow uppercase">On your phone and on your laptop</p>
           <EmailCaptureForm />
+        </section>
+
+        <section className="flex flex-col items-center text-center gap-6">
+          <span className="text-xs tracking-widest text-glow">COMING SOON</span>
+          <h2 className="font-display text-2xl text-glow-strong glow-text">Meet your mascot</h2>
+          <p className="text-text-secondary max-w-xl">
+            Pick an identity and a companion shows up to walk it with you. Early look below — the art is still
+            being refined before launch.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-2xl">
+            {MASCOTS.map((m) => (
+              <div key={m.src} className="glow-panel p-3 flex items-center justify-center">
+                <Image src={m.src} alt={m.alt} width={140} height={140} className="rounded-xl w-full h-auto" />
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
