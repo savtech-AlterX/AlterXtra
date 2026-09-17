@@ -43,7 +43,6 @@ export default function Settings() {
     setAppLockEnabled,
     setDailyReminder,
     setShowGoalBarOnHome,
-    setAlterXtraIntroShown,
     setSoundEffectsEnabled,
     setAmbientSoundEnabled,
     resetSettings,
@@ -246,16 +245,6 @@ export default function Settings() {
           )}
         </GlowCard>
       )}
-
-      <GlowButton
-        label="REPLAY ALTER-XTRA INTRO"
-        variant="outline"
-        icon={<Ionicons name="play" size={16} color={colors.glow} style={iconGlow} />}
-        onPress={() => {
-          setAlterXtraIntroShown(false);
-          router.replace('/(tabs)');
-        }}
-      />
 
       <GlowCard style={styles.lockCard}>
         <View style={styles.lockText}>

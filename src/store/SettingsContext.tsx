@@ -17,8 +17,6 @@ type Settings = {
   // on Home instead, once. This tracks whether that's happened yet,
   // independent of whether the user actually filled anything in.
   limitedBeliefsIntroShown: boolean;
-  // Same idea, for the one-time Alter-Xtra teaser panel on Home.
-  alterXtraIntroShown: boolean;
   // Highest active-streak-day milestone (7/30/100/365) already celebrated on
   // the Growth screen, so crossing it again after a reinstall or on every
   // visit doesn't re-fire the celebration.
@@ -37,7 +35,6 @@ const defaultSettings: Settings = {
   dailyReminderDays: [1, 2, 3, 4, 5, 6, 7],
   showGoalBarOnHome: true,
   limitedBeliefsIntroShown: false,
-  alterXtraIntroShown: false,
   celebratedStreakMilestone: 0,
   soundEffectsEnabled: true,
   ambientSoundEnabled: true,
@@ -54,7 +51,6 @@ type SettingsContextValue = {
   ) => void;
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
-  setAlterXtraIntroShown: (shown: boolean) => void;
   setCelebratedStreakMilestone: (days: number) => void;
   setSoundEffectsEnabled: (enabled: boolean) => void;
   setAmbientSoundEnabled: (enabled: boolean) => void;
@@ -111,10 +107,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, limitedBeliefsIntroShown: shown }));
   }, []);
 
-  const setAlterXtraIntroShown = useCallback((shown: boolean) => {
-    setSettings((prev) => ({ ...prev, alterXtraIntroShown: shown }));
-  }, []);
-
   const setCelebratedStreakMilestone = useCallback((days: number) => {
     setSettings((prev) => ({ ...prev, celebratedStreakMilestone: days }));
   }, []);
@@ -144,7 +136,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setDailyReminder,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
-      setAlterXtraIntroShown,
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
@@ -159,7 +150,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setDailyReminder,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
-      setAlterXtraIntroShown,
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
