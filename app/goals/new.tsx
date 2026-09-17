@@ -7,6 +7,7 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
+import { FREE_GOAL_LIMIT, goalLimitReached } from '../../src/lib/entitlements';
 import { useAppData } from '../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
@@ -74,8 +75,9 @@ export default function NewGoal() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { addGoal } = useAppData();
+  const { data, addGoal } = useAppData();
   const [objective, setObjective] = useState('');
+  const atLimit = goalLimitReached(data.goals.length);
 
   // Defaults a month out — a real, usable date already sitting there beats
   // an empty field the user has to first figure out how to fill in.
@@ -139,6 +141,27 @@ export default function NewGoal() {
     const cleanSteps = steps.map((s) => s.trim()).filter(Boolean);
     addGoal(objective.trim(), targetDate, cleanSteps);
     router.back();
+  }
+
+  if (atLimit) {
+    return (
+      <HudScreen>
+        <StackHeader title="NEW GOAL" />
+        <GlowCard style={styles.limitCard}>
+          <Text style={typography.label}>FREE PLAN LIMIT REACHED</Text>
+          <Text style={styles.limitText}>
+            Free plan is limited to {FREE_GOAL_LIMIT} active goals. Alter-Xtra removes the limit.
+          </Text>
+          <GlowButton
+            label="SEE ALTER-XTRA"
+            variant="outline"
+            icon={<Ionicons name="arrow-forward" size={16} color={colors.glow} style={iconGlow} />}
+            onPress={() => router.push('/alter-xtra')}
+          />
+        </GlowCard>
+        <GlowButton label="CANCEL" variant="outline" onPress={() => router.back()} />
+      </HudScreen>
+    );
   }
 
   return (
@@ -246,6 +269,15 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   intro: {
     marginBottom: -4,
+  },
+  limitCard: {
+    gap: 10,
+  },
+  limitText: {
+    fontFamily: typography.body.fontFamily,
+    color: colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
   },
   dateRow: {
     flexDirection: 'row',
