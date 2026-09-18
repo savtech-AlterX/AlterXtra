@@ -37,6 +37,15 @@ export default function TermsOfService() {
         Lifeline); in the UK, call 116 123 (Samaritans).
       </Section>
 
+      <Section title="Intellectual Property">
+        AlterX — its source code, design, interface, branding, and the names "AlterX" and "Alter-Xtra" — is
+        the proprietary property of its developer and protected by copyright and other intellectual property
+        laws. Using the app gives you a limited, personal, non-transferable license to run it on your own
+        device — not any right to the underlying software. You may not copy, decompile, reverse-engineer,
+        redistribute, or create derivative or competing works from AlterX's code, design, or branding, except
+        where the law gives you that right despite this restriction.
+      </Section>
+
       <Section title="Your Content">
         Everything you create in AlterX is yours. AlterX doesn't claim any ownership over it, and since it's
         stored only on your device, we never see it. You're responsible for keeping your own backups (via
