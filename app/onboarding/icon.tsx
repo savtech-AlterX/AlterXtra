@@ -98,6 +98,21 @@ export default function ChooseIcon() {
         })}
       </View>
 
+      <View style={styles.comingSoon}>
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerLabel}>COMING SOON</Text>
+          <View style={styles.dividerLine} />
+        </View>
+        <View style={styles.roster}>
+          {[0, 1, 2, 3].map((i) => (
+            <Text key={i} style={styles.rosterGlyph}>
+              ?
+            </Text>
+          ))}
+        </View>
+      </View>
+
       <View style={styles.footer}>
         <GlowButton
           label="CONTINUE"
@@ -212,6 +227,40 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontSize: 74,
     ...glowShadow,
     textShadowRadius: 16,
+  },
+  // More identities in development, teased the same way the mystery card
+  // represents an undisclosed one — dimmed '?' glyphs rather than new art,
+  // so this needs no assets beyond what the screen already uses.
+  comingSoon: {
+    alignItems: 'center',
+    gap: 14,
+    marginTop: 4,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.borderDim,
+  },
+  dividerLabel: {
+    ...typography.label,
+    color: colors.textSecondary,
+  },
+  roster: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 22,
+  },
+  rosterGlyph: {
+    fontFamily: typography.screenTitle.fontFamily,
+    fontSize: 28,
+    color: colors.textMuted,
+    opacity: 0.6,
   },
   footer: {
     marginTop: 4,
