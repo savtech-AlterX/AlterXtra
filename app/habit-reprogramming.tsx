@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
@@ -6,6 +7,7 @@ import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { HudTextInput } from '../src/components/HudTextInput';
 import { StackHeader } from '../src/components/StackHeader';
+import { FREE_HABIT_LIMIT, habitLimitReached } from '../src/lib/entitlements';
 import { hasCheckedInToday, successRate } from '../src/lib/habitCheckIns';
 import { useAppData } from '../src/store/AppDataContext';
 import { HabitCheckIn, HabitReprogram } from '../src/store/types';
@@ -95,6 +97,7 @@ function ReprogrammedHabitCard({
 export default function HabitReprogramming() {
   const { colors, typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const router = useRouter();
   const { data, addHabitReprogram, addHabitCheckIn } = useAppData();
   const winFlash = useWinFlash();
   const [trigger, setTrigger] = useState('');
@@ -103,7 +106,8 @@ export default function HabitReprogramming() {
   const [reward, setReward] = useState('');
   const [identityStatement, setIdentityStatement] = useState('');
 
-  const canSave = trigger.trim().length > 0 && replacement.trim().length > 0;
+  const atLimit = habitLimitReached(data.habitReprograms.length);
+  const canSave = !atLimit && trigger.trim().length > 0 && replacement.trim().length > 0;
 
   function save() {
     if (!canSave) return;
@@ -174,7 +178,21 @@ export default function HabitReprogramming() {
               accessibilityLabel="Identity statement"
             />
 
-            <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
+            {atLimit ? (
+              <Pressable
+                onPress={() => router.push('/alter-xtra')}
+                style={styles.limitNotice}
+                accessibilityRole="button"
+                accessibilityLabel={`Free plan limit of ${FREE_HABIT_LIMIT} habits reached. See Alter-Xtra.`}
+              >
+                <Text style={styles.limitText}>
+                  Free plan is limited to {FREE_HABIT_LIMIT} habits at once. Alter-Xtra removes the limit.
+                </Text>
+                <Text style={styles.limitLink}>SEE ALTER-XTRA →</Text>
+              </Pressable>
+            ) : (
+              <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
+            )}
 
             {data.habitReprograms.length > 0 && (
               <Text style={[typography.label, styles.spacer]}>REPROGRAMMED HABITS</Text>
@@ -212,6 +230,27 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   spacer: {
     marginTop: 6,
+  },
+  limitNotice: {
+    marginTop: 6,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.panelSolid,
+    gap: 6,
+  },
+  limitText: {
+    fontFamily: typography.body.fontFamily,
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  limitLink: {
+    fontFamily: typography.label.fontFamily,
+    color: colors.glow,
+    fontSize: 12,
+    letterSpacing: 1,
   },
   entry: {
     gap: 6,

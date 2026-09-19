@@ -17,15 +17,14 @@ type Settings = {
   // on Home instead, once. This tracks whether that's happened yet,
   // independent of whether the user actually filled anything in.
   limitedBeliefsIntroShown: boolean;
-  // Same idea, for the one-time Alter-Xtra teaser panel on Home.
-  alterXtraIntroShown: boolean;
-  // Off by default — the mascot reveal's art is still placeholder reference
-  // material, not final assets. Flip on once real art is in.
-  mascotEnabled: boolean;
   // Highest active-streak-day milestone (7/30/100/365) already celebrated on
   // the Growth screen, so crossing it again after a reinstall or on every
   // visit doesn't re-fire the celebration.
   celebratedStreakMilestone: number;
+  // Win-flash chime + milestone fanfare.
+  soundEffectsEnabled: boolean;
+  // The soft background loop that plays app-wide while AlterX is open.
+  ambientSoundEnabled: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -36,9 +35,9 @@ const defaultSettings: Settings = {
   dailyReminderDays: [1, 2, 3, 4, 5, 6, 7],
   showGoalBarOnHome: true,
   limitedBeliefsIntroShown: false,
-  alterXtraIntroShown: false,
-  mascotEnabled: false,
   celebratedStreakMilestone: 0,
+  soundEffectsEnabled: true,
+  ambientSoundEnabled: true,
 };
 
 type SettingsContextValue = {
@@ -52,9 +51,9 @@ type SettingsContextValue = {
   ) => void;
   setShowGoalBarOnHome: (enabled: boolean) => void;
   setLimitedBeliefsIntroShown: (shown: boolean) => void;
-  setAlterXtraIntroShown: (shown: boolean) => void;
-  setMascotEnabled: (enabled: boolean) => void;
   setCelebratedStreakMilestone: (days: number) => void;
+  setSoundEffectsEnabled: (enabled: boolean) => void;
+  setAmbientSoundEnabled: (enabled: boolean) => void;
   resetSettings: () => void;
 };
 
@@ -108,16 +107,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, limitedBeliefsIntroShown: shown }));
   }, []);
 
-  const setAlterXtraIntroShown = useCallback((shown: boolean) => {
-    setSettings((prev) => ({ ...prev, alterXtraIntroShown: shown }));
-  }, []);
-
-  const setMascotEnabled = useCallback((enabled: boolean) => {
-    setSettings((prev) => ({ ...prev, mascotEnabled: enabled }));
-  }, []);
-
   const setCelebratedStreakMilestone = useCallback((days: number) => {
     setSettings((prev) => ({ ...prev, celebratedStreakMilestone: days }));
+  }, []);
+
+  const setSoundEffectsEnabled = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, soundEffectsEnabled: enabled }));
+  }, []);
+
+  const setAmbientSoundEnabled = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, ambientSoundEnabled: enabled }));
   }, []);
 
   // "Reset All Data" is meant to hand back a genuine beginner's experience —
@@ -137,9 +136,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setDailyReminder,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
-      setAlterXtraIntroShown,
-      setMascotEnabled,
       setCelebratedStreakMilestone,
+      setSoundEffectsEnabled,
+      setAmbientSoundEnabled,
       resetSettings,
     }),
     [
@@ -151,9 +150,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setDailyReminder,
       setShowGoalBarOnHome,
       setLimitedBeliefsIntroShown,
-      setAlterXtraIntroShown,
-      setMascotEnabled,
       setCelebratedStreakMilestone,
+      setSoundEffectsEnabled,
+      setAmbientSoundEnabled,
       resetSettings,
     ]
   );

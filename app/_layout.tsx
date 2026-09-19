@@ -1,3 +1,4 @@
+import '../src/lib/polyfills';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -6,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppDataProvider } from '../src/store/AppDataContext';
 import { SettingsProvider } from '../src/store/SettingsContext';
+import { AmbientSoundController } from '../src/components/AmbientSoundController';
 import { AppLockGate } from '../src/components/AppLockGate';
 import { SaveErrorBanner } from '../src/components/SaveErrorBanner';
 import { WinFlashOverlay } from '../src/components/WinFlashOverlay';
@@ -23,6 +25,7 @@ function ThemedApp() {
         <StatusBar style="light" />
         <AppLockGate>
           <WinFlashProvider>
+            <AmbientSoundController />
             <SaveErrorBanner />
             <Stack
               screenOptions={{
@@ -55,7 +58,7 @@ export default function RootLayout() {
         handleNotification: async () => ({
           shouldShowBanner: true,
           shouldShowList: true,
-          shouldPlaySound: false,
+          shouldPlaySound: true,
           shouldSetBadge: false,
         }),
       });

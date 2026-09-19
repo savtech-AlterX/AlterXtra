@@ -178,7 +178,7 @@ export function LimitedBeliefsIntro() {
 const makeStyles = ({ colors, typography, glowShadow }: AppTheme) =>
   StyleSheet.create({
     scrim: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: colors.overlay,
     },
     burst: {

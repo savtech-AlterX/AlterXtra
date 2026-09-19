@@ -30,8 +30,13 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# env files — real environment values should never be committed, only
+# .env.example templates (which is why .env.production slipped through
+# before: this pattern only caught *.local, not .env.production itself)
+.env
+.env.*
+!.env.example
+!**/.env.example
 
 # typescript
 *.tsbuildinfo

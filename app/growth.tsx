@@ -9,6 +9,8 @@ import { HudScreen } from '../src/components/HudScreen';
 import { CloseToHome } from '../src/components/CloseToHome';
 import { MilestoneCelebration } from '../src/components/MilestoneCelebration';
 import { Sparkline } from '../src/components/Sparkline';
+import { XtraLockedCard } from '../src/components/XtraLockedCard';
+import { hasAlterXtra } from '../src/lib/entitlements';
 import { buildShareReport, computeGrowthStats, formatDurationShort, GrowthStats, HeatmapCell, MONTH_ABBR } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
 import { useSettings } from '../src/store/SettingsContext';
@@ -67,6 +69,18 @@ function AlignmentBar({
         {total === 0 ? 'No entries' : `${aligned}/${total} ${unit}`}
       </Text>
     </View>
+  );
+}
+
+// Free plan: today's number only. The trend across weeks — the part that
+// takes real history to build up and is worth paying to keep — is Alter-Xtra.
+function ThisWeekAlignment({ stats }: { stats: GrowthStats }) {
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <GlowCard style={styles.card}>
+      <Text style={styles.label}>THIS WEEK'S ALIGNMENT</Text>
+      <AlignmentBar label="THIS WEEK" aligned={stats.alignment.thisWeek.aligned} total={stats.alignment.thisWeek.total} />
+    </GlowCard>
   );
 }
 
@@ -410,7 +424,7 @@ export default function Growth() {
       <GlowCard strong style={styles.hero}>
         <Text style={styles.heroValue}>{stats.activeStreakDays}</Text>
         <Text style={styles.heroLabel}>DAY ACTIVE STREAK</Text>
-        {stats.bestStreakDays > stats.activeStreakDays && (
+        {hasAlterXtra() && stats.bestStreakDays > stats.activeStreakDays && (
           <Text style={styles.heroBest}>Personal best: {stats.bestStreakDays} days — keep going to beat it</Text>
         )}
         {stats.daysSinceStart !== null && (
@@ -425,7 +439,14 @@ export default function Growth() {
         onViewHistory={() => router.push('/calendar')}
       />
 
-      <AppActivityCard activity={stats.appActivity} />
+      {hasAlterXtra() ? (
+        <AppActivityCard activity={stats.appActivity} />
+      ) : (
+        <XtraLockedCard
+          title="App activity"
+          body="How often, and when, you actually open AlterX — total opens, this week's count, and your open streak."
+        />
+      )}
 
       {!hasAnyProgress ? (
         <EmptyState
@@ -464,15 +485,46 @@ export default function Growth() {
             </GlowCard>
           )}
 
-          <AlignmentTrend stats={stats} />
+          {hasAlterXtra() ? (
+            <AlignmentTrend stats={stats} />
+          ) : (
+            <>
+              <ThisWeekAlignment stats={stats} />
+              <XtraLockedCard
+                title="Alignment trend · 8 weeks"
+                body="See whether you're trending up or down over time, not just how today looks."
+              />
+            </>
+          )}
 
-          <MomentumComparison stats={stats} />
+          {hasAlterXtra() ? (
+            <MomentumComparison stats={stats} />
+          ) : (
+            <XtraLockedCard
+              title="You · 30 days ago vs now"
+              body="Compare your current month against your last one — showing up, staying aligned, following through."
+            />
+          )}
 
-          <InsightsCard insights={stats.insights} />
+          {hasAlterXtra() ? (
+            <InsightsCard insights={stats.insights} />
+          ) : (
+            <XtraLockedCard
+              title="Patterns"
+              body="Rule-based callouts pulled from your own data — your most consistent day, what correlates with staying aligned."
+            />
+          )}
 
-          <ActivityHeatmap weeks={stats.activityHeatmap} />
+          {hasAlterXtra() ? (
+            <ActivityHeatmap weeks={stats.activityHeatmap} />
+          ) : (
+            <XtraLockedCard
+              title="Activity · past year"
+              body="A full year of activity at a glance, GitHub-contributions style — not just the last few weeks."
+            />
+          )}
 
-          {stats.journalThenNow && (
+          {hasAlterXtra() && stats.journalThenNow && (
             <GlowCard style={styles.card}>
               <Text style={styles.label}>THEN VS NOW</Text>
               <View style={styles.thenNowBlock}>
@@ -494,12 +546,21 @@ export default function Growth() {
             </GlowCard>
           )}
 
-          <GlowButton
-            label="SHARE PROGRESS"
-            variant="outline"
-            icon={<Ionicons name="share-outline" size={16} color={colors.glow} style={iconGlow} />}
-            onPress={handleShare}
-          />
+          {hasAlterXtra() ? (
+            <GlowButton
+              label="SHARE PROGRESS"
+              variant="outline"
+              icon={<Ionicons name="share-outline" size={16} color={colors.glow} style={iconGlow} />}
+              onPress={handleShare}
+            />
+          ) : (
+            <GlowButton
+              label="SHARE PROGRESS · ALTER-XTRA"
+              variant="outline"
+              icon={<Ionicons name="lock-closed" size={16} color={colors.glow} style={iconGlow} />}
+              onPress={() => router.push('/alter-xtra')}
+            />
+          )}
         </>
       )}
 

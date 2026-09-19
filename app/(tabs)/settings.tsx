@@ -43,8 +43,8 @@ export default function Settings() {
     setAppLockEnabled,
     setDailyReminder,
     setShowGoalBarOnHome,
-    setAlterXtraIntroShown,
-    setMascotEnabled,
+    setSoundEffectsEnabled,
+    setAmbientSoundEnabled,
     resetSettings,
   } = useSettings();
   const { resetTheme } = useThemeControls();
@@ -126,7 +126,7 @@ export default function Settings() {
     resetAll();
     resetSettings();
     resetTheme();
-    router.replace('/onboarding/splash');
+    router.replace('/onboarding/icon');
   }
 
   function confirmReset() {
@@ -246,31 +246,6 @@ export default function Settings() {
         </GlowCard>
       )}
 
-      <GlowButton
-        label="REPLAY ALTER-XTRA INTRO"
-        variant="outline"
-        icon={<Ionicons name="play" size={16} color={colors.glow} style={iconGlow} />}
-        onPress={() => {
-          setAlterXtraIntroShown(false);
-          router.replace('/(tabs)');
-        }}
-      />
-
-      <GlowCard style={styles.lockCard}>
-        <View style={styles.lockText}>
-          <Text style={typography.label}>MASCOT INTRO</Text>
-          <Text style={styles.lockDesc}>
-            Play a short animated lead-in before the Alter-Xtra intro. Placeholder art for now.
-          </Text>
-        </View>
-        <Switch
-          value={settings.mascotEnabled}
-          onValueChange={setMascotEnabled}
-          trackColor={{ false: colors.borderDim, true: colors.glow }}
-          thumbColor={colors.textPrimary}
-        />
-      </GlowCard>
-
       <GlowCard style={styles.lockCard}>
         <View style={styles.lockText}>
           <Text style={typography.label}>GOAL BAR ON HOME</Text>
@@ -284,6 +259,36 @@ export default function Settings() {
           trackColor={{ false: colors.borderDim, true: colors.glow }}
           thumbColor={colors.textPrimary}
         />
+      </GlowCard>
+
+      <GlowCard style={styles.card}>
+        <Text style={typography.label}>SOUND</Text>
+
+        <View style={styles.lockCard}>
+          <View style={styles.lockText}>
+            <Text style={styles.soundLabel}>Sound effects</Text>
+            <Text style={styles.lockDesc}>A chime on habit check-ins, log entries, and streak milestones.</Text>
+          </View>
+          <Switch
+            value={settings.soundEffectsEnabled}
+            onValueChange={setSoundEffectsEnabled}
+            trackColor={{ false: colors.borderDim, true: colors.glow }}
+            thumbColor={colors.textPrimary}
+          />
+        </View>
+
+        <View style={[styles.lockCard, styles.soundRow]}>
+          <View style={styles.lockText}>
+            <Text style={styles.soundLabel}>Ambient background</Text>
+            <Text style={styles.lockDesc}>A soft background tone while AlterX is open.</Text>
+          </View>
+          <Switch
+            value={settings.ambientSoundEnabled}
+            onValueChange={setAmbientSoundEnabled}
+            trackColor={{ false: colors.borderDim, true: colors.glow }}
+            thumbColor={colors.textPrimary}
+          />
+        </View>
       </GlowCard>
 
       <GlowCard style={styles.card}>
@@ -335,6 +340,8 @@ export default function Settings() {
         style={styles.dangerButton}
         onPress={confirmReset}
       />
+
+      <Text style={styles.copyright}>© 2026 Savannah Giddings. All rights reserved.</Text>
     </HudScreen>
   );
 }
@@ -363,6 +370,17 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontSize: 12,
     lineHeight: 17,
     color: colors.textSecondary,
+  },
+  soundLabel: {
+    fontFamily: typography.cardTitle.fontFamily,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  soundRow: {
+    marginTop: 2,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderDim,
   },
   timeRow: {
     flexDirection: 'row',
@@ -416,5 +434,12 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   dangerButton: {
     borderColor: colors.danger,
+  },
+  copyright: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 11,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

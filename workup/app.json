@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Workup",
+    "slug": "workup",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "workup",
+    "backgroundColor": "#0b0d12",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.workup.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Workup uses your camera to take consistently framed progress photos of your muscle groups.",
+        "NSFaceIDUsageDescription": "Workup can lock your progress photos behind Face ID."
+      }
+    },
+    "android": {
+      "package": "com.workup.app",
+      "permissions": [
+        "CAMERA",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Workup uses your camera to take consistently framed progress photos of your muscle groups."
+        }
+      ],
+      "expo-notifications"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3110c6e9-3c15-4501-b2b4-31adc8282168"
+      }
+    },
+    "owner": "techsav",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3110c6e9-3c15-4501-b2b4-31adc8282168"
+    }
+  }
+}

@@ -89,14 +89,14 @@ export default function AlterXtra() {
       ))}
 
       <Text style={[typography.label, styles.spacer]}>XTRA.THEMES</Text>
-      <Text style={styles.themeHint}>Tap a theme to try it on. Your choice applies across the whole app.</Text>
+      <Text style={styles.themeHint}>Blue and Navy are free. The rest unlock with Alter-Xtra.</Text>
       <ThemePicker />
 
       {/* Deliberately not a button. A live-looking purchase control with no
           purchase behind it is the single thing that would fail App Store
           review, so there is nothing to tap until in-app purchases are wired. */}
       <Text style={[styles.disclaimer, styles.spacer]}>
-        Alter-Xtra isn't on sale yet. Every theme above is free to use in the meantime.
+        Alter-Xtra isn't on sale yet — coming soon.
       </Text>
     </HudScreen>
   );

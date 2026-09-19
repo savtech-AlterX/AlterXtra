@@ -48,7 +48,7 @@ const makeStyles = ({ colors }: AppTheme) =>
     // A faint full-height column behind every bar, so an 8-slot week grid
     // reads clearly even when most weeks have no data yet.
     track: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       marginHorizontal: 2,
       borderRadius: 3,
       backgroundColor: colors.panelSolid,

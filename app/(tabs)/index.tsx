@@ -3,7 +3,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { AlterXtraIntro } from '../../src/components/AlterXtraIntro';
 import { FreshStartBanner } from '../../src/components/FreshStartBanner';
 import { GlowCard } from '../../src/components/GlowCard';
 import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
@@ -12,9 +11,7 @@ import { IdentityVoiceNudge } from '../../src/components/IdentityVoiceNudge';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { LimitedBeliefsIntro } from '../../src/components/LimitedBeliefsIntro';
 
-// Off for now — the Alter-Xtra teaser panel took its place on Home so the
-// two don't compete for the same moment. Flip back to true to restore it;
-// nothing else needs to change.
+// Off for now. Flip back to true to restore it; nothing else needs to change.
 const LIMITED_BELIEFS_INTRO_ENABLED = false;
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
@@ -203,7 +200,6 @@ export default function Home() {
         />
       </View>
 
-      <AlterXtraIntro />
       {LIMITED_BELIEFS_INTRO_ENABLED && <LimitedBeliefsIntro />}
     </HudScreen>
   );

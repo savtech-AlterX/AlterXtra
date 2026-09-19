@@ -8,6 +8,7 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
+import { FREE_LETTER_LIMIT, letterLimitReached } from '../../src/lib/entitlements';
 import { isFutureSelfUnlocked, logEntriesSince } from '../../src/lib/futureSelfUnlock';
 import { useAppData } from '../../src/store/AppDataContext';
 import { FutureSelfVideo, LogEntry } from '../../src/store/types';
@@ -61,9 +62,10 @@ function LettersPanel() {
   const { data, addFutureSelfLetter } = useAppData();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const atLimit = letterLimitReached(data.futureSelfLetters.length);
 
   function save() {
-    if (!body.trim()) return;
+    if (!body.trim() || atLimit) return;
     addFutureSelfLetter(title.trim(), body.trim());
     setTitle('');
     setBody('');
@@ -77,37 +79,53 @@ function LettersPanel() {
 
   return (
     <>
-      <Text style={typography.label}>LETTER TITLE (OPTIONAL)</Text>
-      <HudTextInput
-        placeholder="e.g. One year from now..."
-        value={title}
-        onChangeText={setTitle}
-        accessibilityLabel="Letter title, optional"
-      />
+      {atLimit ? (
+        <GlowCard style={styles.limitCard}>
+          <Text style={typography.label}>FREE PLAN LIMIT REACHED</Text>
+          <Text style={styles.limitText}>
+            Free plan is limited to {FREE_LETTER_LIMIT} sealed letters. Alter-Xtra removes the limit.
+          </Text>
+          <GlowButton
+            label="SEE ALTER-XTRA"
+            variant="outline"
+            onPress={() => router.push('/alter-xtra')}
+          />
+        </GlowCard>
+      ) : (
+        <>
+          <Text style={typography.label}>LETTER TITLE (OPTIONAL)</Text>
+          <HudTextInput
+            placeholder="e.g. One year from now..."
+            value={title}
+            onChangeText={setTitle}
+            accessibilityLabel="Letter title, optional"
+          />
 
-      <Text style={[typography.label, styles.spacer]}>YOUR LETTER</Text>
-      <HudTextInput
-        placeholder="Write your letter to your future self..."
-        value={body}
-        onChangeText={setBody}
-        multiline
-        accessibilityLabel="Your letter"
-      />
+          <Text style={[typography.label, styles.spacer]}>YOUR LETTER</Text>
+          <HudTextInput
+            placeholder="Write your letter to your future self..."
+            value={body}
+            onChangeText={setBody}
+            multiline
+            accessibilityLabel="Your letter"
+          />
 
-      <GlowButton
-        label="SEAL LETTER"
-        onPress={save}
-        disabled={!body.trim()}
-        style={styles.spacer}
-        icon={<Ionicons name="lock-closed" size={14} color="#02141f" style={iconGlow} />}
-      />
-      <GlowButton
-        label="DISCARD"
-        variant="outline"
-        labelColor={colors.danger}
-        style={styles.discardButton}
-        onPress={discard}
-      />
+          <GlowButton
+            label="SEAL LETTER"
+            onPress={save}
+            disabled={!body.trim()}
+            style={styles.spacer}
+            icon={<Ionicons name="lock-closed" size={14} color="#02141f" style={iconGlow} />}
+          />
+          <GlowButton
+            label="DISCARD"
+            variant="outline"
+            labelColor={colors.danger}
+            style={styles.discardButton}
+            onPress={discard}
+          />
+        </>
+      )}
 
       <View style={styles.list}>
         {data.futureSelfLetters.length === 0 && (
@@ -249,6 +267,15 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   discardButton: {
     borderColor: colors.danger,
+  },
+  limitCard: {
+    gap: 10,
+  },
+  limitText: {
+    fontFamily: typography.body.fontFamily,
+    color: colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
   },
   list: {
     gap: 12,
