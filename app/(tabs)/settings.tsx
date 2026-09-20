@@ -126,7 +126,7 @@ export default function Settings() {
     resetAll();
     resetSettings();
     resetTheme();
-    router.replace('/onboarding/splash');
+    router.replace('/onboarding/icon');
   }
 
   function confirmReset() {

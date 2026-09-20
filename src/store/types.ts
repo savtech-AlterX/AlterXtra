@@ -1,5 +1,10 @@
+// 'male-mohawk' and 'female-curly' are hairstyle variants of the same two
+// figures — they get their own choose-icon glyph and identity mark.
+export type AppIconChoice = 'male' | 'male-mohawk' | 'female' | 'female-curly' | 'mystery';
+
 export type Identity = {
   archetype: string;
+  icon: AppIconChoice;
   name: string;
   email?: string;
   createdAt?: string;
@@ -7,9 +12,10 @@ export type Identity = {
 
 // What's been filled in so far on the onboarding screens, before there's a
 // real Identity to save. Persisted so a force-quit mid-onboarding doesn't
-// silently throw away a name/email the user already typed — cleared the
+// silently throw away a name/icon/email the user already typed — cleared the
 // moment a real Identity is created.
 export type OnboardingDraft = {
+  icon?: AppIconChoice;
   name?: string;
   email?: string;
   customArchetype?: string;

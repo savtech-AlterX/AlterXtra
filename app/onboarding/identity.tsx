@@ -7,6 +7,7 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { archetypes } from '../../src/data/archetypes';
 import { useAppData } from '../../src/store/AppDataContext';
+import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -14,7 +15,8 @@ export default function ChooseIdentity() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { name, email } = useLocalSearchParams<{
+  const { icon, name, email } = useLocalSearchParams<{
+    icon: AppIconChoice;
     name?: string;
     email?: string;
   }>();
@@ -36,10 +38,11 @@ export default function ChooseIdentity() {
   function embody(label: string) {
     setIdentity({
       archetype: label,
+      icon: icon ?? data.onboardingDraft?.icon ?? data.identity?.icon ?? 'mystery',
       name: name || data.onboardingDraft?.name || data.identity?.name || 'there',
       email: email || data.onboardingDraft?.email || data.identity?.email,
     });
-    router.replace('/(tabs)');
+    router.push('/onboarding/loading');
   }
 
   return (

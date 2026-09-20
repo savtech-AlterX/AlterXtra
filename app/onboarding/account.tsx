@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
+import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -14,6 +15,7 @@ export default function CreateAccount() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
+  const { icon } = useLocalSearchParams<{ icon: AppIconChoice }>();
   const { data, setOnboardingDraft } = useAppData();
   // Resume text already typed before a force-quit, instead of greeting a
   // returning user with blank fields.
@@ -38,7 +40,7 @@ export default function CreateAccount() {
   function proceed() {
     router.push({
       pathname: '/onboarding/identity',
-      params: { name: fullName.trim(), email: email.trim() },
+      params: { icon: icon ?? 'mystery', name: fullName.trim(), email: email.trim() },
     });
   }
 
