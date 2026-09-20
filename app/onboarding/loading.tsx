@@ -23,7 +23,7 @@ export default function Loading() {
       useNativeDriver: false,
     }).start();
 
-    const timer = setTimeout(() => router.replace('/(tabs)'), 3000);
+    const timer = setTimeout(() => router.replace('/onboarding/reveal'), 3000);
     return () => clearTimeout(timer);
   }, []);
 

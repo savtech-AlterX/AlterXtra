@@ -8,7 +8,6 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
-import { fonts } from '../../src/theme/typography';
 
 // Two rows of two hairstyle variants around a centered 'mystery' card,
 // matching the 5-card reference layout exactly — including its left-to-right
@@ -40,7 +39,7 @@ function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
 }
 
 export default function ChooseIcon() {
-  const { colors } = useAppTheme();
+  const { colors, typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, setOnboardingDraft } = useAppData();
@@ -51,8 +50,8 @@ export default function ChooseIcon() {
   return (
     <HudScreen style={styles.screen}>
       <View style={styles.header}>
-        <Text style={styles.title}>
-          choose an icon{'\n'}for your app
+        <Text style={[typography.screenTitle, styles.title]}>
+          CHOOSE AN ICON{'\n'}FOR YOUR APP
         </Text>
       </View>
 
@@ -134,23 +133,11 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   header: {
     alignItems: 'center',
   },
-  // LCD-Bold (screenTitle's usual font, used everywhere else in the app) is
-  // a segmented-display face with no real lowercase forms — feeding it
-  // lowercase text just renders as caps, silently undoing the point of this
-  // one screen matching the reference's lowercase title. Chakra Petch (the
-  // app's other, "reading voice" font) has real lowercase, so this title
-  // uses that instead, with the glow added by hand since body text normally
-  // has none.
+  // This screen's header is centered (unlike the left-aligned screenTitle
+  // used everywhere else), so the shared style still needs a text-align
+  // override to sit right in that layout.
   title: {
     textAlign: 'center',
-    fontFamily: fonts.bodyMedium,
-    fontSize: 22,
-    lineHeight: 27,
-    letterSpacing: 1,
-    color: colors.glow,
-    textShadowColor: colors.glow,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 12,
   },
   // Packed right under the title at their natural size (not flex:1 +
   // centered, which splits the leftover space into a gap above the cards
