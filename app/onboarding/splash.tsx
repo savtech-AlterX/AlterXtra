@@ -18,7 +18,7 @@ export default function Splash() {
   return (
     <HudScreen scroll={false}>
       <View style={styles.center}>
-        <IdentityMarkRing size={140} icon="mystery" />
+        <IdentityMarkRing size={140} />
         <Image
           source={wordmarkSource()}
           style={[styles.wordmark, { tintColor: colors.glow }]}
@@ -29,7 +29,7 @@ export default function Splash() {
         <Text style={styles.subtitle}>IDENTITY TRANSFORMATION</Text>
       </View>
 
-      <GlowButton label="BEGIN" onPress={() => router.push('/onboarding/icon')} />
+      <GlowButton label="BEGIN" onPress={() => router.push('/onboarding/account')} />
     </HudScreen>
   );
 }
