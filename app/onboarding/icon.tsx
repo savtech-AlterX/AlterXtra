@@ -20,24 +20,14 @@ const OPTIONS: AppIconChoice[][] = [
   ['female-curly', 'female'],
 ];
 
-// The original icon-choice glyphs: the head silhouette merges into a
-// question mark (same linework as the real app icon), not the plain suit
-// outline used for the identity mark elsewhere in the app. Each renders at
-// a fixed shared width (GLYPH_WIDTH) with its own height computed from its
-// own aspect ratio, rather than a fixed height for both — the two aren't
-// drawn to the same canvas (the female mark's flowing hair makes it taller
-// relative to its width than the male mark), and forcing a shared height
-// squeezed the taller one down narrower than the other, reading as smaller.
-// (react-native-web's Image doesn't derive a resizeMode="contain" box's
-// height from an `aspectRatio` style the way RN does — it renders at the
-// source file's raw pixel height instead — so this computes explicit
-// per-icon width/height rather than relying on that.)
-const GLYPH_WIDTH = 88;
+// Real photo-based avatars — square, already-colored/glowing renders, not
+// tintable line work, so no tintColor here (unlike the mystery glyph below).
+const GLYPH_WIDTH = 118;
 const ICON_CHOICE_MARKS = {
-  male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
-  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (307 / 236) },
-  female: { source: require('../../assets/icon-choice-female.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (716 / 362) },
-  'female-curly': { source: require('../../assets/icon-choice-female-curly.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (309 / 229) },
+  male: { source: require('../../assets/icon-choice-male.png') },
+  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png') },
+  female: { source: require('../../assets/icon-choice-female.png') },
+  'female-curly': { source: require('../../assets/icon-choice-female-curly.png') },
 } as const;
 
 function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
@@ -45,8 +35,8 @@ function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
   if (option === 'mystery') {
     return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
   }
-  const { source, width, height } = ICON_CHOICE_MARKS[option];
-  return <Image source={source} style={[styles.glyphImage, { tintColor: tint, width, height }]} resizeMode="contain" />;
+  const { source } = ICON_CHOICE_MARKS[option];
+  return <Image source={source} style={styles.glyphImage} resizeMode="contain" />;
 }
 
 export default function ChooseIcon() {
@@ -221,6 +211,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   glyphImage: {
     width: GLYPH_WIDTH,
+    height: GLYPH_WIDTH,
   },
   mysteryGlyph: {
     fontFamily: typography.screenTitle.fontFamily,
