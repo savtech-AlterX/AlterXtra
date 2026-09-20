@@ -40,17 +40,15 @@ export default function Loading() {
 
   return (
     <HudScreen scroll={false}>
-      <View style={styles.stack}>
-        <Animated.View style={{ opacity: bannerOpacity }}>
-          <Image source={MASCOT} style={styles.mascot} resizeMode="contain" />
-        </Animated.View>
-        <View style={styles.center}>
-          <IdentityMarkRing size={90} style={styles.mark} />
-          <View style={styles.barTrack}>
-            <Animated.View style={[styles.barFill, { width }]} />
-          </View>
-          <Text style={styles.label}>REPROGRAMMING IDENTITY...</Text>
+      <Animated.View style={[styles.banner, { opacity: bannerOpacity }]}>
+        <Image source={MASCOT} style={styles.mascot} resizeMode="contain" />
+      </Animated.View>
+      <View style={styles.center}>
+        <IdentityMarkRing size={110} style={styles.mark} />
+        <View style={styles.barTrack}>
+          <Animated.View style={[styles.barFill, { width }]} />
         </View>
+        <Text style={styles.label}>REPROGRAMMING IDENTITY...</Text>
       </View>
     </HudScreen>
   );
@@ -58,26 +56,27 @@ export default function Loading() {
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
-  stack: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 20,
+  banner: {
+    position: 'absolute',
+    top: '6%',
+    alignSelf: 'center',
+    width: '64%',
   },
   mascot: {
-    width: 220,
+    width: '100%',
     aspectRatio: MASCOT_ASPECT,
   },
   center: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 20,
+    gap: 28,
   },
   mark: {
     opacity: 0.7,
   },
   barTrack: {
-    width: 200,
+    width: '70%',
     height: 6,
     borderRadius: 3,
     backgroundColor: colors.panelSolid,
