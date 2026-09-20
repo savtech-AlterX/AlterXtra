@@ -1,11 +1,13 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Image, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
+const MASCOT = require('../../assets/coming-soon-mascot.png');
+const MASCOT_ASPECT = 865 / 490;
 const TOTAL_MS = 2800;
 
 export default function Loading() {
@@ -39,7 +41,7 @@ export default function Loading() {
   return (
     <HudScreen scroll={false}>
       <Animated.View style={[styles.banner, { opacity: bannerOpacity }]}>
-        <Text style={styles.bannerText}>ALTERXTRA IS COMING SOON</Text>
+        <Image source={MASCOT} style={styles.mascot} resizeMode="contain" />
       </Animated.View>
       <View style={styles.center}>
         <IdentityMarkRing size={110} style={styles.mark} />
@@ -56,26 +58,13 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
   banner: {
     position: 'absolute',
-    top: '14%',
+    top: '6%',
     alignSelf: 'center',
-    borderWidth: 1.5,
-    borderColor: colors.glowStrong,
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    backgroundColor: colors.panelSolid,
-    shadowColor: colors.glow,
-    shadowOpacity: 0.8,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 0 },
+    width: '64%',
   },
-  bannerText: {
-    fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 13,
-    letterSpacing: 2,
-    textAlign: 'center',
-    color: colors.textPrimary,
-    ...glowShadow,
+  mascot: {
+    width: '100%',
+    aspectRatio: MASCOT_ASPECT,
   },
   center: {
     flex: 1,
