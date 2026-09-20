@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, View, ViewStyle } from 'react-native';
+import { Image, Text, View, ViewStyle } from 'react-native';
 import { useAppData } from '../store/AppDataContext';
 import { markSource } from '../lib/avatar';
 import { AppIconChoice } from '../store/types';
@@ -15,17 +15,18 @@ type Props = {
 
 // The identity-mark icon, shown consistently across choose-icon, the
 // loading screen, the home hero, and the lock screen. The 4 real-photo
-// marks already include their own ring/glow baked in; only the abstract
-// 'mystery' glyph needs the theme tint applied on top.
+// marks already include their own ring/glow baked in. 'mystery' renders as
+// the same glowing LCD-font "?" glyph used on the choose-icon card itself,
+// rather than the separate illustrated question-mark image this used to
+// show — those two looked like different art styles for the same choice.
 export function IdentityMarkRing({ size = 130, style, icon }: Props) {
-  const { colors } = useAppTheme();
+  const { colors, typography } = useAppTheme();
   const { data } = useAppData();
   // Falls back through the in-progress onboarding draft too — during
   // onboarding itself (loading screen) or if a route param carrying the
   // choice ever fails to arrive, the identity object may still be unset even
   // though the user already picked a real avatar.
   const resolved = icon ?? data.identity?.icon ?? data.onboardingDraft?.icon;
-  const { source, aspect, tint } = markSource(resolved);
 
   return (
     <View
@@ -33,15 +34,35 @@ export function IdentityMarkRing({ size = 130, style, icon }: Props) {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Image
-        source={source}
-        style={{
-          width: size,
-          height: size / aspect,
-          tintColor: tint ? colors.glow : undefined,
-        }}
-        resizeMode="contain"
-      />
+      {resolved === 'mystery' ? (
+        <Text
+          style={{
+            fontFamily: typography.screenTitle.fontFamily,
+            fontSize: size * 0.62,
+            color: colors.glow,
+            textShadowColor: colors.glow,
+            textShadowRadius: size * 0.14,
+            textShadowOffset: { width: 0, height: 0 },
+          }}
+        >
+          ?
+        </Text>
+      ) : (
+        (() => {
+          const { source, aspect, tint } = markSource(resolved);
+          return (
+            <Image
+              source={source}
+              style={{
+                width: size,
+                height: size / aspect,
+                tintColor: tint ? colors.glow : undefined,
+              }}
+              resizeMode="contain"
+            />
+          );
+        })()
+      )}
     </View>
   );
 }
