@@ -40,7 +40,10 @@ export default function CreateAccount() {
   function proceed() {
     router.push({
       pathname: '/onboarding/identity',
-      params: { icon: icon ?? 'mystery', name: fullName.trim(), email: email.trim() },
+      // Fall back to the persisted draft choice, not a hardcoded 'mystery' —
+      // if the `icon` route param didn't survive navigation here, baking in
+      // 'mystery' would permanently mask the real pick that's already saved.
+      params: { icon: icon ?? data.onboardingDraft?.icon ?? 'mystery', name: fullName.trim(), email: email.trim() },
     });
   }
 

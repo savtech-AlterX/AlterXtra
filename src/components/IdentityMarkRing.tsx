@@ -20,7 +20,11 @@ type Props = {
 export function IdentityMarkRing({ size = 130, style, icon }: Props) {
   const { colors } = useAppTheme();
   const { data } = useAppData();
-  const resolved = icon ?? data.identity?.icon;
+  // Falls back through the in-progress onboarding draft too — during
+  // onboarding itself (loading screen) or if a route param carrying the
+  // choice ever fails to arrive, the identity object may still be unset even
+  // though the user already picked a real avatar.
+  const resolved = icon ?? data.identity?.icon ?? data.onboardingDraft?.icon;
   const { source, aspect, tint } = markSource(resolved);
 
   return (

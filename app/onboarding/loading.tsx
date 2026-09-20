@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
-import { useAppData } from '../../src/store/AppDataContext';
 import { useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -12,7 +11,6 @@ const TOTAL_MS = 2800;
 export default function Loading() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data } = useAppData();
   const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -32,7 +30,7 @@ export default function Loading() {
   return (
     <HudScreen scroll={false}>
       <View style={styles.center}>
-        <IdentityMarkRing size={110} style={styles.mark} icon={data.identity?.icon} />
+        <IdentityMarkRing size={110} style={styles.mark} />
         <View style={styles.barTrack}>
           <Animated.View style={[styles.barFill, { width }]} />
         </View>

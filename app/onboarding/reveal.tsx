@@ -10,8 +10,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const FLY_MS = 4200;
 const BOB_MS = 900;
 
-// A one-time flourish after onboarding finishes: a plane tows an "ALTER X"
-// banner across the screen — the Scarface "the world is yours" beat, on
+// A one-time flourish after onboarding finishes: a plane tows a banner
+// across the screen — the Scarface "the world is yours" plane beat, on
 // brand (glowing HUD blue on black, not a literal blue-sky recreation).
 export default function Reveal() {
   const styles = useThemedStyles(makeStyles);
@@ -50,12 +50,11 @@ export default function Reveal() {
 
   return (
     <HudScreen scroll={false} style={styles.screen}>
-      <Text style={styles.skyLabel}>THE WORLD IS YOURS</Text>
       <Animated.View style={[styles.rig, { transform: [{ translateX }, { translateY }] }]}>
         <Ionicons name="airplane" size={30} color="#eaf6ff" style={styles.plane} />
         <View style={styles.tether} />
         <View style={styles.banner}>
-          <Text style={styles.bannerText}>ALTER X</Text>
+          <Text style={styles.bannerText}>OUTER WORLD{'\n'}FOLLOWS{'\n'}INNER WORLD</Text>
         </View>
       </Animated.View>
     </HudScreen>
@@ -67,15 +66,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   screen: {
     flex: 1,
     justifyContent: 'center',
-  },
-  skyLabel: {
-    position: 'absolute',
-    top: '18%',
-    alignSelf: 'center',
-    fontFamily: typography.label.fontFamily,
-    fontSize: 13,
-    letterSpacing: 4,
-    color: colors.textMuted,
   },
   rig: {
     flexDirection: 'row',
@@ -95,11 +85,12 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     backgroundColor: colors.borderDim,
   },
   banner: {
+    width: 190,
     borderWidth: 1.5,
     borderColor: colors.glowStrong,
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 22,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     backgroundColor: colors.panelSolid,
     shadowColor: colors.glow,
     shadowOpacity: 0.8,
@@ -108,8 +99,10 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   bannerText: {
     fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 26,
-    letterSpacing: 5,
+    fontSize: 15,
+    lineHeight: 22,
+    letterSpacing: 2,
+    textAlign: 'center',
     color: colors.textPrimary,
     ...glowShadow,
   },
