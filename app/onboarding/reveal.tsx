@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Dimensions, Easing, Image, StyleSheet, Text, View } from 'react-native';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
+const MASCOT = require('../../assets/coming-soon-mascot.png');
+const MASCOT_ASPECT = 865 / 490;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const FLY_MS = 4200;
 const BOB_MS = 900;
@@ -50,13 +52,16 @@ export default function Reveal() {
 
   return (
     <HudScreen scroll={false} style={styles.screen}>
-      <Animated.View style={[styles.rig, { transform: [{ translateX }, { translateY }] }]}>
-        <Ionicons name="airplane" size={30} color="#eaf6ff" style={styles.plane} />
-        <View style={styles.tether} />
-        <View style={styles.banner}>
-          <Text style={styles.bannerText}>OUTER WORLD{'\n'}FOLLOWS{'\n'}INNER WORLD</Text>
-        </View>
-      </Animated.View>
+      <View style={styles.flightArea}>
+        <Animated.View style={[styles.rig, { transform: [{ translateX }, { translateY }] }]}>
+          <Ionicons name="airplane" size={30} color="#eaf6ff" style={styles.plane} />
+          <View style={styles.tether} />
+          <View style={styles.banner}>
+            <Text style={styles.bannerText}>OUTER WORLD{'\n'}FOLLOWS{'\n'}INNER WORLD</Text>
+          </View>
+        </Animated.View>
+      </View>
+      <Image source={MASCOT} style={styles.mascot} resizeMode="contain" />
     </HudScreen>
   );
 }
@@ -65,13 +70,23 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
   screen: {
     flex: 1,
+    alignItems: 'center',
+  },
+  flightArea: {
+    flex: 1,
+    width: '100%',
     justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  mascot: {
+    width: 170,
+    aspectRatio: MASCOT_ASPECT,
+    marginBottom: 16,
   },
   rig: {
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'absolute',
-    top: '48%',
   },
   plane: {
     textShadowColor: '#eaf6ff',
