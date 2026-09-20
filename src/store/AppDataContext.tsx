@@ -23,6 +23,7 @@ import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
 import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt, writeWidgetStreak } from '../lib/sessionWidgetBridge';
 import { computeActiveStreakDays } from '../lib/growth';
 import { deleteAllLocalMedia } from '../lib/localMedia';
+import { armComebackReminder } from '../lib/notifications';
 
 const STORAGE_KEY = 'alterx:appData:v1';
 
@@ -356,10 +357,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
     reconcileFromWidget();
     logAppOpen();
+    armComebackReminder();
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
       if (state === 'active') {
         reconcileFromWidget();
         logAppOpen();
+        armComebackReminder();
       }
     });
     return () => sub.remove();

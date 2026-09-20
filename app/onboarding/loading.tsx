@@ -39,7 +39,7 @@ export default function Loading() {
   return (
     <HudScreen scroll={false}>
       <Animated.View style={[styles.banner, { opacity: bannerOpacity }]}>
-        <Text style={styles.bannerText}>ALTER X IS COMING THROUGH</Text>
+        <Text style={styles.bannerText}>ALTERXTRA IS COMING SOON</Text>
       </Animated.View>
       <View style={styles.center}>
         <IdentityMarkRing size={110} style={styles.mark} />
