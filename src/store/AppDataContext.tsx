@@ -49,7 +49,7 @@ type AppDataContextValue = {
   setIdentity: (identity: Identity) => void;
   setOnboardingDraft: (partial: Partial<OnboardingDraft>) => void;
   addJournalEntry: (date: string, title: string, body: string) => void;
-  addFutureSelfLetter: (title: string, body: string) => void;
+  addFutureSelfLetter: (title: string, body: string, unlockDate?: string) => void;
   addFutureSelfVideo: (
     question: string,
     videoUri: string,
@@ -154,12 +154,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, journalEntries: [entry, ...prev.journalEntries] }));
   }, []);
 
-  const addFutureSelfLetter = useCallback((title: string, body: string) => {
+  const addFutureSelfLetter = useCallback((title: string, body: string, unlockDate?: string) => {
     const letter: FutureSelfLetter = {
       id: makeId(),
       createdAt: new Date().toISOString(),
       title: title || undefined,
       body,
+      unlockDate: unlockDate || undefined,
     };
     setData((prev) => ({ ...prev, futureSelfLetters: [letter, ...prev.futureSelfLetters] }));
   }, []);
