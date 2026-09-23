@@ -2,11 +2,19 @@ import { ThemeName } from '../theme/colors';
 
 // Alter-Xtra isn't purchasable yet (see the disclaimer on app/alter-xtra.tsx),
 // so there's no real entitlement state to read — every install is on the
-// free plan. This becomes a real check against purchase/restore state once
-// Alter-Xtra actually goes on sale; nothing else in this file should need to
-// change when it does.
+// free plan by default. `previewEnabled` lets the owner flip the free-plan
+// caps off from Settings to see Alter-Xtra features live before payments
+// exist. Once Alter-Xtra actually goes on sale, this becomes a real check
+// against purchase/restore state instead; nothing else in this file should
+// need to change when it does.
+let previewEnabled = false;
+
+export function setAlterXtraPreview(enabled: boolean) {
+  previewEnabled = enabled;
+}
+
 export function hasAlterXtra(): boolean {
-  return false;
+  return previewEnabled;
 }
 
 // Free-plan content limits — Alter-Xtra removes every one of these entirely.

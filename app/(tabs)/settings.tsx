@@ -45,6 +45,7 @@ export default function Settings() {
     setShowGoalBarOnHome,
     setSoundEffectsEnabled,
     setAmbientSoundEnabled,
+    setPreviewAlterXtraEnabled,
     resetSettings,
   } = useSettings();
   const { resetTheme } = useThemeControls();
@@ -163,6 +164,22 @@ export default function Settings() {
         icon={<Ionicons name="apps-outline" size={16} color={colors.glow} style={iconGlow} />}
         onPress={() => router.push('/add-widget')}
       />
+
+      <GlowCard style={styles.lockCard}>
+        <View style={styles.lockText}>
+          <Text style={typography.label}>ALTER-XTRA PREVIEW</Text>
+          <Text style={styles.lockDesc}>
+            Owner-only. Lifts every free-plan limit right now so you can see Alter-Xtra features live, before
+            real payments exist.
+          </Text>
+        </View>
+        <Switch
+          value={settings.previewAlterXtraEnabled}
+          onValueChange={setPreviewAlterXtraEnabled}
+          trackColor={{ false: colors.borderDim, true: colors.glow }}
+          thumbColor={colors.textPrimary}
+        />
+      </GlowCard>
 
       {Platform.OS !== 'web' && (
         <GlowCard style={styles.lockCard}>
