@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
@@ -64,6 +64,13 @@ export default function AlterXtra() {
     <HudScreen>
       <StackHeader title="ALTER-XTRA" />
 
+      <Image
+        source={require('../assets/alter-xtra/unlimited-identities-banner.jpg')}
+        style={styles.banner}
+        resizeMode="cover"
+        accessibilityLabel="Five glowing silhouettes, each a different identity you could become"
+      />
+
       <GlowCard strong style={styles.priceCard}>
         <Text style={styles.eyebrow}>ALTER X</Text>
         <Text style={styles.title}>Alter-Xtra</Text>
@@ -104,6 +111,11 @@ export default function AlterXtra() {
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  banner: {
+    width: '100%',
+    height: 175,
+    borderRadius: 16,
+  },
   priceCard: {
     gap: 4,
   },
