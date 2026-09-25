@@ -16,6 +16,11 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
     body: 'Create and manage as many identities as you want.',
   },
   {
+    icon: 'mail-open-outline',
+    title: 'Future Self',
+    body: 'Seal letters and record video messages to the person you’re becoming, locked until the date you choose.',
+  },
+  {
     icon: 'locate-outline',
     title: 'Unlimited Habits',
     body: 'Add and track unlimited habits to build who you want to become.',

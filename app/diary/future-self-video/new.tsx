@@ -5,11 +5,9 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../../src/components/GlowButton';
-import { GlowCard } from '../../../src/components/GlowCard';
 import { HudScreen } from '../../../src/components/HudScreen';
 import { HudTextInput } from '../../../src/components/HudTextInput';
 import { StackHeader } from '../../../src/components/StackHeader';
-import { FREE_VIDEO_LIMIT, videoLimitReached } from '../../../src/lib/entitlements';
 import { explainPermissionDenied } from '../../../src/lib/permissionAlert';
 import { useAppData } from '../../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../../src/theme/useAppTheme';
@@ -52,8 +50,7 @@ export default function RecordFutureSelfVideo() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data, addFutureSelfVideo } = useAppData();
-  const atLimit = videoLimitReached(data.futureSelfVideos.length);
+  const { addFutureSelfVideo } = useAppData();
   const [question, setQuestion] = useState('');
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [answerDate, setAnswerDate] = useState(tomorrow());
@@ -112,26 +109,6 @@ export default function RecordFutureSelfVideo() {
 
   function adjustUnlockCount(delta: number) {
     setUnlockAfterLogEntries((n) => Math.max(MIN_UNLOCK_LOGS, Math.min(MAX_UNLOCK_LOGS, n + delta)));
-  }
-
-  if (atLimit) {
-    return (
-      <HudScreen>
-        <StackHeader title="RECORD FOR FUTURE SELF" />
-        <GlowCard style={styles.limitCard}>
-          <Text style={typography.label}>FREE PLAN LIMIT REACHED</Text>
-          <Text style={styles.hint}>
-            Free plan is limited to {FREE_VIDEO_LIMIT} sealed video message{FREE_VIDEO_LIMIT === 1 ? '' : 's'}.
-            Alter-Xtra removes the limit.
-          </Text>
-          <GlowButton
-            label="SEE ALTER-XTRA"
-            variant="outline"
-            onPress={() => router.push('/alter-xtra')}
-          />
-        </GlowCard>
-      </HudScreen>
-    );
   }
 
   return (
@@ -252,9 +229,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   spacer: {
     marginTop: 6,
-  },
-  limitCard: {
-    gap: 10,
   },
   preview: {
     width: '100%',
