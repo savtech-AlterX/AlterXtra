@@ -15,7 +15,7 @@ export default function CreateAccount() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { icon } = useLocalSearchParams<{ icon: AppIconChoice }>();
+  const { icon, mode } = useLocalSearchParams<{ icon: AppIconChoice; mode?: string }>();
   const { data, setOnboardingDraft } = useAppData();
   // Resume text already typed before a force-quit, instead of greeting a
   // returning user with blank fields.
@@ -40,7 +40,7 @@ export default function CreateAccount() {
   function proceed() {
     router.push({
       pathname: '/onboarding/identity',
-      params: { icon: icon ?? 'mystery', name: fullName.trim(), email: email.trim() },
+      params: { icon: icon ?? 'mystery', name: fullName.trim(), email: email.trim(), mode },
     });
   }
 

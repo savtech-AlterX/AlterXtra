@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
@@ -53,6 +53,7 @@ export default function ChooseIcon() {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
   const { data, setOnboardingDraft } = useAppData();
   // Resume a choice already made before a force-quit, instead of starting
   // this pick over from scratch every time onboarding is re-entered.
@@ -104,7 +105,7 @@ export default function ChooseIcon() {
           icon={<Ionicons name="arrow-forward" size={16} color="#02141f" />}
           onPress={() => {
             setOnboardingDraft({ icon: selected });
-            router.push({ pathname: '/onboarding/account', params: { icon: selected } });
+            router.push({ pathname: '/onboarding/account', params: { icon: selected, mode } });
           }}
         />
       </View>

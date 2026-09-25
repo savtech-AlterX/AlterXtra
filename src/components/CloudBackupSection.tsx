@@ -20,7 +20,7 @@ import type { AppTheme } from '../theme/useAppTheme';
 export function CloudBackupSection() {
   const { colors, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { data, restoreAll } = useAppData();
+  const { store, restoreAll } = useAppData();
 
   const iCloudSupported = isProviderSupported('icloud');
   const driveSupported = isProviderSupported('googledrive');
@@ -42,7 +42,7 @@ export function CloudBackupSection() {
   function confirmRestore(backup: BackupFile) {
     confirmDestructive(
       'Restore backup?',
-      'This replaces your journal, beliefs, habits, goals, and notes on this device with the cloud backup. This cannot be undone.',
+      'This replaces every identity on this device — journal, beliefs, habits, goals, and notes — with the cloud backup. This cannot be undone.',
       'Restore',
       () => restoreAll(backup.data, backup.schemaVersion)
     );
@@ -50,7 +50,7 @@ export function CloudBackupSection() {
 
   async function handleICloudBackup() {
     setICloudBusy(true);
-    const result = await backupToCloud('icloud', data);
+    const result = await backupToCloud('icloud', store);
     setICloudBusy(false);
     if (!result.ok) Alert.alert('iCloud backup failed', result.error);
     else Alert.alert('Backed up', 'Your data is saved to iCloud.');
@@ -73,7 +73,7 @@ export function CloudBackupSection() {
 
   async function runDriveBackup(token: string) {
     setDriveBusy(true);
-    const result = await backupToCloud('googledrive', data, token);
+    const result = await backupToCloud('googledrive', store, token);
     setDriveBusy(false);
     if (!result.ok) Alert.alert('Google Drive backup failed', result.error);
     else Alert.alert('Backed up', 'Your data is saved to Google Drive.');

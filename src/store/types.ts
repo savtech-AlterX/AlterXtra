@@ -123,6 +123,10 @@ export type Album = {
   photoUris: string[];
 };
 
+// Everything scoped to a single identity — diary, goals, habits, the lot.
+// `useAppData().data` always exposes the ACTIVE profile's shape (see
+// AppDataContext), so every screen that reads `data.journalEntries` etc.
+// keeps working unchanged regardless of how many identities exist.
 export type AppData = {
   identity: Identity | null;
   onboardingDraft: OnboardingDraft | null;
@@ -159,4 +163,59 @@ export const emptyAppData: AppData = {
   quickNotes: [],
   identitySessions: [],
   appOpens: [],
+};
+
+// One identity's complete, independent world — its own diary, goals,
+// habits, beliefs, log book, photos, streaks. Structurally the same as
+// AppData minus `onboardingDraft` (that's pre-identity, so it lives on the
+// store, not on any one profile) plus a stable `id` and a non-null Identity.
+export type IdentityProfile = {
+  id: string;
+  identity: Identity;
+  journalEntries: JournalEntry[];
+  futureSelfLetters: FutureSelfLetter[];
+  futureSelfVideos: FutureSelfVideo[];
+  goals: Goal[];
+  logEntries: LogEntry[];
+  albums: Album[];
+  limitedBeliefs: LimitedBelief[];
+  habitReprograms: HabitReprogram[];
+  habitCheckIns: HabitCheckIn[];
+  quickNotes: QuickNote[];
+  identitySessions: IdentitySession[];
+  appOpens: string[];
+};
+
+export function emptyIdentityProfile(id: string, identity: Identity): IdentityProfile {
+  return {
+    id,
+    identity,
+    journalEntries: [],
+    futureSelfLetters: [],
+    futureSelfVideos: [],
+    goals: [],
+    logEntries: [],
+    albums: [],
+    limitedBeliefs: [],
+    habitReprograms: [],
+    habitCheckIns: [],
+    quickNotes: [],
+    identitySessions: [],
+    appOpens: [],
+  };
+}
+
+// The actual shape persisted to disk and covered by cloud/file backups —
+// every identity's data, plus which one is currently active. AppData (above)
+// is a view computed from this, not what's stored.
+export type AppStore = {
+  onboardingDraft: OnboardingDraft | null;
+  activeIdentityId: string | null;
+  profiles: IdentityProfile[];
+};
+
+export const emptyAppStore: AppStore = {
+  onboardingDraft: null,
+  activeIdentityId: null,
+  profiles: [],
 };

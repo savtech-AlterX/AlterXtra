@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { CloudStorage, CloudStorageProvider } from 'react-native-cloud-storage';
-import { AppData } from '../store/types';
+import { AppStore } from '../store/types';
 import { buildBackup, validateBackup, BackupFile } from './backup';
 
 // The default scope for both providers is CloudStorageScope.AppData — the
@@ -37,7 +37,7 @@ export async function isCloudAvailable(provider: CloudProvider): Promise<boolean
 
 export async function backupToCloud(
   provider: CloudProvider,
-  data: AppData,
+  data: AppStore,
   accessToken?: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   if (provider === 'googledrive' && !accessToken) {

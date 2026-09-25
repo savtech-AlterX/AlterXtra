@@ -1,4 +1,4 @@
-import { AppData } from '../store/types';
+import { Album, FutureSelfVideo } from '../store/types';
 
 /**
  * Best-effort deletion of every locally-stored photo/video file referenced
@@ -6,8 +6,12 @@ import { AppData } from '../store/types';
  * of only clearing the database rows that point at it. Never throws — a URI
  * expo-file-system can't touch (a remote URI, a content-provider URI, or a
  * file that's already gone) is skipped rather than blocking the caller.
+ *
+ * Takes just the two fields it needs (not the full AppData/IdentityProfile
+ * shape) so it works the same whether called with one identity's view or a
+ * whole profile being deleted.
  */
-export async function deleteAllLocalMedia(data: AppData): Promise<void> {
+export async function deleteAllLocalMedia(data: { albums: Album[]; futureSelfVideos: FutureSelfVideo[] }): Promise<void> {
   const uris = [
     ...data.albums.flatMap((a) => a.photoUris),
     ...data.futureSelfVideos.flatMap((v) => [v.videoUri, v.replyVideoUri]),

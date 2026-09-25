@@ -37,7 +37,7 @@ export default function Settings() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data, resetAll, restoreAll } = useAppData();
+  const { data, store, resetAll, restoreAll } = useAppData();
   const {
     settings,
     setAppLockEnabled,
@@ -93,7 +93,7 @@ export default function Settings() {
 
   async function handleExport() {
     setBackupBusy(true);
-    const result = await exportBackup(data);
+    const result = await exportBackup(store);
     setBackupBusy(false);
     if (!result.ok) {
       Alert.alert('Export failed', result.error);
@@ -110,7 +110,7 @@ export default function Settings() {
     }
     Alert.alert(
       'Restore backup?',
-      'This replaces your journal, beliefs, habits, goals, and notes on this device with the contents of the backup file. This cannot be undone.',
+      'This replaces every identity on this device — journal, beliefs, habits, goals, and notes — with the contents of the backup file. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -132,7 +132,7 @@ export default function Settings() {
   function confirmReset() {
     confirmDestructive(
       'Reset AlterX',
-      'This clears your identity, diary, goals, and log book on this device. This cannot be undone.',
+      'This clears every identity on this device — diary, goals, and log book included. This cannot be undone.',
       'Reset',
       doReset
     );
@@ -149,6 +149,13 @@ export default function Settings() {
         <Text style={typography.label}>CURRENT IDENTITY</Text>
         <Text style={styles.value}>{data.identity?.archetype ?? '—'}</Text>
       </GlowCard>
+
+      <GlowButton
+        label="MANAGE IDENTITIES"
+        variant="outline"
+        icon={<Ionicons name="people-outline" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push('/identities')}
+      />
 
       <GlowButton
         label="CHANGE IDENTITY"

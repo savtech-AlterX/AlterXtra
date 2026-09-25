@@ -15,12 +15,13 @@ export default function ChooseIdentity() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { icon, name, email } = useLocalSearchParams<{
+  const { icon, name, email, mode } = useLocalSearchParams<{
     icon: AppIconChoice;
     name?: string;
     email?: string;
+    mode?: string;
   }>();
-  const { data, setIdentity, setOnboardingDraft } = useAppData();
+  const { data, setIdentity, addIdentity, setOnboardingDraft } = useAppData();
   const [query, setQuery] = useState('');
   // Resume a custom archetype already typed before a force-quit.
   const [customName, setCustomName] = useState(data.onboardingDraft?.customArchetype ?? '');
@@ -36,13 +37,21 @@ export default function ChooseIdentity() {
   );
 
   function embody(label: string) {
-    setIdentity({
+    const identity = {
       archetype: label,
       icon: icon ?? data.onboardingDraft?.icon ?? data.identity?.icon ?? 'mystery',
       name: name || data.onboardingDraft?.name || data.identity?.name || 'there',
       email: email || data.onboardingDraft?.email || data.identity?.email,
-    });
-    router.push('/onboarding/loading');
+    };
+    if (mode === 'add') {
+      // Adding an additional identity, not editing the active one or
+      // finishing first-run onboarding — a brand-new, empty profile.
+      addIdentity(identity);
+      router.replace('/(tabs)');
+    } else {
+      setIdentity(identity);
+      router.push('/onboarding/loading');
+    }
   }
 
   return (

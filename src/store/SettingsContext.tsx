@@ -25,6 +25,11 @@ type Settings = {
   soundEffectsEnabled: boolean;
   // The soft background loop that plays app-wide while AlterX is open.
   ambientSoundEnabled: boolean;
+  // Whether the one-time Alter-Xtra unlock has been purchased — gates
+  // unlimited identities, themes, etc. Alter-Xtra isn't on sale yet (see
+  // app/alter-xtra.tsx), so this stays false everywhere until real purchase
+  // verification replaces this flag.
+  alterXtraUnlocked: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -38,6 +43,7 @@ const defaultSettings: Settings = {
   celebratedStreakMilestone: 0,
   soundEffectsEnabled: true,
   ambientSoundEnabled: true,
+  alterXtraUnlocked: false,
 };
 
 type SettingsContextValue = {
@@ -54,6 +60,7 @@ type SettingsContextValue = {
   setCelebratedStreakMilestone: (days: number) => void;
   setSoundEffectsEnabled: (enabled: boolean) => void;
   setAmbientSoundEnabled: (enabled: boolean) => void;
+  setAlterXtraUnlocked: (unlocked: boolean) => void;
   resetSettings: () => void;
 };
 
@@ -119,11 +126,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, ambientSoundEnabled: enabled }));
   }, []);
 
+  const setAlterXtraUnlocked = useCallback((unlocked: boolean) => {
+    setSettings((prev) => ({ ...prev, alterXtraUnlocked: unlocked }));
+  }, []);
+
   // "Reset All Data" is meant to hand back a genuine beginner's experience —
   // that has to include the once-only onboarding flags, not just app data,
   // or a returning tester (or a real user starting over) never sees them again.
   const resetSettings = useCallback(() => {
-    setSettings(defaultSettings);
+    // Once Alter-Xtra purchases are real, a device-data reset should NOT
+    // revoke a paid unlock — carry it forward rather than dropping to
+    // defaultSettings' false.
+    setSettings((prev) => ({ ...defaultSettings, alterXtraUnlocked: prev.alterXtraUnlocked }));
   }, []);
 
   const value = useMemo(
@@ -139,6 +153,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
+      setAlterXtraUnlocked,
       resetSettings,
     }),
     [
@@ -153,6 +168,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
+      setAlterXtraUnlocked,
       resetSettings,
     ]
   );

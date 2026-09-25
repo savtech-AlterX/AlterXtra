@@ -1,15 +1,17 @@
 import { Platform } from 'react-native';
-import { AppData } from '../store/types';
+import { AppStore } from '../store/types';
 import { SCHEMA_VERSION } from '../store/migrations';
 
 export type BackupFile = {
   app: 'AlterX';
   schemaVersion: number;
   exportedAt: string;
-  data: AppData;
+  // Every identity, not just whichever one is active when the backup is
+  // taken — otherwise switching identities would make backups quietly lossy.
+  data: AppStore;
 };
 
-export function buildBackup(data: AppData): BackupFile {
+export function buildBackup(data: AppStore): BackupFile {
   return { app: 'AlterX', schemaVersion: SCHEMA_VERSION, exportedAt: new Date().toISOString(), data };
 }
 
@@ -18,7 +20,7 @@ function fileName() {
   return `alterx-backup-${date}.json`;
 }
 
-export async function exportBackup(data: AppData): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function exportBackup(data: AppStore): Promise<{ ok: true } | { ok: false; error: string }> {
   const backup = buildBackup(data);
   const json = JSON.stringify(backup, null, 2);
 
