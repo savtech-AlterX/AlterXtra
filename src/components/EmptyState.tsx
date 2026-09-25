@@ -11,6 +11,8 @@ type Props = {
   body: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** Defaults to 'add' — override when the action isn't creating something (e.g. a link out). */
+  actionIcon?: keyof typeof Ionicons.glyphMap;
   style?: ViewStyle;
   /** Inline variant for a section inside a screen, rather than a whole screen. */
   compact?: boolean;
@@ -24,7 +26,7 @@ type Props = {
  * instead as a space deliberately waiting to be filled — the outline says
  * "your thing goes here", and the copy says what the thing is.
  */
-export function EmptyState({ icon, title, body, actionLabel, onAction, style, compact }: Props) {
+export function EmptyState({ icon, title, body, actionLabel, onAction, actionIcon = 'add', style, compact }: Props) {
   const { colors, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
 
@@ -49,7 +51,7 @@ export function EmptyState({ icon, title, body, actionLabel, onAction, style, co
           accessibilityRole="button"
           accessibilityLabel={actionLabel}
         >
-          <Ionicons name="add" size={15} color={colors.glowStrong} />
+          <Ionicons name={actionIcon} size={15} color={colors.glowStrong} />
           <Text style={styles.actionLabel}>{actionLabel}</Text>
         </Pressable>
       )}

@@ -21,6 +21,11 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
     body: 'Add and track unlimited habits to build who you want to become.',
   },
   {
+    icon: 'bulb-outline',
+    title: 'Unlimited Limited Beliefs',
+    body: 'Free accounts can log up to two. Alter-Xtra removes the cap entirely.',
+  },
+  {
     icon: 'bar-chart-outline',
     title: 'Weekly Reports',
     body: 'See your patterns, progress, and alignment every week.',

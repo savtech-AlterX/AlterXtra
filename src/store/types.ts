@@ -29,6 +29,10 @@ export type LimitedBelief = {
   replacement: string;
 };
 
+// Alter-Xtra isn't purchasable yet (see app/alter-xtra.tsx), so every user is
+// on the free tier for now — this is the cap that applies to all of them.
+export const FREE_LIMITED_BELIEFS_LIMIT = 2;
+
 export type HabitReprogram = {
   id: string;
   createdAt: string;

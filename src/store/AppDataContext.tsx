@@ -11,6 +11,7 @@ import {
   GoalStep,
   HabitCheckIn,
   HabitReprogram,
+  FREE_LIMITED_BELIEFS_LIMIT,
   Identity,
   IdentitySession,
   JournalEntry,
@@ -251,14 +252,21 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addLimitedBelief = useCallback((belief: string, origin: string, replacement: string) => {
-    const entry: LimitedBelief = {
-      id: makeId(),
-      createdAt: new Date().toISOString(),
-      belief,
-      origin,
-      replacement,
-    };
-    setData((prev) => ({ ...prev, limitedBeliefs: [entry, ...prev.limitedBeliefs] }));
+    setData((prev) => {
+      // The free-tier cap lives here, not just in the screens that call this —
+      // every entry point (the dedicated screen, the Home intro panel) goes
+      // through addLimitedBelief, so gating it here is what actually holds the
+      // line regardless of which UI reaches it.
+      if (prev.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT) return prev;
+      const entry: LimitedBelief = {
+        id: makeId(),
+        createdAt: new Date().toISOString(),
+        belief,
+        origin,
+        replacement,
+      };
+      return { ...prev, limitedBeliefs: [entry, ...prev.limitedBeliefs] };
+    });
   }, []);
 
   const addHabitReprogram = useCallback(

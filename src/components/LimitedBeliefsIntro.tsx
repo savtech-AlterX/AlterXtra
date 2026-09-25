@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlowButton } from './GlowButton';
 import { LimitedBeliefFields } from './LimitedBeliefFields';
 import { useAppData } from '../store/AppDataContext';
+import { FREE_LIMITED_BELIEFS_LIMIT } from '../store/types';
 import { useSettings } from '../store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
@@ -55,7 +56,14 @@ export function LimitedBeliefsIntro() {
   const rise = useRef(new Animated.Value(0)).current;
   const burst = useRef(new Animated.Value(0)).current;
 
-  const eligible = isLoaded && !settings.limitedBeliefsIntroShown && !!data.identity;
+  // Also holds off once the free cap's already been hit — addLimitedBelief
+  // would just silently no-op, and there's no reason to walk someone through
+  // naming a belief the app isn't going to save.
+  const eligible =
+    isLoaded &&
+    !settings.limitedBeliefsIntroShown &&
+    !!data.identity &&
+    data.limitedBeliefs.length < FREE_LIMITED_BELIEFS_LIMIT;
 
   useEffect(() => {
     if (!eligible) return;

@@ -8,7 +8,7 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
-import { LimitedBelief } from '../../src/store/types';
+import { FREE_LIMITED_BELIEFS_LIMIT, LimitedBelief } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -41,6 +41,7 @@ export default function LimitedBeliefsHub() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data } = useAppData();
+  const atFreeLimit = data.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT;
 
   return (
     <HudScreen scroll={false} style={styles.noPad}>
@@ -65,11 +66,23 @@ export default function LimitedBeliefsHub() {
               />
             )}
 
-            <GlowButton
-              label="ADD NEW LIMITED BELIEF"
-              icon={<Ionicons name="add" size={16} color="#02141f" />}
-              onPress={() => router.push('/limited-beliefs/new')}
-            />
+            {atFreeLimit ? (
+              <EmptyState
+                icon="lock-closed"
+                title="FREE LIMIT REACHED"
+                body={`Free accounts can log up to ${FREE_LIMITED_BELIEFS_LIMIT} limited beliefs. Unlock Alter-Xtra for unlimited.`}
+                actionLabel="SEE ALTER-XTRA"
+                actionIcon="arrow-forward"
+                onAction={() => router.push('/alter-xtra')}
+                compact
+              />
+            ) : (
+              <GlowButton
+                label="ADD NEW LIMITED BELIEF"
+                icon={<Ionicons name="add" size={16} color="#02141f" />}
+                onPress={() => router.push('/limited-beliefs/new')}
+              />
+            )}
           </View>
         }
         renderItem={({ item }) => <LimitedBeliefCard lb={item} />}

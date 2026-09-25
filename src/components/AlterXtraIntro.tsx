@@ -11,7 +11,13 @@ import type { AppTheme } from '../theme/useAppTheme';
 
 const DELAY_MS = 2000;
 
-const TEASER_POINTS = ['Unlimited identities', 'Unlimited habits', 'Weekly reports', 'Every neon theme'];
+const TEASER_POINTS = [
+  'Unlimited identities',
+  'Unlimited habits',
+  'Unlimited limited beliefs',
+  'Weekly reports',
+  'Every neon theme',
+];
 
 /**
  * A one-time nudge toward Alter-Xtra, shown a few seconds after arriving on
