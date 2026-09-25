@@ -126,6 +126,10 @@ export type Album = {
 export type AppData = {
   identity: Identity | null;
   onboardingDraft: OnboardingDraft | null;
+  // Gates the free-tier habit-reprogram limit (see src/lib/premium.ts).
+  // Not yet wired to a real payment processor — see setPremium in
+  // AppDataContext for how it's currently toggled.
+  isPremium: boolean;
   journalEntries: JournalEntry[];
   futureSelfLetters: FutureSelfLetter[];
   futureSelfVideos: FutureSelfVideo[];
@@ -147,6 +151,7 @@ export type AppData = {
 export const emptyAppData: AppData = {
   identity: null,
   onboardingDraft: null,
+  isPremium: false,
   journalEntries: [],
   futureSelfLetters: [],
   futureSelfVideos: [],

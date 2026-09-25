@@ -75,6 +75,7 @@ type AppDataContextValue = {
   updateQuickNote: (id: string, title: string, body: string) => void;
   deleteQuickNote: (id: string) => void;
   addHabitCheckIn: (habitId: string, followedThrough: boolean) => void;
+  setPremium: (isPremium: boolean) => void;
   startIdentitySession: () => void;
   stopIdentitySession: () => void;
   resetAll: () => void;
@@ -299,6 +300,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, habitCheckIns: [entry, ...prev.habitCheckIns] }));
   }, []);
 
+  const setPremium = useCallback((isPremium: boolean) => {
+    setData((prev) => ({ ...prev, isPremium }));
+  }, []);
+
   const startIdentitySession = useCallback(() => {
     if (data.identitySessions.some((s) => s.endedAt === null)) return;
     const session: IdentitySession = { id: makeId(), startedAt: new Date().toISOString(), endedAt: null };
@@ -406,6 +411,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       updateQuickNote,
       deleteQuickNote,
       addHabitCheckIn,
+      setPremium,
       startIdentitySession,
       stopIdentitySession,
       resetAll,
@@ -434,6 +440,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       updateQuickNote,
       deleteQuickNote,
       addHabitCheckIn,
+      setPremium,
       startIdentitySession,
       stopIdentitySession,
       resetAll,

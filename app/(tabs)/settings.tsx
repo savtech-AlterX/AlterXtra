@@ -165,6 +165,13 @@ export default function Settings() {
         onPress={() => router.push('/add-widget')}
       />
 
+      <GlowButton
+        label={data.isPremium ? 'PREMIUM ACTIVE' : 'UPGRADE TO PREMIUM'}
+        variant="outline"
+        icon={<Ionicons name="star" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push('/upgrade')}
+      />
+
       {Platform.OS !== 'web' && (
         <GlowCard style={styles.lockCard}>
           <View style={styles.lockText}>

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
@@ -7,6 +8,7 @@ import { HudScreen } from '../src/components/HudScreen';
 import { HudTextInput } from '../src/components/HudTextInput';
 import { StackHeader } from '../src/components/StackHeader';
 import { hasCheckedInToday, successRate } from '../src/lib/habitCheckIns';
+import { canAddHabit, FREE_HABIT_LIMIT } from '../src/lib/premium';
 import { useAppData } from '../src/store/AppDataContext';
 import { HabitCheckIn, HabitReprogram } from '../src/store/types';
 import { useWinFlash } from '../src/store/WinFlashContext';
@@ -97,13 +99,15 @@ export default function HabitReprogramming() {
   const styles = useThemedStyles(makeStyles);
   const { data, addHabitReprogram, addHabitCheckIn } = useAppData();
   const winFlash = useWinFlash();
+  const router = useRouter();
   const [trigger, setTrigger] = useState('');
   const [oldHabit, setOldHabit] = useState('');
   const [replacement, setReplacement] = useState('');
   const [reward, setReward] = useState('');
   const [identityStatement, setIdentityStatement] = useState('');
 
-  const canSave = trigger.trim().length > 0 && replacement.trim().length > 0;
+  const atFreeLimit = !canAddHabit(data.habitReprograms.length, data.isPremium);
+  const canSave = !atFreeLimit && trigger.trim().length > 0 && replacement.trim().length > 0;
 
   function save() {
     if (!canSave) return;
@@ -134,47 +138,70 @@ export default function HabitReprogramming() {
           <View style={styles.headerBlock}>
             <StackHeader title="HABIT REPROGRAMMING" />
 
-            <Text style={typography.label}>TRIGGER</Text>
-            <HudTextInput
-              placeholder="e.g. Feeling stressed after work"
-              value={trigger}
-              onChangeText={setTrigger}
-              accessibilityLabel="Trigger"
-            />
+            {atFreeLimit ? (
+              <GlowCard style={styles.upsellCard}>
+                <Text style={typography.label}>FREE LIMIT REACHED</Text>
+                <Text style={styles.lockDesc}>
+                  The free plan holds up to {FREE_HABIT_LIMIT} habit reprograms. Upgrade to Premium for
+                  unlimited habits.
+                </Text>
+                <GlowButton
+                  label="UPGRADE TO PREMIUM"
+                  onPress={() => router.push('/upgrade')}
+                  style={styles.spacer}
+                />
+              </GlowCard>
+            ) : (
+              <>
+                {!data.isPremium && (
+                  <Text style={styles.limitText}>
+                    {data.habitReprograms.length}/{FREE_HABIT_LIMIT} free habits used
+                  </Text>
+                )}
 
-            <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
-            <HudTextInput
-              placeholder="e.g. Doom-scrolling for hours"
-              value={oldHabit}
-              onChangeText={setOldHabit}
-              accessibilityLabel="Old habit"
-            />
+                <Text style={typography.label}>TRIGGER</Text>
+                <HudTextInput
+                  placeholder="e.g. Feeling stressed after work"
+                  value={trigger}
+                  onChangeText={setTrigger}
+                  accessibilityLabel="Trigger"
+                />
 
-            <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
-            <HudTextInput
-              placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
-              value={replacement}
-              onChangeText={setReplacement}
-              accessibilityLabel="Replacement"
-            />
+                <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
+                <HudTextInput
+                  placeholder="e.g. Doom-scrolling for hours"
+                  value={oldHabit}
+                  onChangeText={setOldHabit}
+                  accessibilityLabel="Old habit"
+                />
 
-            <Text style={[typography.label, styles.spacer]}>REWARD</Text>
-            <HudTextInput
-              placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
-              value={reward}
-              onChangeText={setReward}
-              accessibilityLabel="Reward"
-            />
+                <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
+                <HudTextInput
+                  placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
+                  value={replacement}
+                  onChangeText={setReplacement}
+                  accessibilityLabel="Replacement"
+                />
 
-            <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
-            <HudTextInput
-              placeholder="e.g. I follow through on what I commit to."
-              value={identityStatement}
-              onChangeText={setIdentityStatement}
-              accessibilityLabel="Identity statement"
-            />
+                <Text style={[typography.label, styles.spacer]}>REWARD</Text>
+                <HudTextInput
+                  placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
+                  value={reward}
+                  onChangeText={setReward}
+                  accessibilityLabel="Reward"
+                />
 
-            <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
+                <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
+                <HudTextInput
+                  placeholder="e.g. I follow through on what I commit to."
+                  value={identityStatement}
+                  onChangeText={setIdentityStatement}
+                  accessibilityLabel="Identity statement"
+                />
+
+                <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
+              </>
+            )}
 
             {data.habitReprograms.length > 0 && (
               <Text style={[typography.label, styles.spacer]}>REPROGRAMMED HABITS</Text>
@@ -212,6 +239,20 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   spacer: {
     marginTop: 6,
+  },
+  upsellCard: {
+    gap: 6,
+  },
+  limitText: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+  lockDesc: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
   },
   entry: {
     gap: 6,
