@@ -19,7 +19,7 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
   {
     icon: 'locate-outline',
     title: 'Unlimited Habits',
-    body: 'Add and track unlimited habits to build who you want to become.',
+    body: 'Free accounts can reprogram up to two. Alter-Xtra removes the cap entirely.',
   },
   {
     icon: 'bulb-outline',

@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { EmptyState } from '../src/components/EmptyState';
 import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
@@ -8,7 +10,8 @@ import { HudTextInput } from '../src/components/HudTextInput';
 import { StackHeader } from '../src/components/StackHeader';
 import { hasCheckedInToday, successRate } from '../src/lib/habitCheckIns';
 import { useAppData } from '../src/store/AppDataContext';
-import { HabitCheckIn, HabitReprogram } from '../src/store/types';
+import { useSettings } from '../src/store/SettingsContext';
+import { FREE_HABIT_REPROGRAMS_LIMIT, HabitCheckIn, HabitReprogram } from '../src/store/types';
 import { useWinFlash } from '../src/store/WinFlashContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
@@ -95,13 +98,19 @@ function ReprogrammedHabitCard({
 export default function HabitReprogramming() {
   const { colors, typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const router = useRouter();
   const { data, addHabitReprogram, addHabitCheckIn } = useAppData();
+  const { settings } = useSettings();
   const winFlash = useWinFlash();
   const [trigger, setTrigger] = useState('');
   const [oldHabit, setOldHabit] = useState('');
   const [replacement, setReplacement] = useState('');
   const [reward, setReward] = useState('');
   const [identityStatement, setIdentityStatement] = useState('');
+
+  // Same free-tier cap as Limited Beliefs — see addHabitReprogram in
+  // AppDataContext, which is the actual enforcement point.
+  const atFreeLimit = !settings.xtraUnlocked && data.habitReprograms.length >= FREE_HABIT_REPROGRAMS_LIMIT;
 
   const canSave = trigger.trim().length > 0 && replacement.trim().length > 0;
 
@@ -134,47 +143,60 @@ export default function HabitReprogramming() {
           <View style={styles.headerBlock}>
             <StackHeader title="HABIT REPROGRAMMING" />
 
-            <Text style={typography.label}>TRIGGER</Text>
-            <HudTextInput
-              placeholder="e.g. Feeling stressed after work"
-              value={trigger}
-              onChangeText={setTrigger}
-              accessibilityLabel="Trigger"
-            />
+            {atFreeLimit ? (
+              <EmptyState
+                icon="lock-closed"
+                title="FREE LIMIT REACHED"
+                body={`Free accounts can reprogram up to ${FREE_HABIT_REPROGRAMS_LIMIT} habits. Unlock Alter-Xtra for unlimited.`}
+                actionLabel="SEE ALTER-XTRA"
+                actionIcon="arrow-forward"
+                onAction={() => router.push('/alter-xtra')}
+              />
+            ) : (
+              <>
+                <Text style={typography.label}>TRIGGER</Text>
+                <HudTextInput
+                  placeholder="e.g. Feeling stressed after work"
+                  value={trigger}
+                  onChangeText={setTrigger}
+                  accessibilityLabel="Trigger"
+                />
 
-            <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
-            <HudTextInput
-              placeholder="e.g. Doom-scrolling for hours"
-              value={oldHabit}
-              onChangeText={setOldHabit}
-              accessibilityLabel="Old habit"
-            />
+                <Text style={[typography.label, styles.spacer]}>OLD HABIT</Text>
+                <HudTextInput
+                  placeholder="e.g. Doom-scrolling for hours"
+                  value={oldHabit}
+                  onChangeText={setOldHabit}
+                  accessibilityLabel="Old habit"
+                />
 
-            <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
-            <HudTextInput
-              placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
-              value={replacement}
-              onChangeText={setReplacement}
-              accessibilityLabel="Replacement"
-            />
+                <Text style={[typography.label, styles.spacer]}>REPLACEMENT</Text>
+                <HudTextInput
+                  placeholder="e.g. Reset by sitting with thoughts and complete one small goal before entertainment"
+                  value={replacement}
+                  onChangeText={setReplacement}
+                  accessibilityLabel="Replacement"
+                />
 
-            <Text style={[typography.label, styles.spacer]}>REWARD</Text>
-            <HudTextInput
-              placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
-              value={reward}
-              onChangeText={setReward}
-              accessibilityLabel="Reward"
-            />
+                <Text style={[typography.label, styles.spacer]}>REWARD</Text>
+                <HudTextInput
+                  placeholder="e.g. Starts a momentum cycle for achievement and no guilt for consumption"
+                  value={reward}
+                  onChangeText={setReward}
+                  accessibilityLabel="Reward"
+                />
 
-            <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
-            <HudTextInput
-              placeholder="e.g. I follow through on what I commit to."
-              value={identityStatement}
-              onChangeText={setIdentityStatement}
-              accessibilityLabel="Identity statement"
-            />
+                <Text style={[typography.label, styles.spacer]}>IDENTITY STATEMENT</Text>
+                <HudTextInput
+                  placeholder="e.g. I follow through on what I commit to."
+                  value={identityStatement}
+                  onChangeText={setIdentityStatement}
+                  accessibilityLabel="Identity statement"
+                />
 
-            <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
+                <GlowButton label="SAVE HABIT" onPress={save} disabled={!canSave} style={styles.spacer} />
+              </>
+            )}
 
             {data.habitReprograms.length > 0 && (
               <Text style={[typography.label, styles.spacer]}>REPROGRAMMED HABITS</Text>

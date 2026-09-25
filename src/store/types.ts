@@ -43,6 +43,9 @@ export type HabitReprogram = {
   identityStatement: string;
 };
 
+// Same reasoning as FREE_LIMITED_BELIEFS_LIMIT above.
+export const FREE_HABIT_REPROGRAMS_LIMIT = 2;
+
 // A check-in logged against a specific HabitReprogram — closes the loop
 // between "I intend to replace X with Y" and "did that actually happen today."
 export type HabitCheckIn = {

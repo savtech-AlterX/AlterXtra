@@ -11,6 +11,7 @@ import {
   GoalStep,
   HabitCheckIn,
   HabitReprogram,
+  FREE_HABIT_REPROGRAMS_LIMIT,
   FREE_LIMITED_BELIEFS_LIMIT,
   Identity,
   IdentitySession,
@@ -277,18 +278,22 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   const addHabitReprogram = useCallback(
     (trigger: string, oldHabit: string, replacement: string, reward: string, identityStatement: string) => {
-      const entry: HabitReprogram = {
-        id: makeId(),
-        createdAt: new Date().toISOString(),
-        trigger,
-        oldHabit,
-        replacement,
-        reward,
-        identityStatement,
-      };
-      setData((prev) => ({ ...prev, habitReprograms: [entry, ...prev.habitReprograms] }));
+      setData((prev) => {
+        // Same free-tier cap pattern as addLimitedBelief above.
+        if (!settings.xtraUnlocked && prev.habitReprograms.length >= FREE_HABIT_REPROGRAMS_LIMIT) return prev;
+        const entry: HabitReprogram = {
+          id: makeId(),
+          createdAt: new Date().toISOString(),
+          trigger,
+          oldHabit,
+          replacement,
+          reward,
+          identityStatement,
+        };
+        return { ...prev, habitReprograms: [entry, ...prev.habitReprograms] };
+      });
     },
-    []
+    [settings.xtraUnlocked]
   );
 
   const addQuickNote = useCallback(() => {
