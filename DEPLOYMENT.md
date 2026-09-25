@@ -62,3 +62,30 @@ to `alpha`, `beta`, or `production` once you're ready to widen who sees
 it). Each build takes roughly 15–20 minutes in Expo's cloud; store
 processing after submit is another 5–15 minutes for TestFlight, and can
 take longer for Play Console's review on tracks other than internal.
+
+## Checking install/user counts after launch
+
+AlterX has no server or account system (see `PRIVACY_POLICY.md`), so
+there's no in-app telemetry to count active users — the honest source for
+"how many people have this" is each store's own install analytics, which
+needs no code or setup beyond the app being live:
+
+- **iOS** — [App Store Connect](https://appstoreconnect.apple.com) → Apps
+  → AlterXtra → **App Analytics** (or **Analytics** in the sidebar). The
+  **Downloads** metric under Total Downloads is redownloads-inclusive
+  installs; toggle to **First-Time Downloads** for unique installs. Also
+  shows Active Devices (last 7/30 days) as a rough usage signal.
+- **Android** — [Play Console](https://play.google.com/console) → your
+  app → **Statistics** (left sidebar). Filter the metric picker to
+  **Installs** → **Total installs** or **Active device installs**. The
+  Play Console home dashboard also surfaces install count as a headline
+  number.
+
+Both need only the same account used in the one-time setup above (App
+Manager access on ASC, at least Viewer role on Play Console) — no API key
+or service account required for the dashboards themselves, only for
+automated builds/submits.
+
+The marketing website's GA4 property (see `website/README.md`) is a
+separate number — it counts landing-page visits, not app installs or
+opens.
