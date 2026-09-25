@@ -8,7 +8,6 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { AppIconChoice } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
-import { fonts } from '../../src/theme/typography';
 
 // Two rows of two hairstyle variants around a centered 'mystery' card,
 // matching the 5-card reference layout exactly — including its left-to-right
@@ -20,24 +19,14 @@ const OPTIONS: AppIconChoice[][] = [
   ['female-curly', 'female'],
 ];
 
-// The original icon-choice glyphs: the head silhouette merges into a
-// question mark (same linework as the real app icon), not the plain suit
-// outline used for the identity mark elsewhere in the app. Each renders at
-// a fixed shared width (GLYPH_WIDTH) with its own height computed from its
-// own aspect ratio, rather than a fixed height for both — the two aren't
-// drawn to the same canvas (the female mark's flowing hair makes it taller
-// relative to its width than the male mark), and forcing a shared height
-// squeezed the taller one down narrower than the other, reading as smaller.
-// (react-native-web's Image doesn't derive a resizeMode="contain" box's
-// height from an `aspectRatio` style the way RN does — it renders at the
-// source file's raw pixel height instead — so this computes explicit
-// per-icon width/height rather than relying on that.)
-const GLYPH_WIDTH = 88;
+// Real photo-based avatars — square, already-colored/glowing renders, not
+// tintable line work, so no tintColor here (unlike the mystery glyph below).
+const GLYPH_WIDTH = 118;
 const ICON_CHOICE_MARKS = {
-  male: { source: require('../../assets/icon-choice-male.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (633 / 368) },
-  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (307 / 236) },
-  female: { source: require('../../assets/icon-choice-female.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (716 / 362) },
-  'female-curly': { source: require('../../assets/icon-choice-female-curly.png'), width: GLYPH_WIDTH, height: GLYPH_WIDTH * (309 / 229) },
+  male: { source: require('../../assets/icon-choice-male.png') },
+  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png') },
+  female: { source: require('../../assets/icon-choice-female.png') },
+  'female-curly': { source: require('../../assets/icon-choice-female-curly.png') },
 } as const;
 
 function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
@@ -45,12 +34,12 @@ function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
   if (option === 'mystery') {
     return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
   }
-  const { source, width, height } = ICON_CHOICE_MARKS[option];
-  return <Image source={source} style={[styles.glyphImage, { tintColor: tint, width, height }]} resizeMode="contain" />;
+  const { source } = ICON_CHOICE_MARKS[option];
+  return <Image source={source} style={styles.glyphImage} resizeMode="contain" />;
 }
 
 export default function ChooseIcon() {
-  const { colors } = useAppTheme();
+  const { colors, typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, setOnboardingDraft } = useAppData();
@@ -61,8 +50,8 @@ export default function ChooseIcon() {
   return (
     <HudScreen style={styles.screen}>
       <View style={styles.header}>
-        <Text style={styles.title}>
-          choose an icon{'\n'}for your app
+        <Text style={[typography.screenTitle, styles.title]}>
+          CHOOSE AN ICON{'\n'}FOR YOUR APP
         </Text>
       </View>
 
@@ -144,23 +133,11 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   header: {
     alignItems: 'center',
   },
-  // LCD-Bold (screenTitle's usual font, used everywhere else in the app) is
-  // a segmented-display face with no real lowercase forms — feeding it
-  // lowercase text just renders as caps, silently undoing the point of this
-  // one screen matching the reference's lowercase title. Chakra Petch (the
-  // app's other, "reading voice" font) has real lowercase, so this title
-  // uses that instead, with the glow added by hand since body text normally
-  // has none.
+  // This screen's header is centered (unlike the left-aligned screenTitle
+  // used everywhere else), so the shared style still needs a text-align
+  // override to sit right in that layout.
   title: {
     textAlign: 'center',
-    fontFamily: fonts.bodyMedium,
-    fontSize: 22,
-    lineHeight: 27,
-    letterSpacing: 1,
-    color: colors.glow,
-    textShadowColor: colors.glow,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 12,
   },
   // Packed right under the title at their natural size (not flex:1 +
   // centered, which splits the leftover space into a gap above the cards
@@ -221,6 +198,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   glyphImage: {
     width: GLYPH_WIDTH,
+    height: GLYPH_WIDTH,
   },
   mysteryGlyph: {
     fontFamily: typography.screenTitle.fontFamily,

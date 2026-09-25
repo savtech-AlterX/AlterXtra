@@ -77,6 +77,9 @@ export type FutureSelfLetter = {
   createdAt: string;
   title?: string;
   body: string;
+  // Absent means readable immediately. Set means the letter's body stays
+  // hidden — only the fact that it's sealed shows — until this date.
+  unlockDate?: string;
 };
 
 export type FutureSelfVideo = {

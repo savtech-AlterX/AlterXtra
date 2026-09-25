@@ -23,6 +23,7 @@ import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
 import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt, writeWidgetStreak } from '../lib/sessionWidgetBridge';
 import { computeActiveStreakDays } from '../lib/growth';
 import { deleteAllLocalMedia } from '../lib/localMedia';
+import { armComebackReminder } from '../lib/notifications';
 
 const STORAGE_KEY = 'alterx:appData:v1';
 
@@ -48,7 +49,7 @@ type AppDataContextValue = {
   setIdentity: (identity: Identity) => void;
   setOnboardingDraft: (partial: Partial<OnboardingDraft>) => void;
   addJournalEntry: (date: string, title: string, body: string) => void;
-  addFutureSelfLetter: (title: string, body: string) => void;
+  addFutureSelfLetter: (title: string, body: string, unlockDate?: string) => void;
   addFutureSelfVideo: (
     question: string,
     videoUri: string,
@@ -153,12 +154,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({ ...prev, journalEntries: [entry, ...prev.journalEntries] }));
   }, []);
 
-  const addFutureSelfLetter = useCallback((title: string, body: string) => {
+  const addFutureSelfLetter = useCallback((title: string, body: string, unlockDate?: string) => {
     const letter: FutureSelfLetter = {
       id: makeId(),
       createdAt: new Date().toISOString(),
       title: title || undefined,
       body,
+      unlockDate: unlockDate || undefined,
     };
     setData((prev) => ({ ...prev, futureSelfLetters: [letter, ...prev.futureSelfLetters] }));
   }, []);
@@ -356,10 +358,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
     reconcileFromWidget();
     logAppOpen();
+    armComebackReminder();
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
       if (state === 'active') {
         reconcileFromWidget();
         logAppOpen();
+        armComebackReminder();
       }
     });
     return () => sub.remove();

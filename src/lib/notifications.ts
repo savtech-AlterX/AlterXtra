@@ -54,3 +54,28 @@ export async function disableDailyReminder(): Promise<void> {
   const Notifications = await import('expo-notifications');
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
+
+const COMEBACK_IDENTIFIER = 'alterx-comeback-reminder';
+const COMEBACK_DELAY_SECONDS = 2 * 24 * 60 * 60;
+const COMEBACK_TITLE = 'AlterX';
+const COMEBACK_BODY = "Haven't seen you in a couple of days — your identity work is still waiting. Come back and keep going.";
+
+// A Duolingo-style "come back" nudge: re-armed on every app open so it keeps
+// getting pushed 2 days into the future, and only actually fires once the
+// user goes quiet for that long. Scheduling with the same identifier
+// replaces any pending one, so this never stacks duplicates. Silently does
+// nothing if notification permission was never granted — this shouldn't be
+// the thing that prompts for it; the daily-reminder settings toggle already
+// owns that ask.
+export async function armComebackReminder(): Promise<void> {
+  if (Platform.OS === 'web') return;
+  const Notifications = await import('expo-notifications');
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') return;
+
+  await Notifications.scheduleNotificationAsync({
+    identifier: COMEBACK_IDENTIFIER,
+    content: { title: COMEBACK_TITLE, body: COMEBACK_BODY },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: COMEBACK_DELAY_SECONDS, repeats: false },
+  });
+}

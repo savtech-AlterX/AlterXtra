@@ -53,6 +53,7 @@
           "faceIDPermission": "AlterX uses Face ID to keep your identity data private if you enable App Lock."
         }
       ],
+      "react-native-cloud-storage",
       [
         "expo-notifications",
         {

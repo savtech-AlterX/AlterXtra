@@ -100,15 +100,18 @@ export default function Home() {
             <Ionicons name="bulb-outline" size={16} color={colors.glow} style={iconGlow} />
             <Text style={styles.iconBoxLabel}>LB</Text>
           </Pressable>
-          <Pressable
-            style={styles.iconBoxSmall}
-            onPress={() => router.push('/alter-xtra')}
-            accessibilityRole="button"
-            accessibilityLabel="Alter-Xtra"
-          >
-            <MaterialCommunityIcons name="crown-outline" size={16} color={colors.glow} style={iconGlow} />
-            <Text style={styles.iconBoxLabel}>XTRA</Text>
-          </Pressable>
+          <View style={styles.xtraWrap}>
+            <Pressable
+              style={styles.iconBoxSmall}
+              onPress={() => router.push('/alter-xtra')}
+              accessibilityRole="button"
+              accessibilityLabel="Alter-Xtra, coming soon"
+            >
+              <MaterialCommunityIcons name="crown-outline" size={16} color={colors.glow} style={iconGlow} />
+              <Text style={styles.iconBoxLabel}>XTRA</Text>
+            </Pressable>
+            <Text style={styles.xtraSoonLabel}>COMING SOON</Text>
+          </View>
         </View>
       </View>
 
@@ -258,6 +261,17 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.label.fontFamily,
     fontSize: 7,
     color: colors.glow,
+    textAlign: 'center',
+  },
+  xtraWrap: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  xtraSoonLabel: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 6,
+    letterSpacing: 0.5,
+    color: colors.textMuted,
     textAlign: 'center',
   },
   wordmarkBlock: {

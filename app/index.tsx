@@ -14,7 +14,7 @@ export default function Index() {
   }
 
   if (!data.identity) {
-    return <Redirect href="/onboarding/splash" />;
+    return <Redirect href="/onboarding/icon" />;
   }
 
   return <Redirect href="/(tabs)" />;
