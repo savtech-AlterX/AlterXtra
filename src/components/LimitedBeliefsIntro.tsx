@@ -63,7 +63,7 @@ export function LimitedBeliefsIntro() {
     isLoaded &&
     !settings.limitedBeliefsIntroShown &&
     !!data.identity &&
-    data.limitedBeliefs.length < FREE_LIMITED_BELIEFS_LIMIT;
+    (settings.xtraUnlocked || data.limitedBeliefs.length < FREE_LIMITED_BELIEFS_LIMIT);
 
   useEffect(() => {
     if (!eligible) return;

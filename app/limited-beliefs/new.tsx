@@ -7,11 +7,13 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { LimitedBeliefFields } from '../../src/components/LimitedBeliefFields';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
+import { useSettings } from '../../src/store/SettingsContext';
 import { FREE_LIMITED_BELIEFS_LIMIT } from '../../src/store/types';
 
 export default function NewLimitedBelief() {
   const router = useRouter();
   const { data, addLimitedBelief } = useAppData();
+  const { settings } = useSettings();
   const [belief, setBelief] = useState('');
   const [origin, setOrigin] = useState('');
   const [replacement, setReplacement] = useState('');
@@ -20,7 +22,7 @@ export default function NewLimitedBelief() {
   // button is already swapped for the upsell — addLimitedBelief would just
   // silently no-op past the cap, so this catches it before the form even
   // renders rather than let someone fill it in for nothing.
-  const atFreeLimit = data.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT;
+  const atFreeLimit = !settings.xtraUnlocked && data.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT;
 
   const canSave = belief.trim().length > 0 && replacement.trim().length > 0;
 

@@ -27,6 +27,10 @@ type Settings = {
   soundEffectsEnabled: boolean;
   // The soft background loop that plays app-wide while AlterX is open.
   ambientSoundEnabled: boolean;
+  // Dev-only stand-in for a real Alter-Xtra purchase (see app/alter-xtra.tsx —
+  // in-app purchases aren't wired up yet). Only ever surfaced behind __DEV__
+  // in Settings, so this can't reach a real user or an App Store build.
+  xtraUnlocked: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -41,6 +45,7 @@ const defaultSettings: Settings = {
   celebratedStreakMilestone: 0,
   soundEffectsEnabled: true,
   ambientSoundEnabled: true,
+  xtraUnlocked: false,
 };
 
 type SettingsContextValue = {
@@ -58,6 +63,7 @@ type SettingsContextValue = {
   setCelebratedStreakMilestone: (days: number) => void;
   setSoundEffectsEnabled: (enabled: boolean) => void;
   setAmbientSoundEnabled: (enabled: boolean) => void;
+  setXtraUnlocked: (enabled: boolean) => void;
   resetSettings: () => void;
 };
 
@@ -127,6 +133,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, ambientSoundEnabled: enabled }));
   }, []);
 
+  const setXtraUnlocked = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, xtraUnlocked: enabled }));
+  }, []);
+
   // "Reset All Data" is meant to hand back a genuine beginner's experience —
   // that has to include the once-only onboarding flags, not just app data,
   // or a returning tester (or a real user starting over) never sees them again.
@@ -148,6 +158,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
+      setXtraUnlocked,
       resetSettings,
     }),
     [
@@ -163,6 +174,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
+      setXtraUnlocked,
       resetSettings,
     ]
   );

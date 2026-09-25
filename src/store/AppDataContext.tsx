@@ -21,6 +21,7 @@ import {
   QuickNote,
 } from './types';
 import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
+import { useSettings } from './SettingsContext';
 import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt, writeWidgetStreak } from '../lib/sessionWidgetBridge';
 import { computeActiveStreakDays } from '../lib/growth';
 import { deleteAllLocalMedia } from '../lib/localMedia';
@@ -85,6 +86,10 @@ type AppDataContextValue = {
 const AppDataContext = createContext<AppDataContextValue | null>(null);
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
+  // AppDataProvider is nested inside SettingsProvider (see app/_layout.tsx),
+  // so this is safe to read here — it's what lets addLimitedBelief bypass the
+  // free-tier cap once the dev-only Xtra toggle in Settings is flipped on.
+  const { settings } = useSettings();
   const [data, setData] = useState<AppData>(emptyAppData);
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -256,8 +261,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       // The free-tier cap lives here, not just in the screens that call this —
       // every entry point (the dedicated screen, the Home intro panel) goes
       // through addLimitedBelief, so gating it here is what actually holds the
-      // line regardless of which UI reaches it.
-      if (prev.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT) return prev;
+      // line regardless of which UI reaches it. settings.xtraUnlocked is the
+      // dev-only stand-in for a real purchase (see SettingsContext).
+      if (!settings.xtraUnlocked && prev.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT) return prev;
       const entry: LimitedBelief = {
         id: makeId(),
         createdAt: new Date().toISOString(),
@@ -267,7 +273,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       };
       return { ...prev, limitedBeliefs: [entry, ...prev.limitedBeliefs] };
     });
-  }, []);
+  }, [settings.xtraUnlocked]);
 
   const addHabitReprogram = useCallback(
     (trigger: string, oldHabit: string, replacement: string, reward: string, identityStatement: string) => {

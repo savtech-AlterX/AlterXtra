@@ -8,6 +8,7 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
 import { useAppData } from '../../src/store/AppDataContext';
+import { useSettings } from '../../src/store/SettingsContext';
 import { FREE_LIMITED_BELIEFS_LIMIT, LimitedBelief } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
@@ -41,7 +42,8 @@ export default function LimitedBeliefsHub() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data } = useAppData();
-  const atFreeLimit = data.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT;
+  const { settings } = useSettings();
+  const atFreeLimit = !settings.xtraUnlocked && data.limitedBeliefs.length >= FREE_LIMITED_BELIEFS_LIMIT;
 
   return (
     <HudScreen scroll={false} style={styles.noPad}>

@@ -46,6 +46,7 @@ export default function Settings() {
     setAlterXtraIntroShown,
     setSoundEffectsEnabled,
     setAmbientSoundEnabled,
+    setXtraUnlocked,
     resetSettings,
   } = useSettings();
   const { resetTheme } = useThemeControls();
@@ -343,6 +344,27 @@ export default function Settings() {
         icon={<Ionicons name="document-text-outline" size={16} color={colors.glow} style={iconGlow} />}
         onPress={() => router.push('/terms-of-service')}
       />
+
+      {/* __DEV__ is false in any release/TestFlight/App Store build, so this
+          never reaches a real user or a reviewer — it's a stand-in for real
+          Alter-Xtra purchases (see app/alter-xtra.tsx) purely so the unlocked
+          experience can be tested before in-app purchases are wired up. */}
+      {__DEV__ && (
+        <GlowCard style={styles.lockCard}>
+          <View style={styles.lockText}>
+            <Text style={typography.label}>DEV.XTRA UNLOCKED</Text>
+            <Text style={styles.lockDesc}>
+              Testing only — stands in for a real Alter-Xtra purchase. Never shown outside a dev build.
+            </Text>
+          </View>
+          <Switch
+            value={settings.xtraUnlocked}
+            onValueChange={setXtraUnlocked}
+            trackColor={{ false: colors.borderDim, true: colors.glow }}
+            thumbColor={colors.textPrimary}
+          />
+        </GlowCard>
+      )}
 
       <GlowButton
         label="RESET ALL DATA"

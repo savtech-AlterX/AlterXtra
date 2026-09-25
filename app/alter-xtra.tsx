@@ -6,6 +6,7 @@ import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { StackHeader } from '../src/components/StackHeader';
 import { ThemePicker } from '../src/components/ThemePicker';
+import { useSettings } from '../src/store/SettingsContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
@@ -65,6 +66,7 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
 export default function AlterXtra() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const { settings } = useSettings();
   return (
     <HudScreen>
       <StackHeader title="ALTER-XTRA" />
@@ -101,7 +103,9 @@ export default function AlterXtra() {
           purchase behind it is the single thing that would fail App Store
           review, so there is nothing to tap until in-app purchases are wired. */}
       <Text style={[styles.disclaimer, styles.spacer]}>
-        Alter-Xtra isn't on sale yet. Every theme above is free to use in the meantime.
+        {settings.xtraUnlocked
+          ? 'Xtra unlocked (dev testing only — not a real purchase).'
+          : "Alter-Xtra isn't on sale yet. Every theme above is free to use in the meantime."}
       </Text>
     </HudScreen>
   );
