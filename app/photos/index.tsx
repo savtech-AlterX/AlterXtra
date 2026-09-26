@@ -50,7 +50,7 @@ export default function PhotoAlbums() {
           <Text style={styles.emptyText}>Create your first album to store photos & videos.</Text>
           <GlowButton
             label="CREATE ALBUM"
-            icon={<Ionicons name="add" size={16} color="#02141f" />}
+            icon={<Ionicons name="add" size={16} color="#ffffff" />}
             onPress={() => setCreating(true)}
           />
         </View>

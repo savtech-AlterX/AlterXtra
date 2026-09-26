@@ -140,7 +140,7 @@ function LettersPanel() {
         onPress={save}
         disabled={!canSave}
         style={styles.spacer}
-        icon={<Ionicons name="lock-closed" size={14} color="#02141f" style={iconGlow} />}
+        icon={<Ionicons name="lock-closed" size={14} color="#ffffff" style={iconGlow} />}
       />
       <GlowButton
         label="DISCARD"
@@ -198,7 +198,7 @@ function VideoPanel() {
     <>
       <GlowButton
         label="RECORD A VIDEO MESSAGE"
-        icon={<Ionicons name="videocam" size={16} color="#02141f" style={iconGlow} />}
+        icon={<Ionicons name="videocam" size={16} color="#ffffff" style={iconGlow} />}
         onPress={() => router.push('/diary/future-self-video/new')}
       />
 
@@ -241,7 +241,7 @@ function VideoPanel() {
               {completed ? (
                 <GlowButton
                   label="WATCH"
-                  icon={<Ionicons name="play" size={14} color="#02141f" />}
+                  icon={<Ionicons name="play" size={14} color="#ffffff" />}
                   onPress={() => router.push({ pathname: '/diary/future-self-video/[id]', params: { id: v.id } })}
                 />
               ) : unlocked ? (

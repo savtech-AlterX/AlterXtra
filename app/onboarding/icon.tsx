@@ -90,22 +90,15 @@ export default function ChooseIcon() {
       <View style={styles.comingSoon}>
         <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerLabel}>COMING SOON</Text>
+          <Text style={styles.dividerLabel}>MORE IDENTITIES COMING SOON</Text>
           <View style={styles.dividerLine} />
-        </View>
-        <View style={styles.roster}>
-          {[0, 1, 2, 3].map((i) => (
-            <Text key={i} style={styles.rosterGlyph}>
-              ?
-            </Text>
-          ))}
         </View>
       </View>
 
       <View style={styles.footer}>
         <GlowButton
           label="CONTINUE"
-          icon={<Ionicons name="arrow-forward" size={16} color="#02141f" />}
+          icon={<Ionicons name="arrow-forward" size={16} color="#ffffff" />}
           onPress={() => {
             setOnboardingDraft({ icon: selected });
             router.push({ pathname: '/onboarding/account', params: { icon: selected } });
@@ -206,9 +199,8 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     ...glowShadow,
     textShadowRadius: 16,
   },
-  // More identities in development, teased the same way the mystery card
-  // represents an undisclosed one — dimmed '?' glyphs rather than new art,
-  // so this needs no assets beyond what the screen already uses.
+  // A plain divider naming what's next, rather than placeholder glyphs
+  // standing in for icons that don't exist yet.
   comingSoon: {
     alignItems: 'center',
     gap: 14,
@@ -228,17 +220,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   dividerLabel: {
     ...typography.label,
     color: colors.textSecondary,
-  },
-  roster: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 22,
-  },
-  rosterGlyph: {
-    fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 28,
-    color: colors.textMuted,
-    opacity: 0.6,
   },
   footer: {
     marginTop: 4,

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
+import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 import { fonts } from '../theme/typography';
 
@@ -29,7 +28,6 @@ export function GlowButton({
   labelColor,
   accessibilityLabel,
 }: Props) {
-  const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   if (variant === 'outline') {
     return (
@@ -60,15 +58,10 @@ export function GlowButton({
       accessibilityState={{ disabled: !!disabled }}
       style={({ pressed }) => [styles.solidWrap, style, (pressed || disabled) && styles.pressed]}
     >
-      <LinearGradient
-        colors={[colors.glow, colors.glowStrong]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.solid}
-      >
+      <View style={styles.solid}>
         <Text style={styles.solidLabel}>{label}</Text>
         {icon}
-      </LinearGradient>
+      </View>
     </Pressable>
   );
 }
@@ -90,17 +83,23 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.glowStrong,
+    backgroundColor: colors.glow,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
+  // White instead of the old near-black label — reads as a neon tube lit up
+  // against the electric-blue fill, rather than printed text sitting on it.
   solidLabel: {
     fontFamily: fonts.titleMedium,
     fontSize: 14,
     letterSpacing: 2,
-    color: '#02141f',
+    color: '#ffffff',
+    textShadowColor: '#ffffff',
+    textShadowRadius: 8,
+    textShadowOffset: { width: 0, height: 0 },
   },
   outline: {
     borderRadius: 999,

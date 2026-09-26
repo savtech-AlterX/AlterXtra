@@ -67,7 +67,7 @@ export default function LimitedBeliefsHub() {
 
             <GlowButton
               label="ADD NEW LIMITED BELIEF"
-              icon={<Ionicons name="add" size={16} color="#02141f" />}
+              icon={<Ionicons name="add" size={16} color="#ffffff" />}
               onPress={() => router.push('/limited-beliefs/new')}
             />
           </View>
