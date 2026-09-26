@@ -172,13 +172,6 @@ export default function Settings() {
         onPress={() => router.push('/change-icon')}
       />
 
-      <GlowButton
-        label="ADD WIDGET"
-        variant="outline"
-        icon={<Ionicons name="apps-outline" size={16} color={colors.glow} style={iconGlow} />}
-        onPress={() => router.push('/add-widget')}
-      />
-
       <GlowCard style={styles.lockCard}>
         <View style={styles.lockText}>
           <Text style={typography.label}>ALTER-XTRA PREVIEW</Text>
