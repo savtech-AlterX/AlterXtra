@@ -159,6 +159,13 @@ export default function Settings() {
       />
 
       <GlowButton
+        label="CHANGE ICON"
+        variant="outline"
+        icon={<Ionicons name="person-circle-outline" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push('/change-icon')}
+      />
+
+      <GlowButton
         label="ADD WIDGET"
         variant="outline"
         icon={<Ionicons name="apps-outline" size={16} color={colors.glow} style={iconGlow} />}
