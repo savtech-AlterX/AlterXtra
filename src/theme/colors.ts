@@ -75,6 +75,13 @@ const green = neon('#3eea86', '#7efcb2', '#1dedb9');
 const amber = neon('#f7b23b', '#fcd188', '#ed6f26');
 const white = neon('#c7cfdb', '#f2f5fa', '#99a6ba');
 
+// Three additions to round out the spectrum: a true red (nothing in the set
+// covers that hue), a cyan distinct from the softer indigo-leaning "blue",
+// and an acid-green sharper than the existing "green".
+const red = neon('#ff4d4d', '#ff9494', '#ff2e63');
+const cyan = neon('#2fe6e0', '#8ff9f5', '#19c3ce');
+const lime = neon('#c6f22d', '#e2fa8f', '#9fd91a');
+
 // Sampled pixel-for-pixel from the vintage reference: a neutral near-black
 // ground (#131313) with warm cream ink (#d5cec4). No neon here, so the halos
 // are dialled right down rather than tinted.
@@ -103,7 +110,7 @@ const vintage: Palette = {
   overlay: 'rgba(0, 0, 0, 0.7)',
 };
 
-export const palettes = { navy, blue, purple, pink, green, amber, white, vintage } as const;
+export const palettes = { navy, blue, purple, pink, green, amber, white, red, cyan, lime, vintage } as const;
 export type ThemeName = keyof typeof palettes;
 
 // 'blue' ships as the default — sampled directly against the original
