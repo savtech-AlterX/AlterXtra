@@ -68,9 +68,6 @@ export default function AlterXtra() {
   const styles = useThemedStyles(makeStyles);
   const owned = hasAlterXtra();
 
-  // Owners land here to actually use the perk, not to be sold on it — so
-  // colours come first, before the pitch. Everyone else sees them last, as
-  // part of the tease, same as before.
   const themesBlock = (
     <View key="themes">
       <Text style={typography.label}>XTRA.THEMES</Text>
@@ -94,7 +91,7 @@ export default function AlterXtra() {
         accessibilityLabel="Five glowing silhouettes, each a different identity you could become"
       />
 
-      {owned && themesBlock}
+      {themesBlock}
 
       <GlowCard strong style={styles.priceCard}>
         <Text style={styles.eyebrow}>ALTER X</Text>
@@ -125,8 +122,6 @@ export default function AlterXtra() {
           </View>
         </GlowCard>
       ))}
-
-      {!owned && themesBlock}
 
       {!owned && (
         // Deliberately not a button. A live-looking purchase control with no
