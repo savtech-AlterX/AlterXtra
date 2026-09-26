@@ -58,7 +58,7 @@ export function GlowButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [style, (pressed || disabled) && styles.pressed]}
+      style={({ pressed }) => [styles.solidWrap, style, (pressed || disabled) && styles.pressed]}
     >
       <LinearGradient
         colors={[colors.glow, colors.glowStrong]}
@@ -75,8 +75,21 @@ export function GlowButton({
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  // The outer glow lives on this wrapper, not the gradient — a shadow on the
+  // same layer as the gradient's own borderRadius clips unpredictably on
+  // iOS, so the halo needs its own unclipped box around it.
+  solidWrap: {
+    borderRadius: 999,
+    shadowColor: colors.glow,
+    shadowOpacity: 0.55,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  },
   solid: {
     borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.glowStrong,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
