@@ -6,6 +6,7 @@ import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { StackHeader } from '../src/components/StackHeader';
 import { ThemePicker } from '../src/components/ThemePicker';
+import { hasAlterXtra } from '../src/lib/entitlements';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
@@ -65,6 +66,23 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
 export default function AlterXtra() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const owned = hasAlterXtra();
+
+  // Owners land here to actually use the perk, not to be sold on it — so
+  // colours come first, before the pitch. Everyone else sees them last, as
+  // part of the tease, same as before.
+  const themesBlock = (
+    <View key="themes">
+      <Text style={typography.label}>XTRA.THEMES</Text>
+      <Text style={styles.themeHint}>
+        {owned
+          ? 'Every colour is unlocked. Tap one to try it on.'
+          : "Blue and Navy are free. The rest unlock with Alter-Xtra."}
+      </Text>
+      <ThemePicker />
+    </View>
+  );
+
   return (
     <HudScreen>
       <StackHeader title="ALTER-XTRA" />
@@ -76,16 +94,24 @@ export default function AlterXtra() {
         accessibilityLabel="Five glowing silhouettes, each a different identity you could become"
       />
 
+      {owned && themesBlock}
+
       <GlowCard strong style={styles.priceCard}>
         <Text style={styles.eyebrow}>ALTER X</Text>
         <Text style={styles.title}>Alter-Xtra</Text>
-        <Text style={styles.price}>$17.99 <Text style={styles.priceUnit}>one-time unlock</Text></Text>
-        <Text style={styles.tagline}>
-          Buy it once and keep it. No subscription, and nothing you've written ever expires.
-        </Text>
+        {owned ? (
+          <Text style={styles.tagline}>You own Alter-Xtra. Every perk below is already yours.</Text>
+        ) : (
+          <>
+            <Text style={styles.price}>$17.99 <Text style={styles.priceUnit}>one-time unlock</Text></Text>
+            <Text style={styles.tagline}>
+              Buy it once and keep it. No subscription, and nothing you've written ever expires.
+            </Text>
+          </>
+        )}
       </GlowCard>
 
-      <Text style={typography.label}>XTRA.BENEFITS</Text>
+      <Text style={[typography.label, styles.spacer]}>XTRA.BENEFITS</Text>
 
       {BENEFITS.map((b, i) => (
         <GlowCard key={b.title} style={styles.benefitCard}>
@@ -100,16 +126,16 @@ export default function AlterXtra() {
         </GlowCard>
       ))}
 
-      <Text style={[typography.label, styles.spacer]}>XTRA.THEMES</Text>
-      <Text style={styles.themeHint}>Blue and Navy are free. The rest unlock with Alter-Xtra.</Text>
-      <ThemePicker />
+      {!owned && themesBlock}
 
-      {/* Deliberately not a button. A live-looking purchase control with no
-          purchase behind it is the single thing that would fail App Store
-          review, so there is nothing to tap until in-app purchases are wired. */}
-      <Text style={[styles.disclaimer, styles.spacer]}>
-        Alter-Xtra isn't on sale yet — coming soon.
-      </Text>
+      {!owned && (
+        // Deliberately not a button. A live-looking purchase control with no
+        // purchase behind it is the single thing that would fail App Store
+        // review, so there is nothing to tap until in-app purchases are wired.
+        <Text style={[styles.disclaimer, styles.spacer]}>
+          Alter-Xtra isn't on sale yet — coming soon.
+        </Text>
+      )}
     </HudScreen>
   );
 }
