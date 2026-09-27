@@ -6,8 +6,17 @@ import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
 import { AppIconChoice } from '../../src/store/types';
+import { fonts } from '../../src/theme/typography';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
+
+// A more saturated, deliberately "brand blue" than the default theme's glow
+// accent (#3da8f5) — just for this screen's CONTINUE button, which reads as
+// a touch pale/washed-out at its usual glow-tinted opacity next to a solid
+// fill. Chakra Petch (SIL Open Font License, cleared for commercial use —
+// see src/theme/typography.ts) instead of the LCD family here specifically,
+// per a request to not have this one button ride on the display font.
+const CONTINUE_BLUE = '#0B84F3';
 
 // Two rows of two hairstyle variants around a centered 'mystery' card,
 // matching the 5-card reference layout exactly — including its left-to-right
@@ -21,25 +30,26 @@ const OPTIONS: AppIconChoice[][] = [
 
 // Real photo-based avatars — square, already-colored/glowing renders, not
 // tintable line work, so no tintColor here (unlike the mystery glyph below).
+// Mystery reuses the same identity-mark asset shown everywhere else the
+// mystery icon appears (Settings, Identities) — a real icon of its own,
+// not a bare "?" character standing in for one.
 const GLYPH_WIDTH = 118;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../../assets/icon-choice-male.png') },
   'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png') },
   female: { source: require('../../assets/icon-choice-female.png') },
   'female-curly': { source: require('../../assets/icon-choice-female-curly.png') },
+  mystery: { source: require('../../assets/identity-mark-mystery.png') },
 } as const;
 
-function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
+function IconGlyph({ option }: { option: AppIconChoice }) {
   const styles = useThemedStyles(makeStyles);
-  if (option === 'mystery') {
-    return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
-  }
   const { source } = ICON_CHOICE_MARKS[option];
   return <Image source={source} style={styles.glyphImage} resizeMode="contain" />;
 }
 
 export default function ChooseIcon() {
-  const { colors, typography } = useAppTheme();
+  const { typography } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { mode } = useLocalSearchParams<{ mode?: string }>();
@@ -63,7 +73,6 @@ export default function ChooseIcon() {
             <View key={i} style={styles.row}>
               {rowOptions.map((opt) => {
                 const isSelected = selected === opt;
-                const tint = isSelected ? colors.glowStrong : colors.glow;
                 return (
                   <Pressable
                     key={opt}
@@ -79,7 +88,7 @@ export default function ChooseIcon() {
                     accessibilityLabel={`${opt} icon`}
                     accessibilityState={{ selected: isSelected }}
                   >
-                    <IconGlyph option={opt} tint={tint} />
+                    <IconGlyph option={opt} />
                   </Pressable>
                 );
               })}
@@ -88,18 +97,12 @@ export default function ChooseIcon() {
         })}
       </View>
 
-      <View style={styles.comingSoon}>
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerLabel}>MORE IDENTITIES COMING SOON</Text>
-          <View style={styles.dividerLine} />
-        </View>
-      </View>
-
       <View style={styles.footer}>
         <GlowButton
           label="CONTINUE"
           icon={<Ionicons name="arrow-forward" size={16} color="#ffffff" />}
+          backgroundColor={CONTINUE_BLUE}
+          labelFontFamily={fonts.bodyBold}
           onPress={() => {
             setOnboardingDraft({ icon: selected });
             router.push({ pathname: '/onboarding/account', params: { icon: selected, mode } });
@@ -115,7 +118,7 @@ export default function ChooseIcon() {
 // on a typical modern phone (390-430pt wide) this still fits without
 // scrolling, and the screen falls back to scrolling rather than clipping
 // on anything smaller.
-const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
+const makeStyles = ({ colors }: AppTheme) =>
   StyleSheet.create({
   // Trims HudScreen's default 40pt bottom padding and 16pt inter-block gap
   // (sized for shorter screens) down to what these three larger blocks
@@ -193,34 +196,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   glyphImage: {
     width: GLYPH_WIDTH,
     height: GLYPH_WIDTH,
-  },
-  mysteryGlyph: {
-    fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 74,
-    ...glowShadow,
-    textShadowRadius: 16,
-  },
-  // A plain divider naming what's next, rather than placeholder glyphs
-  // standing in for icons that don't exist yet.
-  comingSoon: {
-    alignItems: 'center',
-    gap: 14,
-    marginTop: 4,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    width: '100%',
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.borderDim,
-  },
-  dividerLabel: {
-    ...typography.label,
-    color: colors.textSecondary,
   },
   footer: {
     marginTop: 4,

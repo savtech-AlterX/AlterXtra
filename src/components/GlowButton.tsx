@@ -12,6 +12,13 @@ type Props = {
   style?: ViewStyle;
   disabled?: boolean;
   labelColor?: string;
+  // Solid variant only — overrides the fill/border, e.g. a screen that wants
+  // a punchier brand blue than the current theme's default glow color.
+  backgroundColor?: string;
+  // Overrides the label font — both LCD-Bold/LCD2-Bold and Chakra Petch are
+  // cleared for commercial use (see src/theme/typography.ts); this exists
+  // for screens that want the other voice on a button specifically.
+  labelFontFamily?: string;
   // Overrides what a screen reader announces — defaults to the visible
   // label, which is right for plain text buttons but wrong for ones whose
   // label is decorative or ambiguous without more context.
@@ -26,6 +33,8 @@ export function GlowButton({
   style,
   disabled,
   labelColor,
+  backgroundColor,
+  labelFontFamily,
   accessibilityLabel,
 }: Props) {
   const styles = useThemedStyles(makeStyles);
@@ -56,10 +65,15 @@ export function GlowButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [styles.solidWrap, style, (pressed || disabled) && styles.pressed]}
+      style={({ pressed }) => [
+        styles.solidWrap,
+        backgroundColor ? { shadowColor: backgroundColor } : null,
+        style,
+        (pressed || disabled) && styles.pressed,
+      ]}
     >
-      <View style={styles.solid}>
-        <Text style={styles.solidLabel}>{label}</Text>
+      <View style={[styles.solid, backgroundColor ? { backgroundColor, borderColor: backgroundColor } : null]}>
+        <Text style={[styles.solidLabel, labelFontFamily ? { fontFamily: labelFontFamily } : null]}>{label}</Text>
         {icon}
       </View>
     </Pressable>
