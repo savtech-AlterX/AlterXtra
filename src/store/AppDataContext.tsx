@@ -64,14 +64,14 @@ type AppDataContextValue = {
   retrySave: () => void;
   identities: IdentitySummary[];
   activeIdentityId: string | null;
-  canAddIdentity: boolean;
   // Creates the first identity (onboarding) or edits the active identity's
   // archetype/icon/name in place ("Change Identity" in Settings) — it never
   // creates a second profile. Use addIdentity for that.
   setIdentity: (identity: Identity) => void;
   // Creates a brand-new, empty identity profile and switches to it. Refuses
   // (returns null) past the free-tier cap unless Alter-Xtra is unlocked —
-  // check canAddIdentity first to steer the UI to the paywall instead.
+  // check identityLimitReached() (src/lib/entitlements.ts) first to steer
+  // the UI to the paywall instead.
   addIdentity: (identity: Identity) => string | null;
   switchActiveIdentity: (id: string) => void;
   deleteIdentity: (id: string) => void;
@@ -174,8 +174,6 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     () => store.profiles.map((p) => ({ id: p.id, identity: p.identity })),
     [store.profiles]
   );
-
-  const canAddIdentity = !identityLimitReached(store.profiles.length);
 
   // Applies `updater` to the currently active profile only — every content
   // mutator (journal, goals, habits, ...) goes through this so it never
@@ -508,7 +506,6 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       retrySave,
       identities,
       activeIdentityId: store.activeIdentityId,
-      canAddIdentity,
       setIdentity,
       addIdentity,
       switchActiveIdentity,
@@ -542,7 +539,6 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       saveError,
       retrySave,
       identities,
-      canAddIdentity,
       setIdentity,
       addIdentity,
       switchActiveIdentity,

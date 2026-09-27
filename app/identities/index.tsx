@@ -8,7 +8,8 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { StackHeader } from '../../src/components/StackHeader';
 import { confirmDestructive } from '../../src/lib/confirm';
-import { MAX_FREE_IDENTITIES, useAppData } from '../../src/store/AppDataContext';
+import { FREE_IDENTITY_LIMIT, identityLimitReached } from '../../src/lib/entitlements';
+import { useAppData } from '../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
@@ -16,7 +17,10 @@ export default function Identities() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { identities, activeIdentityId, canAddIdentity, switchActiveIdentity, deleteIdentity } = useAppData();
+  const { identities, activeIdentityId, switchActiveIdentity, deleteIdentity } = useAppData();
+  // Computed here (not read off context) so it's always current with
+  // hasAlterXtra() — see the note in AppDataContext.addIdentity.
+  const canAddIdentity = !identityLimitReached(identities.length);
 
   function selectIdentity(id: string) {
     if (id === activeIdentityId) return;
@@ -89,7 +93,7 @@ export default function Identities() {
 
       {!canAddIdentity && (
         <Text style={styles.hint}>
-          Free AlterX includes {MAX_FREE_IDENTITIES} identity. Unlock Alter-Xtra for unlimited identities.
+          Free AlterX includes {FREE_IDENTITY_LIMIT} identity. Unlock Alter-Xtra for unlimited identities.
         </Text>
       )}
     </HudScreen>
