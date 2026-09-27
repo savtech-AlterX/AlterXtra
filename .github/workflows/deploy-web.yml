@@ -1,0 +1,33 @@
+name: Deploy web preview
+
+# Publishes a static web export of the app to GitHub Pages on every push to
+# claude/hello-46bydk, so the live preview at
+# https://savtech-alterx.github.io/AlterXtra/ never drifts out of sync with
+# the code again. Uses expo export --platform web, which is a pure static
+# build (no EAS credits, no native compile) — unlike the EAS development
+# builds workflow, this is safe and cheap to run on every push.
+on:
+  push:
+    branches: ['claude/hello-46bydk']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx expo export --platform web --output-dir dist
+      - run: touch dist/.nojekyll
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages

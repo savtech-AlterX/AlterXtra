@@ -93,7 +93,7 @@ export default function ChooseIdentity() {
 
       <GlowButton
         label="EMBODY THIS PERSONA"
-        icon={<Ionicons name="arrow-forward" size={16} color="#02141f" />}
+        icon={<Ionicons name="arrow-forward" size={16} color="#ffffff" />}
         disabled={customName.trim().length === 0}
         onPress={() => embody(customName.trim())}
       />

@@ -1,17 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View, ViewStyle } from 'react-native';
+import React from 'react';
+import { Image, Text, View, ViewStyle } from 'react-native';
 import { useAppData } from '../store/AppDataContext';
-import { markSource, MarkExpression } from '../lib/avatar';
+import { markSource } from '../lib/avatar';
 import { AppIconChoice } from '../store/types';
-import { useThemeControls } from '../theme/ThemeContext';
-import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
-import type { AppTheme } from '../theme/useAppTheme';
-
-// A beat of "just standing there" before the smile forms, then how long the
-// crossfade itself takes — a smile that's already there when the screen
-// mounts doesn't read as an expression at all, just a different drawing.
-const SMILE_DELAY_MS = 500;
-const SMILE_FADE_MS = 550;
+import { useAppTheme } from '../theme/useAppTheme';
 
 type Props = {
   size?: number;
@@ -19,100 +11,58 @@ type Props = {
   // Override the mark shown. Defaults to whichever icon the user picked
   // during onboarding, so the choice carries through the whole app.
   icon?: AppIconChoice;
-  // Defaults to neutral everywhere except the one screen that asks for
-  // something else (loading, currently, which shows the charismatic smirk).
-  expression?: MarkExpression;
-  // Plays the neutral -> expression change as a crossfade shortly after
-  // mount, instead of just showing the target expression outright.
-  animated?: boolean;
 };
 
-// The identity-mark icon inside a circular glowing ring, as shown
-// consistently across the reference recording (splash + home hero).
-export function IdentityMarkRing({ size = 130, style, icon, expression = 'neutral', animated = false }: Props) {
-  const styles = useThemedStyles(makeStyles);
-  const { colors } = useAppTheme();
+// The identity-mark icon, shown consistently across choose-icon, the
+// loading screen, the home hero, and the lock screen. The 4 real-photo
+// marks already include their own ring/glow baked in. 'mystery' renders as
+// the same glowing LCD-font "?" glyph used on the choose-icon card itself,
+// rather than the separate illustrated question-mark image this used to
+// show — those two looked like different art styles for the same choice.
+export function IdentityMarkRing({ size = 130, style, icon }: Props) {
+  const { colors, typography } = useAppTheme();
   const { data } = useAppData();
-  const { theme } = useThemeControls();
-  const resolved = icon ?? data.identity?.icon;
-  const neutral = markSource(resolved, 'neutral');
-  const target = markSource(resolved, expression);
-  const markWidth = size * 0.46;
-  const crossfade = useRef(new Animated.Value(0)).current;
-
-  const playAnimation = animated && target.source !== neutral.source;
-
-  useEffect(() => {
-    if (!playAnimation) return;
-    crossfade.setValue(0);
-    const timer = setTimeout(() => {
-      Animated.timing(crossfade, {
-        toValue: 1,
-        duration: SMILE_FADE_MS,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: false,
-      }).start();
-    }, SMILE_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [playAnimation, crossfade]);
-
-  if (!playAnimation) {
-    return (
-      <View
-        style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <Animated.Image
-          source={target.source}
-          style={{ width: markWidth, height: markWidth / target.aspect, tintColor: colors.glow }}
-          resizeMode="contain"
-        />
-      </View>
-    );
-  }
+  // Falls back through the in-progress onboarding draft too — during
+  // onboarding itself (loading screen) or if a route param carrying the
+  // choice ever fails to arrive, the identity object may still be unset even
+  // though the user already picked a real avatar.
+  const resolved = icon ?? data.identity?.icon ?? data.onboardingDraft?.icon;
 
   return (
     <View
-        style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }, style]}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-      <Animated.Image
-        source={neutral.source}
-        style={{
-          width: markWidth,
-          height: markWidth / neutral.aspect,
-          tintColor: colors.glow,
-          opacity: crossfade.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
-        }}
-        resizeMode="contain"
-      />
-      <Animated.Image
-        source={target.source}
-        style={{
-          position: 'absolute',
-          width: markWidth,
-          height: markWidth / target.aspect,
-          tintColor: colors.glow,
-          opacity: crossfade,
-        }}
-        resizeMode="contain"
-      />
+      style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      {resolved === 'mystery' ? (
+        <Text
+          style={{
+            fontFamily: typography.screenTitle.fontFamily,
+            fontSize: size * 0.62,
+            color: colors.glow,
+            textShadowColor: colors.glow,
+            textShadowRadius: size * 0.14,
+            textShadowOffset: { width: 0, height: 0 },
+          }}
+        >
+          ?
+        </Text>
+      ) : (
+        (() => {
+          const { source, aspect, tint } = markSource(resolved);
+          return (
+            <Image
+              source={source}
+              style={{
+                width: size,
+                height: size / aspect,
+                tintColor: tint ? colors.glow : undefined,
+              }}
+              resizeMode="contain"
+            />
+          );
+        })()
+      )}
     </View>
   );
 }
-
-const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
-  StyleSheet.create({
-  ring: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.glow,
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 0 },
-  },
-});

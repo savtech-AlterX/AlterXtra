@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { StackHeader } from '../src/components/StackHeader';
 import { ThemePicker } from '../src/components/ThemePicker';
+import { hasAlterXtra } from '../src/lib/entitlements';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
@@ -16,9 +17,19 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
     body: 'Create and manage as many identities as you want.',
   },
   {
+    icon: 'mail-open-outline',
+    title: 'Future Self',
+    body: 'Seal letters and record video messages to the person you’re becoming, locked until the date you choose.',
+  },
+  {
     icon: 'locate-outline',
     title: 'Unlimited Habits',
     body: 'Add and track unlimited habits to build who you want to become.',
+  },
+  {
+    icon: 'bulb-outline',
+    title: 'Unlimited Limited Beliefs',
+    body: 'Rewire as many limiting beliefs as you need to, with no cap on your rewiring log.',
   },
   {
     icon: 'bar-chart-outline',
@@ -60,20 +71,49 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
 export default function AlterXtra() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const owned = hasAlterXtra();
+
+  const themesBlock = (
+    <View key="themes">
+      <Text style={typography.label}>XTRA.THEMES</Text>
+      <Text style={styles.themeHint}>
+        {owned
+          ? 'Every colour is unlocked. Tap one to try it on.'
+          : "Blue and Navy are free. The rest unlock with Alter-Xtra."}
+      </Text>
+      <ThemePicker />
+    </View>
+  );
+
   return (
     <HudScreen>
       <StackHeader title="ALTER-XTRA" />
 
+      <Image
+        source={require('../assets/alter-xtra/unlimited-identities-banner.jpg')}
+        style={styles.banner}
+        resizeMode="cover"
+        accessibilityLabel="Five glowing silhouettes, each a different identity you could become"
+      />
+
+      {themesBlock}
+
       <GlowCard strong style={styles.priceCard}>
         <Text style={styles.eyebrow}>ALTER X</Text>
         <Text style={styles.title}>Alter-Xtra</Text>
-        <Text style={styles.price}>$17.99 <Text style={styles.priceUnit}>one-time unlock</Text></Text>
-        <Text style={styles.tagline}>
-          Buy it once and keep it. No subscription, and nothing you've written ever expires.
-        </Text>
+        {owned ? (
+          <Text style={styles.tagline}>You own Alter-Xtra. Every perk below is already yours.</Text>
+        ) : (
+          <>
+            <Text style={styles.price}>$17.99 <Text style={styles.priceUnit}>one-time unlock</Text></Text>
+            <Text style={styles.tagline}>
+              Buy it once and keep it. No subscription, no recurring fees.
+            </Text>
+          </>
+        )}
       </GlowCard>
 
-      <Text style={typography.label}>XTRA.BENEFITS</Text>
+      <Text style={[typography.label, styles.spacer]}>XTRA.BENEFITS</Text>
 
       {BENEFITS.map((b, i) => (
         <GlowCard key={b.title} style={styles.benefitCard}>
@@ -88,22 +128,25 @@ export default function AlterXtra() {
         </GlowCard>
       ))}
 
-      <Text style={[typography.label, styles.spacer]}>XTRA.THEMES</Text>
-      <Text style={styles.themeHint}>Tap a theme to try it on. Your choice applies across the whole app.</Text>
-      <ThemePicker />
-
-      {/* Deliberately not a button. A live-looking purchase control with no
-          purchase behind it is the single thing that would fail App Store
-          review, so there is nothing to tap until in-app purchases are wired. */}
-      <Text style={[styles.disclaimer, styles.spacer]}>
-        Alter-Xtra isn't on sale yet. Every theme above is free to use in the meantime.
-      </Text>
+      {!owned && (
+        // Deliberately not a button. A live-looking purchase control with no
+        // purchase behind it is the single thing that would fail App Store
+        // review, so there is nothing to tap until in-app purchases are wired.
+        <Text style={[styles.disclaimer, styles.spacer]}>
+          Alter-Xtra isn't on sale yet — coming soon.
+        </Text>
+      )}
     </HudScreen>
   );
 }
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  banner: {
+    width: '100%',
+    height: 175,
+    borderRadius: 16,
+  },
   priceCard: {
     gap: 4,
   },

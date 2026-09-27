@@ -9,6 +9,7 @@ import { AppDataProvider } from '../src/store/AppDataContext';
 import { SettingsProvider } from '../src/store/SettingsContext';
 import { AmbientSoundController } from '../src/components/AmbientSoundController';
 import { AppLockGate } from '../src/components/AppLockGate';
+import { GlitchTransitionOverlay } from '../src/components/GlitchTransitionOverlay';
 import { SaveErrorBanner } from '../src/components/SaveErrorBanner';
 import { WinFlashOverlay } from '../src/components/WinFlashOverlay';
 import { Platform, View } from 'react-native';
@@ -34,6 +35,7 @@ function ThemedApp() {
                 animation: 'fade',
               }}
             />
+            <GlitchTransitionOverlay />
             <WinFlashOverlay />
           </WinFlashProvider>
         </AppLockGate>

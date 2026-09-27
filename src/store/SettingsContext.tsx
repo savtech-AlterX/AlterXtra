@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { setAlterXtraPreview } from '../lib/entitlements';
 
 const SETTINGS_KEY = 'alterx:settings:v1';
 
@@ -25,11 +26,10 @@ type Settings = {
   soundEffectsEnabled: boolean;
   // The soft background loop that plays app-wide while AlterX is open.
   ambientSoundEnabled: boolean;
-  // Whether the one-time Alter-Xtra unlock has been purchased — gates
-  // unlimited identities, themes, etc. Alter-Xtra isn't on sale yet (see
-  // app/alter-xtra.tsx), so this stays false everywhere until real purchase
-  // verification replaces this flag.
-  alterXtraUnlocked: boolean;
+  // Owner-only preview toggle — lifts every free-plan cap so Alter-Xtra
+  // features can be seen live before real payments exist. Never surfaced
+  // to anyone but the app owner from Settings.
+  previewAlterXtraEnabled: boolean;
 };
 
 const defaultSettings: Settings = {
@@ -43,7 +43,7 @@ const defaultSettings: Settings = {
   celebratedStreakMilestone: 0,
   soundEffectsEnabled: true,
   ambientSoundEnabled: true,
-  alterXtraUnlocked: false,
+  previewAlterXtraEnabled: false,
 };
 
 type SettingsContextValue = {
@@ -60,7 +60,7 @@ type SettingsContextValue = {
   setCelebratedStreakMilestone: (days: number) => void;
   setSoundEffectsEnabled: (enabled: boolean) => void;
   setAmbientSoundEnabled: (enabled: boolean) => void;
-  setAlterXtraUnlocked: (unlocked: boolean) => void;
+  setPreviewAlterXtraEnabled: (enabled: boolean) => void;
   resetSettings: () => void;
 };
 
@@ -90,6 +90,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
     persist(settings);
   }, [settings, isLoaded, persist]);
+
+  // entitlements.ts can't read React context (it's called from plain
+  // functions all over the app), so mirror the flag into its module state.
+  // This runs inline during render, not in a useEffect: SettingsProvider
+  // renders before its children in the same pass, so a screen further down
+  // the tree that calls hasAlterXtra() while rendering always sees the
+  // value that matches the settings it just received — no one-render lag
+  // after the async AsyncStorage load resolves.
+  setAlterXtraPreview(settings.previewAlterXtraEnabled);
 
   const retrySave = useCallback(() => persist(settings), [persist, settings]);
 
@@ -126,18 +135,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, ambientSoundEnabled: enabled }));
   }, []);
 
-  const setAlterXtraUnlocked = useCallback((unlocked: boolean) => {
-    setSettings((prev) => ({ ...prev, alterXtraUnlocked: unlocked }));
+  const setPreviewAlterXtraEnabled = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, previewAlterXtraEnabled: enabled }));
   }, []);
 
   // "Reset All Data" is meant to hand back a genuine beginner's experience —
   // that has to include the once-only onboarding flags, not just app data,
   // or a returning tester (or a real user starting over) never sees them again.
   const resetSettings = useCallback(() => {
-    // Once Alter-Xtra purchases are real, a device-data reset should NOT
-    // revoke a paid unlock — carry it forward rather than dropping to
-    // defaultSettings' false.
-    setSettings((prev) => ({ ...defaultSettings, alterXtraUnlocked: prev.alterXtraUnlocked }));
+    setSettings(defaultSettings);
   }, []);
 
   const value = useMemo(
@@ -153,7 +159,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
-      setAlterXtraUnlocked,
+      setPreviewAlterXtraEnabled,
       resetSettings,
     }),
     [
@@ -168,7 +174,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setCelebratedStreakMilestone,
       setSoundEffectsEnabled,
       setAmbientSoundEnabled,
-      setAlterXtraUnlocked,
+      setPreviewAlterXtraEnabled,
       resetSettings,
     ]
   );

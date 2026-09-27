@@ -4,14 +4,15 @@ import { useAppTheme, useThemedStyles } from '../theme/useAppTheme';
 import type { AppTheme } from '../theme/useAppTheme';
 import { fonts } from '../theme/typography';
 
-export function HudTextInput(props: TextInputProps & { multiline?: boolean }) {
+export function HudTextInput({ style, multiline, ...rest }: TextInputProps & { multiline?: boolean }) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   return (
     <TextInput
       placeholderTextColor={colors.textMuted}
-      style={[styles.input, props.multiline && styles.multiline, props.style]}
-      {...props}
+      multiline={multiline}
+      {...rest}
+      style={[styles.input, multiline && styles.multiline, style]}
     />
   );
 }

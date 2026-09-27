@@ -27,14 +27,10 @@ import { isEnvelope, migrate, SCHEMA_VERSION } from './migrations';
 import { readWidgetSessionStartedAt, writeWidgetSessionStartedAt, writeWidgetStreak } from '../lib/sessionWidgetBridge';
 import { computeActiveStreakDays } from '../lib/growth';
 import { deleteAllLocalMedia } from '../lib/localMedia';
-import { useSettings } from './SettingsContext';
+import { armComebackReminder } from '../lib/notifications';
+import { identityLimitReached } from '../lib/entitlements';
 
 const STORAGE_KEY = 'alterx:appData:v1';
-
-// Free tier: one identity. Alter-Xtra unlocks unlimited — see
-// settings.alterXtraUnlocked (SettingsContext), which real purchase
-// wiring will flip once Alter-Xtra is actually on sale.
-export const MAX_FREE_IDENTITIES = 1;
 
 // A foreground within this many ms of the last recorded open is treated as
 // the same "sitting down with the app," not a separate open — otherwise a
@@ -81,7 +77,7 @@ type AppDataContextValue = {
   deleteIdentity: (id: string) => void;
   setOnboardingDraft: (partial: Partial<OnboardingDraft>) => void;
   addJournalEntry: (date: string, title: string, body: string) => void;
-  addFutureSelfLetter: (title: string, body: string) => void;
+  addFutureSelfLetter: (title: string, body: string, unlockDate?: string) => void;
   addFutureSelfVideo: (
     question: string,
     videoUri: string,
@@ -117,7 +113,6 @@ type AppDataContextValue = {
 const AppDataContext = createContext<AppDataContextValue | null>(null);
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
-  const { settings } = useSettings();
   const [store, setStore] = useState<AppStore>(emptyAppStore);
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -180,7 +175,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     [store.profiles]
   );
 
-  const canAddIdentity = settings.alterXtraUnlocked || store.profiles.length < MAX_FREE_IDENTITIES;
+  const canAddIdentity = !identityLimitReached(store.profiles.length);
 
   // Applies `updater` to the currently active profile only — every content
   // mutator (journal, goals, habits, ...) goes through this so it never
@@ -221,24 +216,25 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const addIdentity = useCallback(
-    (identity: Identity): string | null => {
-      if (!canAddIdentity) return null;
-      const id = makeId();
-      const profile = emptyIdentityProfile(id, {
-        ...identity,
-        createdAt: identity.createdAt ?? new Date().toISOString(),
-      });
-      setStore((prev) => ({
-        ...prev,
-        onboardingDraft: null,
-        activeIdentityId: id,
-        profiles: [...prev.profiles, profile],
-      }));
-      return id;
-    },
-    [canAddIdentity]
-  );
+  const addIdentity = useCallback((identity: Identity): string | null => {
+    // Checked fresh against the store being updated, not a value captured at
+    // AppDataProvider's last render — hasAlterXtra() is a plain module
+    // variable (see src/lib/entitlements.ts), not React state, so a stale
+    // closure here could let someone past the cap right after it changes.
+    if (identityLimitReached(store.profiles.length)) return null;
+    const id = makeId();
+    const profile = emptyIdentityProfile(id, {
+      ...identity,
+      createdAt: identity.createdAt ?? new Date().toISOString(),
+    });
+    setStore((prev) => ({
+      ...prev,
+      onboardingDraft: null,
+      activeIdentityId: id,
+      profiles: [...prev.profiles, profile],
+    }));
+    return id;
+  }, [store.profiles.length]);
 
   const switchActiveIdentity = useCallback((id: string) => {
     setStore((prev) => (prev.profiles.some((p) => p.id === id) ? { ...prev, activeIdentityId: id } : prev));
@@ -273,12 +269,13 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     updateActiveProfile((p) => ({ ...p, journalEntries: [entry, ...p.journalEntries] }));
   }, [updateActiveProfile]);
 
-  const addFutureSelfLetter = useCallback((title: string, body: string) => {
+  const addFutureSelfLetter = useCallback((title: string, body: string, unlockDate?: string) => {
     const letter: FutureSelfLetter = {
       id: makeId(),
       createdAt: new Date().toISOString(),
       title: title || undefined,
       body,
+      unlockDate: unlockDate || undefined,
     };
     updateActiveProfile((p) => ({ ...p, futureSelfLetters: [letter, ...p.futureSelfLetters] }));
   }, [updateActiveProfile]);
@@ -474,10 +471,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
     reconcileFromWidget();
     logAppOpen();
+    armComebackReminder();
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
       if (state === 'active') {
         reconcileFromWidget();
         logAppOpen();
+        armComebackReminder();
       }
     });
     return () => sub.remove();

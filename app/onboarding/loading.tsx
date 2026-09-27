@@ -6,20 +6,31 @@ import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
+const TOTAL_MS = 2800;
+
 export default function Loading() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const progress = useRef(new Animated.Value(0)).current;
+  const bannerOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(progress, {
       toValue: 1,
-      duration: 2800,
+      duration: TOTAL_MS,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
 
-    const timer = setTimeout(() => router.replace('/(tabs)'), 3000);
+    Animated.timing(bannerOpacity, {
+      toValue: 1,
+      duration: 500,
+      delay: 200,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+
+    const timer = setTimeout(() => router.replace('/onboarding/reveal'), 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -27,6 +38,9 @@ export default function Loading() {
 
   return (
     <HudScreen scroll={false}>
+      <Animated.View style={[styles.banner, { opacity: bannerOpacity }]}>
+        <Text style={styles.bannerText}>ALTERXTRA IS COMING SOON</Text>
+      </Animated.View>
       <View style={styles.center}>
         <IdentityMarkRing size={110} style={styles.mark} />
         <View style={styles.barTrack}>
@@ -40,6 +54,29 @@ export default function Loading() {
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
+  banner: {
+    position: 'absolute',
+    top: '14%',
+    alignSelf: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.glowStrong,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    backgroundColor: colors.panelSolid,
+    shadowColor: colors.glow,
+    shadowOpacity: 0.8,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  bannerText: {
+    fontFamily: typography.screenTitle.fontFamily,
+    fontSize: 13,
+    letterSpacing: 2,
+    textAlign: 'center',
+    color: colors.textPrimary,
+    ...glowShadow,
+  },
   center: {
     flex: 1,
     alignItems: 'center',

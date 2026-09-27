@@ -50,6 +50,7 @@ export default function Home() {
             AlterX is a private, on-device identity-transformation app — habits, journaling, belief work, and
             messages to your future self. No account, no server, no tracking.
           </p>
+          <p className="text-xs tracking-widest text-glow uppercase">On your phone and on your laptop</p>
           <EmailCaptureForm />
         </section>
 

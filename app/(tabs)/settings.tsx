@@ -45,6 +45,7 @@ export default function Settings() {
     setShowGoalBarOnHome,
     setSoundEffectsEnabled,
     setAmbientSoundEnabled,
+    setPreviewAlterXtraEnabled,
     resetSettings,
   } = useSettings();
   const { resetTheme } = useThemeControls();
@@ -165,11 +166,34 @@ export default function Settings() {
       />
 
       <GlowButton
+        label="CHANGE ICON"
+        variant="outline"
+        icon={<Ionicons name="person-circle-outline" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push('/change-icon')}
+      />
+
+      <GlowButton
         label="ADD WIDGET"
         variant="outline"
         icon={<Ionicons name="apps-outline" size={16} color={colors.glow} style={iconGlow} />}
         onPress={() => router.push('/add-widget')}
       />
+
+      <GlowCard style={styles.lockCard}>
+        <View style={styles.lockText}>
+          <Text style={typography.label}>ALTER-XTRA PREVIEW</Text>
+          <Text style={styles.lockDesc}>
+            Owner-only. Lifts every free-plan limit right now so you can see Alter-Xtra features live, before
+            real payments exist.
+          </Text>
+        </View>
+        <Switch
+          value={settings.previewAlterXtraEnabled}
+          onValueChange={setPreviewAlterXtraEnabled}
+          trackColor={{ false: colors.borderDim, true: colors.glow }}
+          thumbColor={colors.textPrimary}
+        />
+      </GlowCard>
 
       {Platform.OS !== 'web' && (
         <GlowCard style={styles.lockCard}>
@@ -347,6 +371,8 @@ export default function Settings() {
         style={styles.dangerButton}
         onPress={confirmReset}
       />
+
+      <Text style={styles.copyright}>© 2026 Savannah Giddings. All rights reserved.</Text>
     </HudScreen>
   );
 }
@@ -439,5 +465,12 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   dangerButton: {
     borderColor: colors.danger,
+  },
+  copyright: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 11,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

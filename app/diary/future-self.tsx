@@ -8,6 +8,8 @@ import { GlowCard } from '../../src/components/GlowCard';
 import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
+import { XtraLockedCard } from '../../src/components/XtraLockedCard';
+import { hasAlterXtra } from '../../src/lib/entitlements';
 import { isFutureSelfUnlocked, logEntriesSince } from '../../src/lib/futureSelfUnlock';
 import { useAppData } from '../../src/store/AppDataContext';
 import { FutureSelfVideo, LogEntry } from '../../src/store/types';
@@ -17,6 +19,24 @@ import type { AppTheme } from '../../src/theme/useAppTheme';
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDateString(s: string) {
+  if (!DATE_RE.test(s)) return false;
+  const [y, m, d] = s.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  // new Date() silently rolls invalid days (e.g. Feb 30) into the next
+  // month rather than rejecting them — round-tripping catches that.
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+}
+
+function isLetterLocked(letter: { unlockDate?: string }) {
+  if (!letter.unlockDate) return false;
+  const t = new Date(`${letter.unlockDate}T00:00:00`).getTime();
+  if (Number.isNaN(t)) return false;
+  return t > Date.now();
 }
 
 function lockStatusLabel(video: FutureSelfVideo, logEntries: LogEntry[]) {
@@ -61,17 +81,23 @@ function LettersPanel() {
   const { data, addFutureSelfLetter } = useAppData();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [unlockDate, setUnlockDate] = useState('');
+  const dateEntered = unlockDate.trim().length > 0;
+  const dateValid = !dateEntered || isValidDateString(unlockDate.trim());
+  const canSave = !!body.trim() && dateValid;
 
   function save() {
-    if (!body.trim()) return;
-    addFutureSelfLetter(title.trim(), body.trim());
+    if (!canSave) return;
+    addFutureSelfLetter(title.trim(), body.trim(), dateEntered ? unlockDate.trim() : undefined);
     setTitle('');
     setBody('');
+    setUnlockDate('');
   }
 
   function discard() {
     setTitle('');
     setBody('');
+    setUnlockDate('');
     router.back();
   }
 
@@ -94,12 +120,27 @@ function LettersPanel() {
         accessibilityLabel="Your letter"
       />
 
+      <Text style={[typography.label, styles.spacer]}>UNLOCK DATE (OPTIONAL)</Text>
+      <HudTextInput
+        placeholder="2027-01-01"
+        value={unlockDate}
+        onChangeText={setUnlockDate}
+        accessibilityLabel="Unlock date, optional, format year-month-day"
+      />
+      {dateEntered && !dateValid ? (
+        <Text style={[styles.hint, { color: colors.danger }]}>Enter a real date as YYYY-MM-DD.</Text>
+      ) : (
+        <Text style={styles.hint}>
+          {dateEntered ? 'Sealed and hidden until this date.' : 'Leave blank to read it back whenever you want.'}
+        </Text>
+      )}
+
       <GlowButton
         label="SEAL LETTER"
         onPress={save}
-        disabled={!body.trim()}
+        disabled={!canSave}
         style={styles.spacer}
-        icon={<Ionicons name="lock-closed" size={14} color="#02141f" style={iconGlow} />}
+        icon={<Ionicons name="lock-closed" size={14} color="#ffffff" style={iconGlow} />}
       />
       <GlowButton
         label="DISCARD"
@@ -118,13 +159,30 @@ function LettersPanel() {
             body="Write to the person you're becoming. Sealed letters stay here waiting for you."
           />
         )}
-        {data.futureSelfLetters.map((letter) => (
-          <GlowCard key={letter.id} style={styles.entry}>
-            <Text style={styles.entryDate}>SEALED {formatDate(letter.createdAt)}</Text>
-            {!!letter.title && <Text style={styles.entryTitle}>{letter.title}</Text>}
-            <Text style={styles.entryBody}>{letter.body}</Text>
-          </GlowCard>
-        ))}
+        {data.futureSelfLetters.map((letter) => {
+          const locked = isLetterLocked(letter);
+          return (
+            <GlowCard key={letter.id} style={styles.entry}>
+              <View style={styles.entryHeaderRow}>
+                <Ionicons
+                  name={locked ? 'lock-closed' : 'lock-open-outline'}
+                  size={16}
+                  color={locked ? colors.textMuted : colors.accentTeal}
+                  style={iconGlow}
+                />
+                <Text style={[styles.statusLabel, !locked && { color: colors.accentTeal }]}>
+                  {locked ? `LOCKED UNTIL ${letter.unlockDate}` : 'SEALED ' + formatDate(letter.createdAt)}
+                </Text>
+              </View>
+              {!!letter.title && <Text style={styles.entryTitle}>{letter.title}</Text>}
+              {locked ? (
+                <Text style={styles.entryBody}>You'll be able to read this back on {letter.unlockDate}.</Text>
+              ) : (
+                <Text style={styles.entryBody}>{letter.body}</Text>
+              )}
+            </GlowCard>
+          );
+        })}
       </View>
     </>
   );
@@ -140,7 +198,7 @@ function VideoPanel() {
     <>
       <GlowButton
         label="RECORD A VIDEO MESSAGE"
-        icon={<Ionicons name="videocam" size={16} color="#02141f" style={iconGlow} />}
+        icon={<Ionicons name="videocam" size={16} color="#ffffff" style={iconGlow} />}
         onPress={() => router.push('/diary/future-self-video/new')}
       />
 
@@ -183,7 +241,7 @@ function VideoPanel() {
               {completed ? (
                 <GlowButton
                   label="WATCH"
-                  icon={<Ionicons name="play" size={14} color="#02141f" />}
+                  icon={<Ionicons name="play" size={14} color="#ffffff" />}
                   onPress={() => router.push({ pathname: '/diary/future-self-video/[id]', params: { id: v.id } })}
                 />
               ) : unlocked ? (
@@ -210,8 +268,17 @@ export default function FutureSelf() {
   return (
     <HudScreen>
       <StackHeader title="FUTURE SELF" />
-      <ModeToggle mode={mode} onChange={setMode} />
-      {mode === 'letters' ? <LettersPanel /> : <VideoPanel />}
+      {hasAlterXtra() ? (
+        <>
+          <ModeToggle mode={mode} onChange={setMode} />
+          {mode === 'letters' ? <LettersPanel /> : <VideoPanel />}
+        </>
+      ) : (
+        <XtraLockedCard
+          title="Future Self"
+          body="Seal letters and record video messages to the person you're becoming — locked until the date you choose, or until you've shown up enough times to earn them."
+        />
+      )}
     </HudScreen>
   );
 }
@@ -246,6 +313,13 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   spacer: {
     marginTop: 6,
+  },
+  hint: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: -6,
   },
   discardButton: {
     borderColor: colors.danger,
