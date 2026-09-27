@@ -7,7 +7,7 @@ import { useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
 const MASCOT = require('../../assets/coming-soon-mascot.png');
-const MASCOT_ASPECT = 865 / 490;
+const MASCOT_ASPECT = 700 / 380;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const FLY_MS = 4200;
 const BOB_MS = 900;
@@ -61,7 +61,14 @@ export default function Reveal() {
           </View>
         </Animated.View>
       </View>
-      <Image source={MASCOT} style={styles.mascot} resizeMode="contain" />
+      <View style={styles.mascotArea}>
+        <Image source={MASCOT} style={styles.mascot} resizeMode="contain" />
+        {/* Real text, not baked into the image — same LCD-Bold wordmark
+            style as the ALTER X logo itself (see typography.ts), so it
+            matches the brand and carries no font-licensing risk: it's the
+            one already cleared for exactly this kind of use. */}
+        <Text style={styles.comingSoon}>COMING SOON</Text>
+      </View>
     </HudScreen>
   );
 }
@@ -79,10 +86,31 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     alignItems: 'center',
     overflow: 'hidden',
   },
+  // Even split with flightArea, not "whatever's left after the plane zone" —
+  // that's what previously squeezed the mascot down to a sliver pinned to
+  // the bottom edge, with most of the screen reading as empty black above it.
+  mascotArea: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  // Bleeds past HudScreen's 20pt side padding to the full screen width —
+  // resizeMode="contain" caps the visible content at whatever width it's
+  // given (it can't grow into unused vertical space), so reclaiming that
+  // padding is what actually makes the figures bigger, not a taller box.
   mascot: {
-    width: 170,
+    width: SCREEN_WIDTH,
     aspectRatio: MASCOT_ASPECT,
-    marginBottom: 16,
+    marginHorizontal: -20,
+  },
+  comingSoon: {
+    fontFamily: typography.wordmark.fontFamily,
+    fontSize: 26,
+    letterSpacing: 6,
+    color: colors.textPrimary,
+    ...glowShadow,
   },
   rig: {
     flexDirection: 'row',
