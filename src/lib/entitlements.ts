@@ -20,6 +20,7 @@ export function hasAlterXtra(): boolean {
 // Free-plan content limits — Alter-Xtra removes every one of these entirely.
 export const FREE_HABIT_LIMIT = 4;
 export const FREE_GOAL_LIMIT = 3;
+export const FREE_LIMITED_BELIEFS_LIMIT = 2;
 
 export function habitLimitReached(habitCount: number): boolean {
   return !hasAlterXtra() && habitCount >= FREE_HABIT_LIMIT;
@@ -27,6 +28,10 @@ export function habitLimitReached(habitCount: number): boolean {
 
 export function goalLimitReached(goalCount: number): boolean {
   return !hasAlterXtra() && goalCount >= FREE_GOAL_LIMIT;
+}
+
+export function limitedBeliefsLimitReached(limitedBeliefsCount: number): boolean {
+  return !hasAlterXtra() && limitedBeliefsCount >= FREE_LIMITED_BELIEFS_LIMIT;
 }
 
 // Blue is the app default and Navy its closest dark neighbor — the two
