@@ -42,7 +42,10 @@ export default function Loading() {
         <Text style={styles.bannerText}>ALTERXTRA IS COMING SOON</Text>
       </Animated.View>
       <View style={styles.center}>
-        <IdentityMarkRing size={110} style={styles.mark} />
+        {/* Always the mystery mark here, regardless of the icon the user
+            actually picked — this screen is about the reprogramming-in-
+            progress moment, not confirming their choice. */}
+        <IdentityMarkRing size={110} style={styles.mark} icon="mystery" />
         <View style={styles.barTrack}>
           <Animated.View style={[styles.barFill, { width }]} />
         </View>
