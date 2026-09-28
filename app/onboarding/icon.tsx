@@ -35,17 +35,27 @@ const OPTIONS: AppIconChoice[][] = [
 // not a bare "?" character standing in for one.
 const GLYPH_WIDTH = 118;
 const ICON_CHOICE_MARKS = {
-  male: { source: require('../../assets/icon-choice-male.png') },
-  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png') },
-  female: { source: require('../../assets/icon-choice-female.png') },
-  'female-curly': { source: require('../../assets/icon-choice-female-curly.png') },
-  mystery: { source: require('../../assets/identity-mark-mystery.png') },
+  male: { source: require('../../assets/icon-choice-male.png'), tint: false },
+  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), tint: false },
+  female: { source: require('../../assets/icon-choice-female.png'), tint: false },
+  'female-curly': { source: require('../../assets/icon-choice-female-curly.png'), tint: false },
+  // Unlike the 4 real photos (already colored/glowing), this is a plain white
+  // line glyph — needs the theme's glow tint to read as the same blue neon
+  // as the rest of the row instead of standing out as a white outlier.
+  mystery: { source: require('../../assets/identity-mark-mystery.png'), tint: true },
 } as const;
 
 function IconGlyph({ option }: { option: AppIconChoice }) {
+  const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { source } = ICON_CHOICE_MARKS[option];
-  return <Image source={source} style={styles.glyphImage} resizeMode="contain" />;
+  const { source, tint } = ICON_CHOICE_MARKS[option];
+  return (
+    <Image
+      source={source}
+      style={[styles.glyphImage, tint ? { tintColor: colors.glow } : null]}
+      resizeMode="contain"
+    />
+  );
 }
 
 export default function ChooseIcon() {
