@@ -34,6 +34,12 @@ const OPTIONS: AppIconChoice[][] = [
 // mystery icon appears (Settings, Identities) — a real icon of its own,
 // not a bare "?" character standing in for one.
 const GLYPH_WIDTH = 118;
+// The mystery asset is a tall, narrow glyph (290x480), not a 1:1 square like
+// the photo avatars — boxing it at GLYPH_WIDTH's fixed 118x118 left it
+// visibly smaller than the reference (which fills most of mysteryBox's
+// height). Sized to nearly fill mysteryBox (132x169) instead.
+const MYSTERY_GLYPH_WIDTH = 100;
+const MYSTERY_GLYPH_HEIGHT = 162;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../../assets/icon-choice-male.png'), tint: false },
   'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), tint: false },
@@ -52,7 +58,10 @@ function IconGlyph({ option }: { option: AppIconChoice }) {
   return (
     <Image
       source={source}
-      style={[styles.glyphImage, tint ? { tintColor: colors.glow } : null]}
+      style={[
+        option === 'mystery' ? styles.mysteryGlyphImage : styles.glyphImage,
+        tint ? { tintColor: colors.glow } : null,
+      ]}
       resizeMode="contain"
     />
   );
@@ -206,6 +215,10 @@ const makeStyles = ({ colors }: AppTheme) =>
   glyphImage: {
     width: GLYPH_WIDTH,
     height: GLYPH_WIDTH,
+  },
+  mysteryGlyphImage: {
+    width: MYSTERY_GLYPH_WIDTH,
+    height: MYSTERY_GLYPH_HEIGHT,
   },
   footer: {
     marginTop: 4,
