@@ -21,25 +21,25 @@ const OPTIONS: AppIconChoice[][] = [
   ['female-curly', 'female'],
 ];
 
+// Mystery reuses the same identity-mark asset shown everywhere else the
+// mystery icon appears (Settings, Identities, onboarding) — a real icon of
+// its own, not a bare "?" character standing in for one.
 const GLYPH_WIDTH = 118;
 const ICON_CHOICE_MARKS = {
   male: { source: require('../assets/icon-choice-male.png') },
   'male-mohawk': { source: require('../assets/icon-choice-male-mohawk.png') },
   female: { source: require('../assets/icon-choice-female.png') },
   'female-curly': { source: require('../assets/icon-choice-female-curly.png') },
+  mystery: { source: require('../assets/identity-mark-mystery.png') },
 } as const;
 
-function IconGlyph({ option, tint }: { option: AppIconChoice; tint: string }) {
+function IconGlyph({ option }: { option: AppIconChoice }) {
   const styles = useThemedStyles(makeStyles);
-  if (option === 'mystery') {
-    return <Text style={[styles.mysteryGlyph, { color: tint, textShadowColor: tint }]}>?</Text>;
-  }
   const { source } = ICON_CHOICE_MARKS[option];
   return <Image source={source} style={styles.glyphImage} resizeMode="contain" />;
 }
 
 export default function ChangeIcon() {
-  const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { data, setIdentity } = useAppData();
@@ -60,7 +60,6 @@ export default function ChangeIcon() {
           <View key={i} style={styles.row}>
             {rowOptions.map((opt) => {
               const isSelected = selected === opt;
-              const tint = isSelected ? colors.glowStrong : colors.glow;
               return (
                 <Pressable
                   key={opt}
@@ -73,7 +72,7 @@ export default function ChangeIcon() {
                   accessibilityLabel={`${opt} icon`}
                   accessibilityState={{ selected: isSelected }}
                 >
-                  <IconGlyph option={opt} tint={tint} />
+                  <IconGlyph option={opt} />
                 </Pressable>
               );
             })}
@@ -92,7 +91,7 @@ export default function ChangeIcon() {
   );
 }
 
-const makeStyles = ({ colors, typography, glowShadow }: AppTheme) =>
+const makeStyles = ({ colors }: AppTheme) =>
   StyleSheet.create({
   screen: {
     gap: 10,
@@ -140,12 +139,6 @@ const makeStyles = ({ colors, typography, glowShadow }: AppTheme) =>
   glyphImage: {
     width: GLYPH_WIDTH,
     height: GLYPH_WIDTH,
-  },
-  mysteryGlyph: {
-    fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 74,
-    ...glowShadow,
-    textShadowRadius: 16,
   },
   save: {
     marginTop: 12,
