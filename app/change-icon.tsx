@@ -159,9 +159,21 @@ const makeStyles = ({ colors }: AppTheme) =>
     width: GLYPH_WIDTH,
     height: GLYPH_WIDTH,
   },
+  // The 4 photo avatars have their glow baked into the PNG itself; this
+  // glyph is a plain tinted line, so without its own glow it reads as a
+  // flat solid stroke instead of the soft neon-tube bloom the reference
+  // shows around the line. react-native-web's Image specifically converts
+  // shadowColor/shadowOffset/shadowRadius into a CSS filter:drop-shadow()
+  // applied to its real (background-image) rendering layer — not the
+  // hidden a11y <img> element, which is why inspecting boxShadow on that
+  // element showed "none" even though the glow was working.
   mysteryGlyphImage: {
     width: MYSTERY_GLYPH_WIDTH,
     height: MYSTERY_GLYPH_HEIGHT,
+    shadowColor: colors.glow,
+    shadowOpacity: 0.9,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 0 },
   },
   save: {
     marginTop: 12,
