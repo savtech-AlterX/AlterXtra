@@ -32,12 +32,9 @@ const OPTIONS: AppIconChoice[][] = [
 const GLYPH_WIDTH = 118;
 
 // Sourced from the same markSource() every other identity-mark spot uses
-// (home hero, lock screen, Identities list) — the 4 real photos already come
-// pre-colored so tint is a no-op for them, but 'mystery' is a transparent
-// line-art glyph that only reads as "the same blue mark" once it's tinted
-// and given the matching glow; both come straight from markSource()'s own
-// `tint` flag rather than being decided per-screen, which is what let this
-// card drift to a bare white question mark before.
+// (home hero, lock screen, Identities list), instead of a copy of the asset
+// list kept just for this screen — that duplication is what let 'mystery'
+// drift out of sync with the real glow art shown everywhere else.
 function IconGlyph({ option }: { option: AppIconChoice }) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
@@ -46,10 +43,7 @@ function IconGlyph({ option }: { option: AppIconChoice }) {
     <Image
       source={source}
       resizeMode="contain"
-      style={[
-        styles.glyphImage,
-        tint ? ({ tintColor: colors.glow, boxShadow: `0 0 26px ${colors.glow}` } as ImageStyle) : null,
-      ]}
+      style={[styles.glyphImage, tint ? ({ tintColor: colors.glow } as ImageStyle) : null]}
     />
   );
 }

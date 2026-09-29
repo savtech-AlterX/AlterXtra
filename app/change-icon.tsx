@@ -35,10 +35,7 @@ function IconGlyph({ option }: { option: AppIconChoice }) {
     <Image
       source={source}
       resizeMode="contain"
-      style={[
-        styles.glyphImage,
-        tint ? ({ tintColor: colors.glow, boxShadow: `0 0 26px ${colors.glow}` } as ImageStyle) : null,
-      ]}
+      style={[styles.glyphImage, tint ? ({ tintColor: colors.glow } as ImageStyle) : null]}
     />
   );
 }

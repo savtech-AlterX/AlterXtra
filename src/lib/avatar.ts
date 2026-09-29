@@ -4,14 +4,14 @@ import { AppIconChoice } from '../store/types';
 // icon choice — square, self-contained circular glow art, not tintable line
 // work like the previous set. 'mystery' keeps its abstract "?" glyph.
 const MARKS = {
-  // The 4 real photos are already fully colored/glowing — tint would just
-  // paint the whole opaque square solid blue, so only 'mystery' (a
-  // transparent-background line glyph) opts into it.
+  // All 5 marks, including 'mystery', are now real pre-rendered glow art —
+  // tint would flatten their actual color/blur gradient to one flat color,
+  // so none of them opt into it.
   male: { source: require('../../assets/icon-choice-male.png'), aspect: 1, tint: false },
   'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png'), aspect: 1, tint: false },
   female: { source: require('../../assets/icon-choice-female.png'), aspect: 1, tint: false },
   'female-curly': { source: require('../../assets/icon-choice-female-curly.png'), aspect: 1, tint: false },
-  mystery: { source: require('../../assets/identity-mark-mystery.png'), aspect: 290 / 480, tint: true },
+  mystery: { source: require('../../assets/identity-mark-mystery.png'), aspect: 193 / 302, tint: false },
 } as const;
 
 const WORDMARK = require('../../assets/wordmark.png');

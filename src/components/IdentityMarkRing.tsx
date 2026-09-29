@@ -36,10 +36,7 @@ export function IdentityMarkRing({ size = 130, style, icon }: Props) {
       <Image
         source={source}
         resizeMode="contain"
-        style={[
-          { width: size, height: size / aspect },
-          tint ? ({ tintColor: colors.glow, boxShadow: `0 0 ${Math.round(size * 0.2)}px ${colors.glow}` } as ImageStyle) : null,
-        ]}
+        style={[{ width: size, height: size / aspect }, tint ? ({ tintColor: colors.glow } as ImageStyle) : null]}
       />
     </View>
   );
