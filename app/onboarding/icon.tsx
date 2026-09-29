@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageStyle, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { HudScreen } from '../../src/components/HudScreen';
+import { markSource } from '../../src/lib/avatar';
 import { useAppData } from '../../src/store/AppDataContext';
 import { AppIconChoice } from '../../src/store/types';
 import { fonts } from '../../src/theme/typography';
@@ -28,24 +29,29 @@ const OPTIONS: AppIconChoice[][] = [
   ['female-curly', 'female'],
 ];
 
-// Real photo-based avatars — square, already-colored/glowing renders, not
-// tintable line work, so no tintColor here (unlike the mystery glyph below).
-// Mystery reuses the same identity-mark asset shown everywhere else the
-// mystery icon appears (Settings, Identities) — a real icon of its own,
-// not a bare "?" character standing in for one.
 const GLYPH_WIDTH = 118;
-const ICON_CHOICE_MARKS = {
-  male: { source: require('../../assets/icon-choice-male.png') },
-  'male-mohawk': { source: require('../../assets/icon-choice-male-mohawk.png') },
-  female: { source: require('../../assets/icon-choice-female.png') },
-  'female-curly': { source: require('../../assets/icon-choice-female-curly.png') },
-  mystery: { source: require('../../assets/identity-mark-mystery.png') },
-} as const;
 
+// Sourced from the same markSource() every other identity-mark spot uses
+// (home hero, lock screen, Identities list) — the 4 real photos already come
+// pre-colored so tint is a no-op for them, but 'mystery' is a transparent
+// line-art glyph that only reads as "the same blue mark" once it's tinted
+// and given the matching glow; both come straight from markSource()'s own
+// `tint` flag rather than being decided per-screen, which is what let this
+// card drift to a bare white question mark before.
 function IconGlyph({ option }: { option: AppIconChoice }) {
+  const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { source } = ICON_CHOICE_MARKS[option];
-  return <Image source={source} style={styles.glyphImage} resizeMode="contain" />;
+  const { source, tint } = markSource(option);
+  return (
+    <Image
+      source={source}
+      resizeMode="contain"
+      style={[
+        styles.glyphImage,
+        tint ? ({ tintColor: colors.glow, boxShadow: `0 0 26px ${colors.glow}` } as ImageStyle) : null,
+      ]}
+    />
+  );
 }
 
 export default function ChooseIcon() {

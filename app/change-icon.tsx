@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageStyle, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
 import { HudScreen } from '../src/components/HudScreen';
 import { StackHeader } from '../src/components/StackHeader';
+import { markSource } from '../src/lib/avatar';
 import { useAppData } from '../src/store/AppDataContext';
 import { AppIconChoice } from '../src/store/types';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
@@ -21,22 +22,25 @@ const OPTIONS: AppIconChoice[][] = [
   ['female-curly', 'female'],
 ];
 
-// Mystery reuses the same identity-mark asset shown everywhere else the
-// mystery icon appears (Settings, Identities, onboarding) — a real icon of
-// its own, not a bare "?" character standing in for one.
 const GLYPH_WIDTH = 118;
-const ICON_CHOICE_MARKS = {
-  male: { source: require('../assets/icon-choice-male.png') },
-  'male-mohawk': { source: require('../assets/icon-choice-male-mohawk.png') },
-  female: { source: require('../assets/icon-choice-female.png') },
-  'female-curly': { source: require('../assets/icon-choice-female-curly.png') },
-  mystery: { source: require('../assets/identity-mark-mystery.png') },
-} as const;
 
+// Sourced from markSource() — same asset + tint rule used everywhere else
+// the identity mark appears, so 'mystery' can't drift back to a plain white
+// question mark on just this screen again.
 function IconGlyph({ option }: { option: AppIconChoice }) {
+  const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { source } = ICON_CHOICE_MARKS[option];
-  return <Image source={source} style={styles.glyphImage} resizeMode="contain" />;
+  const { source, tint } = markSource(option);
+  return (
+    <Image
+      source={source}
+      resizeMode="contain"
+      style={[
+        styles.glyphImage,
+        tint ? ({ tintColor: colors.glow, boxShadow: `0 0 26px ${colors.glow}` } as ImageStyle) : null,
+      ]}
+    />
+  );
 }
 
 export default function ChangeIcon() {
