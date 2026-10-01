@@ -9,7 +9,7 @@
     "scheme": "alterxtra",
     "backgroundColor": "#000000",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.alterxtra.app",
       "appleTeamId": "TWG36YAH5A",
       "entitlements": {},
