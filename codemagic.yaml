@@ -3,13 +3,36 @@ workflows:
     name: AlterX iOS Build
     max_build_duration: 120
     instance_type: mac_mini_m2
+
     environment:
       xcode: latest
       cocoapods: default
+
     scripts:
       - name: Install dependencies
-        script: npm install
+        script: |
+          npm install
+
       - name: Generate iOS project
-        script: npx expo prebuild --platform ios
+        script: |
+          npx expo prebuild --platform ios --clean
+
       - name: Install CocoaPods
-        script: cd ios && pod install
+        script: |
+          cd ios
+          pod install
+
+      - name: Build iOS
+        script: |
+          cd ios
+          xcodebuild \
+            -workspace *.xcworkspace \
+            -scheme AlterXtra \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+    artifacts:
+      - ios/build/**/*
