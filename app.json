@@ -32,9 +32,7 @@
       "bundler": "metro",
       "output": "static"
     },
-    "experiments": {
-      "baseUrl": "/AlterXtra"
-    },
+  
     "plugins": [
       "expo-router",
       "expo-font",
