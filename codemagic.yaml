@@ -8,7 +8,7 @@ workflows:
      ios_signing:
        distribution_type: app_store
        bundle_identifier: com.alterxtra.app
-      vars:
+             vars:
         XCODE_WORKSPACE: "AlterXtra.xcworkspace"
         XCODE_SCHEME: "AlterXtra"
       xcode: latest
