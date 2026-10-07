@@ -5,12 +5,9 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      ios_signing:
-        provisioning_profiles:
-          - "Savage "
-          - "Savage widget "
-        certificates:
-          - "alterx_distribution"
+     ios_signing:
+       distribution_type: app_store
+       bundle_identifier: com.alterxtra.app
       vars:
         XCODE_WORKSPACE: "AlterXtra.xcworkspace"
         XCODE_SCHEME: "AlterXtra"
