@@ -5,6 +5,15 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
+      ios_signing:
+        provisioning_profiles:
+          - "Savage"
+          - "Savage widget"
+        certificates:
+          - "alterx_distribution"
+      vars:
+        XCODE_WORKSPACE: "AlterXtra.xcworkspace"
+        XCODE_SCHEME: "AlterXtra"
       xcode: latest
       cocoapods: default
 
@@ -22,17 +31,16 @@ workflows:
           cd ios
           pod install
 
-      - name: Build iOS
+      - name: Set up code signing
         script: |
-          cd ios
-          xcodebuild \
-            -workspace *.xcworkspace \
-            -scheme AlterXtra \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination "generic/platform=iOS" \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+          xcode-project use-profiles --project ios/*.xcodeproj
+
+      - name: Build signed IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace "$CM_BUILD_DIR/ios/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
-      - ios/build/**/*
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
