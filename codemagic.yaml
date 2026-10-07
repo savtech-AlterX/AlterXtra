@@ -1,7 +1,14 @@
 workflows:
   ios-build:
     name: AlterX iOS Build
+    
+
+    integrations:
+
+      app_store_connect: Codemagicc
+
     max_build_duration: 120
+    
     instance_type: mac_mini_m2
 
     environment:
@@ -41,3 +48,6 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
