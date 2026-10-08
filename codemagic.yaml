@@ -11,7 +11,9 @@ workflows:
     
     instance_type: mac_mini_m2
 
-    environment:
+    environment: 
+      groups:
+        - apple_upload
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.alterxtra.app
@@ -45,9 +47,16 @@ workflows:
             --workspace "$CM_BUILD_DIR/ios/$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"
 
+      - name: Upload to App Store Connect
+        script: |
+          unset APP_STORE_CONNECT_ISSUER_ID
+          unset APP_STORE_CONNECT_KEY_IDENTIFIER
+          unset APP_STORE_CONNECT_PRIVATE_KEY
+          app-store-connect publish \
+            --path "build/ios/ipa/*.ipa" \
+            --apple-id "$APPLE_ID_EMAIL" \
+            --password @env:APP_SPECIFIC_PASSWORD
+
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-    publishing:
-      app_store_connect:
-        auth: integration
