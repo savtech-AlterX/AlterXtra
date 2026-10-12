@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { isThemeFree } from '../lib/entitlements';
+import { isThemeFree, useAlterXtra } from '../lib/entitlements';
 import { palettes, ThemeName } from '../theme/colors';
 import { useThemeControls } from '../theme/ThemeContext';
 import { useAppTheme, useThemedStyles, type AppTheme } from '../theme/useAppTheme';
@@ -28,6 +28,7 @@ const THEMES: { key: ThemeName; label: string }[] = [
  * so this reads as part of the interface, not a decoration bolted onto it.
  */
 export function ThemePicker() {
+  useAlterXtra();
   const styles = useThemedStyles(makeStyles);
   const { theme, setTheme } = useThemeControls();
   const router = useRouter();
@@ -45,7 +46,7 @@ export function ThemePicker() {
             style={[styles.panel, { borderColor: selected ? p.glowStrong : p.border }]}
             accessibilityRole="radio"
             accessibilityState={{ checked: selected, disabled: !free }}
-            accessibilityLabel={free ? `${label} theme` : `${label} theme. Coming soon with Alter-Xtra.`}
+            accessibilityLabel={free ? `${label} theme` : `${label} theme. Unlock with Alter-Xtra.`}
           >
             <View pointerEvents="none" style={[styles.bracket, styles.bracketTL, { borderColor: p.glowStrong }]} />
             <View pointerEvents="none" style={[styles.bracket, styles.bracketBR, { borderColor: p.glowStrong }]} />

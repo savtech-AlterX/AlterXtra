@@ -9,7 +9,7 @@ import { HudScreen } from '../../src/components/HudScreen';
 import { HudTextInput } from '../../src/components/HudTextInput';
 import { StackHeader } from '../../src/components/StackHeader';
 import { XtraLockedCard } from '../../src/components/XtraLockedCard';
-import { hasAlterXtra } from '../../src/lib/entitlements';
+import { useAlterXtra } from '../../src/lib/entitlements';
 import { isFutureSelfUnlocked, logEntriesSince } from '../../src/lib/futureSelfUnlock';
 import { useAppData } from '../../src/store/AppDataContext';
 import { FutureSelfVideo, LogEntry } from '../../src/store/types';
@@ -263,12 +263,13 @@ function VideoPanel() {
 }
 
 export default function FutureSelf() {
+  const owned = useAlterXtra();
   const [mode, setMode] = useState<Mode>('letters');
 
   return (
     <HudScreen>
       <StackHeader title="FUTURE SELF" />
-      {hasAlterXtra() ? (
+      {owned ? (
         <>
           <ModeToggle mode={mode} onChange={setMode} />
           {mode === 'letters' ? <LettersPanel /> : <VideoPanel />}

@@ -23,11 +23,11 @@ export function XtraLockedCard({ title, body }: Props) {
       style={styles.card}
       onPress={() => router.push('/alter-xtra')}
       accessibilityRole="button"
-      accessibilityLabel={`${title}. Coming soon with Alter-Xtra.`}
+      accessibilityLabel={`${title}. Unlock with Alter-Xtra.`}
     >
       <View style={styles.badge}>
         <Ionicons name="lock-closed" size={11} color={colors.glow} style={iconGlow} />
-        <Text style={styles.badgeText}>COMING SOON &middot; ALTER-XTRA</Text>
+        <Text style={styles.badgeText}>UNLOCK WITH ALTER-XTRA</Text>
       </View>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.body}>{body}</Text>

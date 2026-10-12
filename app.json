@@ -15,7 +15,8 @@
       "entitlements": {},
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "9"
     },
     "android": {
       "package": "com.alterxtra.app",
@@ -32,7 +33,6 @@
       "bundler": "metro",
       "output": "static"
     },
-  
     "plugins": [
       "expo-router",
       "expo-font",
@@ -51,7 +51,6 @@
           "faceIDPermission": "AlterX uses Face ID to keep your identity data private if you enable App Lock."
         }
       ],
-      
       [
         "expo-notifications",
         {
@@ -81,7 +80,9 @@
         }
       ],
       "./plugins/withAndroidWidgetSdkVersions",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-iap",
+      "./plugins/withInAppPurchase"
     ],
     "extra": {
       "router": {},
@@ -94,9 +95,7 @@
       }
     },
     "owner": "techsavs-team",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0-premium-1",
     "updates": {
       "url": "https://u.expo.dev/38ed9e85-27b8-48c6-afcd-f95aa83eabf8"
     }

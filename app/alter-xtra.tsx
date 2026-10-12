@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import React, { useSyncExternalStore } from 'react';
+import { Image, Platform, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
 import { StackHeader } from '../src/components/StackHeader';
 import { ThemePicker } from '../src/components/ThemePicker';
-import { hasAlterXtra } from '../src/lib/entitlements';
+import { useAlterXtra } from '../src/lib/entitlements';
+import { purchases } from '../src/lib/purchases';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
 import type { AppTheme } from '../src/theme/useAppTheme';
 
@@ -71,7 +72,8 @@ const BENEFITS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: str
 export default function AlterXtra() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const owned = hasAlterXtra();
+  const owned = useAlterXtra();
+  const store = useSyncExternalStore(purchases.subscribe, purchases.getSnapshot, purchases.getSnapshot);
 
   const themesBlock = (
     <View key="themes">
@@ -105,7 +107,7 @@ export default function AlterXtra() {
           <Text style={styles.tagline}>You own Alter-Xtra. Every perk below is already yours.</Text>
         ) : (
           <>
-            <Text style={styles.price}>$17.99 <Text style={styles.priceUnit}>one-time unlock</Text></Text>
+            <Text style={styles.price}>{store.price ?? (Platform.OS === 'ios' ? (store.message ? 'Price unavailable' : 'Loading price…') : 'Available on iPhone')} <Text style={styles.priceUnit}>one-time unlock</Text></Text>
             <Text style={styles.tagline}>
               Buy it once and keep it. No subscription, no recurring fees.
             </Text>
@@ -128,14 +130,23 @@ export default function AlterXtra() {
         </GlowCard>
       ))}
 
-      {!owned && (
-        // Deliberately not a button. A live-looking purchase control with no
-        // purchase behind it is the single thing that would fail App Store
-        // review, so there is nothing to tap until in-app purchases are wired.
-        <Text style={[styles.disclaimer, styles.spacer]}>
-          Alter-Xtra isn't on sale yet — coming soon.
-        </Text>
+      {!owned && Platform.OS === 'ios' && (
+        <GlowButton
+          label={store.busy ? 'PLEASE WAIT…' : store.price ? `UNLOCK ALTER-XTRA · ${store.price}` : 'PURCHASE UNAVAILABLE'}
+          disabled={!store.connected || !store.price || store.busy}
+          onPress={() => { void purchases.buy(); }}
+        />
       )}
+      {Platform.OS === 'ios' && (
+        <GlowButton label="RESTORE PURCHASES" variant="outline"
+          disabled={!store.connected || store.busy}
+          onPress={() => { void purchases.restore(); }} />
+      )}
+      {store.message && <Text accessibilityRole="alert" style={styles.disclaimer}>{store.message}</Text>}
+      {Platform.OS === 'ios' && !store.busy && (!store.connected || !store.price) && (
+        <GlowButton label="RETRY APP STORE" variant="outline" onPress={() => { void purchases.retry(); }} />
+      )}
+
     </HudScreen>
   );
 }

@@ -172,6 +172,7 @@ export default function Settings() {
         onPress={() => router.push('/change-icon')}
       />
 
+      {__DEV__ && (
       <GlowCard style={styles.lockCard}>
         <View style={styles.lockText}>
           <Text style={typography.label}>ALTER-XTRA PREVIEW</Text>
@@ -187,6 +188,7 @@ export default function Settings() {
           thumbColor={colors.textPrimary}
         />
       </GlowCard>
+      )}
 
       {Platform.OS !== 'web' && (
         <GlowCard style={styles.lockCard}>

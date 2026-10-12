@@ -10,7 +10,7 @@ import { CloseToHome } from '../src/components/CloseToHome';
 import { MilestoneCelebration } from '../src/components/MilestoneCelebration';
 import { Sparkline } from '../src/components/Sparkline';
 import { XtraLockedCard } from '../src/components/XtraLockedCard';
-import { hasAlterXtra } from '../src/lib/entitlements';
+import { useAlterXtra } from '../src/lib/entitlements';
 import { buildShareReport, computeGrowthStats, formatDurationShort, GrowthStats, HeatmapCell, MONTH_ABBR } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
 import { useSettings } from '../src/store/SettingsContext';
@@ -380,6 +380,7 @@ function InsightsCard({ insights }: { insights: string[] }) {
 }
 
 export default function Growth() {
+  const owned = useAlterXtra();
   const router = useRouter();
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
@@ -424,7 +425,7 @@ export default function Growth() {
       <GlowCard strong style={styles.hero}>
         <Text style={styles.heroValue}>{stats.activeStreakDays}</Text>
         <Text style={styles.heroLabel}>DAY ACTIVE STREAK</Text>
-        {hasAlterXtra() && stats.bestStreakDays > stats.activeStreakDays && (
+        {owned && stats.bestStreakDays > stats.activeStreakDays && (
           <Text style={styles.heroBest}>Personal best: {stats.bestStreakDays} days — keep going to beat it</Text>
         )}
         {stats.daysSinceStart !== null && (
@@ -439,7 +440,7 @@ export default function Growth() {
         onViewHistory={() => router.push('/calendar')}
       />
 
-      {hasAlterXtra() ? (
+      {owned ? (
         <AppActivityCard activity={stats.appActivity} />
       ) : (
         <XtraLockedCard
@@ -485,7 +486,7 @@ export default function Growth() {
             </GlowCard>
           )}
 
-          {hasAlterXtra() ? (
+          {owned ? (
             <AlignmentTrend stats={stats} />
           ) : (
             <>
@@ -497,7 +498,7 @@ export default function Growth() {
             </>
           )}
 
-          {hasAlterXtra() ? (
+          {owned ? (
             <MomentumComparison stats={stats} />
           ) : (
             <XtraLockedCard
@@ -506,7 +507,7 @@ export default function Growth() {
             />
           )}
 
-          {hasAlterXtra() ? (
+          {owned ? (
             <InsightsCard insights={stats.insights} />
           ) : (
             <XtraLockedCard
@@ -515,7 +516,7 @@ export default function Growth() {
             />
           )}
 
-          {hasAlterXtra() ? (
+          {owned ? (
             <ActivityHeatmap weeks={stats.activityHeatmap} />
           ) : (
             <XtraLockedCard
@@ -524,7 +525,7 @@ export default function Growth() {
             />
           )}
 
-          {hasAlterXtra() && stats.journalThenNow && (
+          {owned && stats.journalThenNow && (
             <GlowCard style={styles.card}>
               <Text style={styles.label}>THEN VS NOW</Text>
               <View style={styles.thenNowBlock}>
@@ -546,7 +547,7 @@ export default function Growth() {
             </GlowCard>
           )}
 
-          {hasAlterXtra() ? (
+          {owned ? (
             <GlowButton
               label="SHARE PROGRESS"
               variant="outline"

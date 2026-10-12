@@ -14,6 +14,7 @@ import { SaveErrorBanner } from '../src/components/SaveErrorBanner';
 import { WinFlashOverlay } from '../src/components/WinFlashOverlay';
 import { Platform, View } from 'react-native';
 import { WinFlashProvider } from '../src/store/WinFlashContext';
+import { PurchasesBootstrap } from '../src/components/PurchasesBootstrap';
 import { ThemeProvider } from '../src/theme/ThemeContext';
 import { useAppTheme } from '../src/theme/useAppTheme';
 
@@ -23,6 +24,7 @@ function ThemedApp() {
   return (
     <SettingsProvider>
       <AppDataProvider>
+        <PurchasesBootstrap />
         <StatusBar style="light" />
         <AppLockGate>
           <WinFlashProvider>
