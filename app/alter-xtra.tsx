@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useSyncExternalStore } from 'react';
-import { Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../src/components/GlowButton';
 import { GlowCard } from '../src/components/GlowCard';
 import { HudScreen } from '../src/components/HudScreen';
@@ -74,6 +75,7 @@ export default function AlterXtra() {
   const styles = useThemedStyles(makeStyles);
   const owned = useAlterXtra();
   const store = useSyncExternalStore(purchases.subscribe, purchases.getSnapshot, purchases.getSnapshot);
+  const purchaseDisabled = Platform.OS !== 'ios' || !store.connected || !store.price || store.busy;
 
   const themesBlock = (
     <View key="themes">
@@ -92,27 +94,43 @@ export default function AlterXtra() {
       <StackHeader title="ALTER-XTRA" />
 
       <GlowCard strong style={styles.priceCard}>
-        <Text style={styles.eyebrow}>ALTER X</Text>
+        <View style={styles.accessRow}>
+          <View style={styles.accessLine} />
+          <Text style={styles.eyebrow}>LIFETIME ACCESS</Text>
+        </View>
         <Text style={styles.title}>Alter-Xtra</Text>
         {owned ? (
           <Text style={styles.tagline}>You own Alter-Xtra. Every perk below is already yours.</Text>
         ) : (
           <>
-            <Text style={styles.price} accessibilityLabel={store.price ? `Price: ${store.price}, one-time unlock` : undefined}>{store.price ?? (Platform.OS === 'ios' ? (store.message ? 'Price unavailable' : 'Loading price…') : 'Available on iPhone')} <Text style={styles.priceUnit}>one-time unlock</Text></Text>
+            <Text style={[styles.price, !store.price && styles.pricePending]} accessibilityLabel={store.price ? `Price: ${store.price}, one-time unlock` : undefined}>{store.price ?? (Platform.OS === 'ios' ? (store.message ? 'Price unavailable' : 'Loading price…') : 'Available on iPhone')}</Text>
+            <Text style={styles.priceUnit}>ONE PURCHASE. YOURS TO KEEP.</Text>
             <Text style={styles.tagline}>
               Buy it once and keep it. No subscription, no recurring fees.
             </Text>
           </>
         )}
         {!owned && (
-          <GlowButton
-            label={Platform.OS !== 'ios' ? 'AVAILABLE ON IPHONE' : store.busy ? 'PLEASE WAIT…' : 'BUY ALTER-XTRA'}
+          <Pressable
+            accessibilityRole="button"
             accessibilityLabel={store.price ? `Buy Alter-Xtra for ${store.price}, one-time purchase` : 'Buy Alter-Xtra, price unavailable'}
-            backgroundColor="#2455FF"
-            style={styles.purchaseButton}
-            disabled={Platform.OS !== 'ios' || !store.connected || !store.price || store.busy}
+            accessibilityState={{ disabled: purchaseDisabled, busy: store.busy }}
+            style={({ pressed }) => [styles.purchaseButton, purchaseDisabled && styles.purchaseDisabled, pressed && styles.purchasePressed]}
+            disabled={purchaseDisabled}
             onPress={() => { void purchases.buy(); }}
-          />
+          >
+            <LinearGradient
+              colors={['#315FFF', '#2455FF', '#1537B8']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={styles.purchaseSurface}
+            >
+              <View pointerEvents="none" style={styles.purchaseHighlight} />
+              <Text style={styles.purchaseLabel}>
+                {Platform.OS !== 'ios' ? 'AVAILABLE ON IPHONE' : store.busy ? 'PLEASE WAIT…' : 'BUY ALTER-XTRA'}
+              </Text>
+              <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
+            </LinearGradient>
+          </Pressable>
         )}
         {store.message && (
           <Text accessibilityRole="alert" style={styles.storeMessage}>{store.message}</Text>
@@ -122,9 +140,13 @@ export default function AlterXtra() {
             onPress={() => { void purchases.retry(); }} />
         )}
         {Platform.OS === 'ios' && (
-          <GlowButton label="RESTORE PURCHASES" variant="outline"
+          <Pressable accessibilityRole="button" accessibilityLabel="Restore purchases"
+            accessibilityState={{ disabled: !store.connected || store.busy }}
+            style={({ pressed }) => [styles.restoreButton, (pressed || !store.connected || store.busy) && styles.purchaseDisabled]}
             disabled={!store.connected || store.busy}
-            onPress={() => { void purchases.restore(); }} />
+            onPress={() => { void purchases.restore(); }}>
+            <Text style={styles.restoreLabel}>Restore purchases</Text>
+          </Pressable>
         )}
       </GlowCard>
 
@@ -165,30 +187,49 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     borderRadius: 16,
   },
   priceCard: {
-    gap: 4,
+    gap: 8,
+    padding: 24,
+    backgroundColor: '#000000',
+    borderColor: '#2455FF',
+    borderRadius: 20,
+    shadowColor: '#2455FF',
+    shadowOpacity: 0.3,
+    shadowRadius: 22,
+  },
+  accessRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  accessLine: {
+    width: 24,
+    height: 2,
+    backgroundColor: '#2455FF',
   },
   eyebrow: {
     fontFamily: typography.label.fontFamily,
     fontSize: 11,
-    color: colors.glowStrong,
+    color: '#8EA8FF',
     letterSpacing: 2,
   },
   title: {
     fontFamily: typography.cardTitle.fontFamily,
-    fontSize: 22,
+    fontSize: 26,
     color: colors.textPrimary,
     ...glowShadow,
   },
   price: {
     fontFamily: typography.cardTitle.fontFamily,
-    fontSize: 30,
+    fontSize: 40,
     color: colors.textPrimary,
     marginTop: 4,
     ...glowShadow,
   },
   priceUnit: {
     fontFamily: typography.body.fontFamily,
-    fontSize: 14,
+    fontSize: 10,
+    letterSpacing: 1.6,
     lineHeight: 20,
     color: colors.textSecondary,
   },
@@ -246,7 +287,64 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     marginTop: 6,
   },
   purchaseButton: {
-    marginTop: 12,
+    marginTop: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    shadowColor: '#2455FF',
+    shadowOpacity: 0.6,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 10,
+  },
+  purchaseSurface: {
+    minHeight: 76,
+    paddingVertical: 22,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#7895FF',
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  purchaseHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 18,
+    right: 18,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+  },
+  purchaseLabel: {
+    fontFamily: typography.bodyStrong.fontFamily,
+    fontSize: 17,
+    letterSpacing: 1.8,
+    lineHeight: 24,
+    color: '#FFFFFF',
+    flex: 1,
+  },
+  purchaseDisabled: {
+    opacity: 0.65,
+  },
+  purchasePressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  pricePending: {
+    fontSize: 22,
+  },
+  restoreButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restoreLabel: {
+    fontFamily: typography.body.fontFamily,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textDecorationLine: 'underline',
   },
   storeMessage: {
     fontFamily: typography.bodyMuted.fontFamily,
