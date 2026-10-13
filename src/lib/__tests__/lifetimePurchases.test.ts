@@ -108,3 +108,16 @@ it('does not submit a purchase while products are unavailable', async () => {
   expect(api.requestPurchase).not.toHaveBeenCalled();
   expect(store.getSnapshot().price).toBeNull();
 });
+
+it('reloads pricing on retry even when ownership recovery fails', async () => {
+  const { api, store, setOwned } = setup();
+  api.fetchProducts.mockResolvedValueOnce([]);
+  await store.start();
+  api.currentEntitlementIOS.mockRejectedValueOnce(new Error('offline'));
+  await store.retry();
+  expect(api.fetchProducts).toHaveBeenCalledTimes(2);
+  expect(store.getSnapshot().price).toBe('£14.99');
+  await store.buy();
+  expect(api.requestPurchase).toHaveBeenCalledTimes(1);
+  expect(setOwned).not.toHaveBeenCalledWith(true);
+});

@@ -91,7 +91,9 @@ export class LifetimePurchases {
       await this.start();
       return;
     }
-    try { await this.refresh(); await this.loadProduct(); }
+    // An ownership lookup can fail independently of the product catalog.
+    // Still reload pricing so a new customer can retry a purchase.
+    try { await this.refresh().catch(() => {}); await this.loadProduct(); }
     catch { this.update({ message: 'Could not load the App Store. Check your connection and try again.' }); }
   };
   buy = async () => {

@@ -91,6 +91,43 @@ export default function AlterXtra() {
     <HudScreen>
       <StackHeader title="ALTER-XTRA" />
 
+      <GlowCard strong style={styles.priceCard}>
+        <Text style={styles.eyebrow}>ALTER X</Text>
+        <Text style={styles.title}>Alter-Xtra</Text>
+        {owned ? (
+          <Text style={styles.tagline}>You own Alter-Xtra. Every perk below is already yours.</Text>
+        ) : (
+          <>
+            <Text style={styles.price} accessibilityLabel={store.price ? `Price: ${store.price}, one-time unlock` : undefined}>{store.price ?? (Platform.OS === 'ios' ? (store.message ? 'Price unavailable' : 'Loading price…') : 'Available on iPhone')} <Text style={styles.priceUnit}>one-time unlock</Text></Text>
+            <Text style={styles.tagline}>
+              Buy it once and keep it. No subscription, no recurring fees.
+            </Text>
+          </>
+        )}
+        {!owned && (
+          <GlowButton
+            label={Platform.OS !== 'ios' ? 'AVAILABLE ON IPHONE' : store.busy ? 'PLEASE WAIT…' : 'BUY ALTER-XTRA'}
+            accessibilityLabel={store.price ? `Buy Alter-Xtra for ${store.price}, one-time purchase` : 'Buy Alter-Xtra, price unavailable'}
+            backgroundColor="#2455FF"
+            style={styles.purchaseButton}
+            disabled={Platform.OS !== 'ios' || !store.connected || !store.price || store.busy}
+            onPress={() => { void purchases.buy(); }}
+          />
+        )}
+        {store.message && (
+          <Text accessibilityRole="alert" style={styles.storeMessage}>{store.message}</Text>
+        )}
+        {Platform.OS === 'ios' && !store.busy && (!store.connected || !store.price) && (
+          <GlowButton label="RELOAD PRICE" variant="outline"
+            onPress={() => { void purchases.retry(); }} />
+        )}
+        {Platform.OS === 'ios' && (
+          <GlowButton label="RESTORE PURCHASES" variant="outline"
+            disabled={!store.connected || store.busy}
+            onPress={() => { void purchases.restore(); }} />
+        )}
+      </GlowCard>
+
       <Image
         source={require('../assets/alter-xtra/unlimited-identities-banner.jpg')}
         style={styles.banner}
@@ -99,21 +136,6 @@ export default function AlterXtra() {
       />
 
       {themesBlock}
-
-      <GlowCard strong style={styles.priceCard}>
-        <Text style={styles.eyebrow}>ALTER X</Text>
-        <Text style={styles.title}>Alter-Xtra</Text>
-        {owned ? (
-          <Text style={styles.tagline}>You own Alter-Xtra. Every perk below is already yours.</Text>
-        ) : (
-          <>
-            <Text style={styles.price}>{store.price ?? (Platform.OS === 'ios' ? (store.message ? 'Price unavailable' : 'Loading price…') : 'Available on iPhone')} <Text style={styles.priceUnit}>one-time unlock</Text></Text>
-            <Text style={styles.tagline}>
-              Buy it once and keep it. No subscription, no recurring fees.
-            </Text>
-          </>
-        )}
-      </GlowCard>
 
       <Text style={[typography.label, styles.spacer]}>XTRA.BENEFITS</Text>
 
@@ -130,22 +152,6 @@ export default function AlterXtra() {
         </GlowCard>
       ))}
 
-      {!owned && Platform.OS === 'ios' && (
-        <GlowButton
-          label={store.busy ? 'PLEASE WAIT…' : store.price ? `UNLOCK ALTER-XTRA · ${store.price}` : 'PURCHASE UNAVAILABLE'}
-          disabled={!store.connected || !store.price || store.busy}
-          onPress={() => { void purchases.buy(); }}
-        />
-      )}
-      {Platform.OS === 'ios' && (
-        <GlowButton label="RESTORE PURCHASES" variant="outline"
-          disabled={!store.connected || store.busy}
-          onPress={() => { void purchases.restore(); }} />
-      )}
-      {store.message && <Text accessibilityRole="alert" style={styles.disclaimer}>{store.message}</Text>}
-      {Platform.OS === 'ios' && !store.busy && (!store.connected || !store.price) && (
-        <GlowButton label="RETRY APP STORE" variant="outline" onPress={() => { void purchases.retry(); }} />
-      )}
 
     </HudScreen>
   );
@@ -175,7 +181,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   price: {
     fontFamily: typography.cardTitle.fontFamily,
-    fontSize: 22,
+    fontSize: 30,
     color: colors.textPrimary,
     marginTop: 4,
     ...glowShadow,
@@ -239,11 +245,13 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   spacer: {
     marginTop: 6,
   },
-  disclaimer: {
+  purchaseButton: {
+    marginTop: 12,
+  },
+  storeMessage: {
     fontFamily: typography.bodyMuted.fontFamily,
-    fontSize: 11,
-    lineHeight: 16,
-    color: colors.textMuted,
-    textAlign: 'center',
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.textSecondary,
   },
 });
