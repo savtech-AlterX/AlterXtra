@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -26,13 +27,13 @@
   --color-border-dim: var(--border-dim);
   --color-success: var(--success);
   --color-danger: var(--danger);
-  --font-display: var(--font-chakra-petch);
+  --font-display: "Manrope", "Arial", sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-chakra-petch), Arial, Helvetica, sans-serif;
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
 }
 
 .glow-text {
