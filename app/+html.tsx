@@ -33,8 +33,8 @@ export default function WebDocument({ children }: PropsWithChildren) {
       </head>
       <body>
         <aside className="alterx-launch" aria-label="Coming soon">
-          <p><strong>ALTER X · THE FIRST STEP</strong>You don’t have to feel ready. You just have to begin.<span>App Store review in progress.</span></p>
-          <p><strong>ALTER-XTRA · THE NEXT LEVEL</strong>Don’t just set the goal. Become the person who gets there.<span>Premium is on its way.</span></p>
+          <p><strong>ALTER X</strong>Coming to the App Store<span>Currently in review.</span></p>
+          <p><strong>ALTER-XTRA</strong>Premium unlock<span>Coming soon.</span></p>
         </aside>
         {children}
       </body>
