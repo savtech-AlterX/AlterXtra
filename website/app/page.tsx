@@ -40,6 +40,21 @@ export default function Home() {
         </Link>
       </header>
 
+      <aside aria-label="AlterX announcements" className="grid gap-3 sm:grid-cols-2 max-w-5xl w-full mx-auto px-6 pt-2">
+        <section className="relative overflow-hidden border border-[#2457ff]/70 bg-[#05070c] px-5 py-5 sm:px-6">
+          <p className="text-[10px] uppercase tracking-[0.24em] text-[#6f91ff]">ALTER X · THE FIRST STEP</p>
+          <p className="mt-3 font-display text-xl sm:text-2xl leading-tight text-white">You don’t have to feel ready.<br />You just have to begin.</p>
+          <p className="mt-3 text-xs leading-relaxed text-text-secondary">The app is making its way through App Store review.</p>
+          <span aria-hidden="true" className="absolute right-0 top-0 h-full w-px bg-[#2457ff]/70 shadow-[0_0_18px_#2457ff]" />
+        </section>
+        <section className="relative overflow-hidden border border-[#2457ff]/35 bg-black px-5 py-5 sm:px-6">
+          <p className="text-[10px] uppercase tracking-[0.24em] text-[#6f91ff]">ALTER-XTRA · THE NEXT LEVEL</p>
+          <p className="mt-3 font-display text-xl sm:text-2xl leading-tight text-white">Don’t just set the goal.<br />Become the person who gets there.</p>
+          <p className="mt-3 text-xs leading-relaxed text-text-secondary">The premium unlock is on its way.</p>
+          <span aria-hidden="true" className="absolute right-0 top-0 h-full w-px bg-[#2457ff]/40" />
+        </section>
+      </aside>
+
       <main className="flex flex-col gap-24 px-6 pb-24 max-w-5xl w-full mx-auto">
         <section className="flex flex-col items-center text-center gap-6 pt-12">
           <Image src="/icon.png" alt="" width={72} height={72} className="rounded-2xl" />
