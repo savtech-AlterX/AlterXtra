@@ -82,7 +82,7 @@ export default function Home() {
             {MASCOTS.map((mascot, index) => (
               <article
                 key={mascot.image}
-                className="group relative isolate aspect-[3/4] overflow-hidden bg-[#03050b]"
+                className="mascot-panel group relative isolate aspect-[3/4] overflow-hidden bg-[#03050b]"
               >
                 <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(36,87,255,0.15),transparent_65%)]" />
                 <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black via-black/45 to-transparent" />
@@ -92,7 +92,7 @@ export default function Home() {
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-contain object-bottom transition duration-500 group-hover:scale-[1.035]"
                 />
-                <span className="absolute -left-[22%] top-[38%] z-10 w-[145%] -rotate-[18deg] border-y border-[#5b7dff]/90 bg-[#0a1a55]/95 py-2 text-center font-display text-[9px] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_0_24px_rgba(36,87,255,0.25)] sm:py-3 sm:text-[10px] sm:tracking-[0.24em]">
+                <span className="mascot-ribbon absolute -left-[22%] top-[38%] z-10 w-[145%] -rotate-[18deg] border-y border-[#5b7dff]/90 bg-[#071344]/95 py-2 text-center font-display text-[9px] font-semibold uppercase tracking-[0.18em] text-white sm:py-3 sm:text-[10px] sm:tracking-[0.24em]">
                   Mascot coming soon
                 </span>
                 <span className="absolute bottom-3 left-3 font-display text-[9px] tracking-[0.24em] text-white/40">
@@ -104,13 +104,13 @@ export default function Home() {
           </div>
         </section>
 
-        <section aria-label="Launch announcements" className="mt-16 grid border-y border-[#2457ff]/35 sm:mt-20 sm:grid-cols-2">
-          <article className="flex min-h-36 flex-col justify-center py-7 sm:pr-10 sm:py-9">
+        <section aria-label="Launch announcements" className="launch-stage mt-16 grid sm:mt-20 sm:grid-cols-2">
+          <article className="launch-panel launch-panel-app flex min-h-36 flex-col justify-center py-7 sm:pr-10 sm:py-9">
             <p className="font-display text-[10px] uppercase tracking-[0.28em] text-[#6284ff]">ALTER X</p>
             <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">Coming to the App Store</h2>
             <p className="mt-2 text-xs tracking-wide text-white/45">Currently in review</p>
           </article>
-          <article className="flex min-h-36 flex-col justify-center border-t border-[#2457ff]/25 py-7 sm:border-l sm:border-t-0 sm:pl-10 sm:py-9">
+          <article className="launch-panel launch-panel-xtra flex min-h-36 flex-col justify-center border-t border-[#2457ff]/25 py-7 sm:border-l sm:border-t-0 sm:pl-10 sm:py-9">
             <p className="font-display text-[10px] uppercase tracking-[0.28em] text-[#6284ff]">ALTER-XTRA</p>
             <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">Premium unlock</h2>
             <p className="mt-2 text-xs tracking-wide text-white/45">Coming soon</p>
