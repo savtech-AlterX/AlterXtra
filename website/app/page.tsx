@@ -57,7 +57,7 @@ export default function Home() {
           <p className="relative mb-4 font-display text-[10px] font-semibold uppercase tracking-[0.38em] text-[#6284ff]">
             ALTER X · IDENTITY REPROGRAMMING
           </p>
-          <h1 className="relative max-w-3xl font-display text-4xl font-semibold leading-[1.04] tracking-[-0.045em] sm:text-6xl md:text-7xl">
+          <h1 className="relative max-w-3xl font-display text-5xl font-extrabold leading-[0.98] tracking-[-0.055em] sm:text-7xl md:text-8xl">
             Become who you&apos;re
             <span className="block text-[#5278ff]">building toward.</span>
           </h1>
@@ -107,13 +107,13 @@ export default function Home() {
         <section aria-label="Launch announcements" className="launch-stage mt-16 grid sm:mt-20 sm:grid-cols-2">
           <article className="launch-panel launch-panel-app flex min-h-36 flex-col justify-center py-7 sm:pr-10 sm:py-9">
             <p className="font-display text-[10px] uppercase tracking-[0.28em] text-[#6284ff]">ALTER X</p>
-            <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">Coming to the App Store</h2>
-            <p className="mt-2 text-xs tracking-wide text-white/45">Currently in review</p>
+            <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">The next version of you.</h2>
+            <p className="mt-2 text-xs tracking-wide text-white/45">App Store launch approaching.</p>
           </article>
           <article className="launch-panel launch-panel-xtra flex min-h-36 flex-col justify-center border-t border-[#2457ff]/25 py-7 sm:border-l sm:border-t-0 sm:pl-10 sm:py-9">
             <p className="font-display text-[10px] uppercase tracking-[0.28em] text-[#6284ff]">ALTER-XTRA</p>
-            <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">Premium unlock</h2>
-            <p className="mt-2 text-xs tracking-wide text-white/45">Coming soon</p>
+            <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">Unlock your next level.</h2>
+            <p className="mt-2 text-xs tracking-wide text-white/45">Premium edition · Coming soon</p>
           </article>
         </section>
 
