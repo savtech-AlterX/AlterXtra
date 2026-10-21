@@ -40,19 +40,44 @@ export default function Home() {
         </Link>
       </header>
 
-      <aside aria-label="AlterX announcements" className="grid gap-3 sm:grid-cols-2 max-w-5xl w-full mx-auto px-6 pt-2">
-        <section className="relative overflow-hidden border border-[#2457ff]/70 bg-[#05070c] px-5 py-5 sm:px-6">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-[#6f91ff]">ALTER X · THE FIRST STEP</p>
-          <p className="mt-3 font-display text-xl sm:text-2xl leading-tight text-white">You don’t have to feel ready.<br />You just have to begin.</p>
-          <p className="mt-3 text-xs leading-relaxed text-text-secondary">The app is making its way through App Store review.</p>
-          <span aria-hidden="true" className="absolute right-0 top-0 h-full w-px bg-[#2457ff]/70 shadow-[0_0_18px_#2457ff]" />
-        </section>
-        <section className="relative overflow-hidden border border-[#2457ff]/35 bg-black px-5 py-5 sm:px-6">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-[#6f91ff]">ALTER-XTRA · THE NEXT LEVEL</p>
-          <p className="mt-3 font-display text-xl sm:text-2xl leading-tight text-white">Don’t just set the goal.<br />Become the person who gets there.</p>
-          <p className="mt-3 text-xs leading-relaxed text-text-secondary">The premium unlock is on its way.</p>
-          <span aria-hidden="true" className="absolute right-0 top-0 h-full w-px bg-[#2457ff]/40" />
-        </section>
+      <aside aria-label="AlterX launch announcements" className="max-w-5xl w-full mx-auto px-6 pt-2">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <section className="relative overflow-hidden border border-[#2457ff]/70 bg-[#05070c] px-5 py-5 sm:px-6">
+            <p className="font-display text-[10px] uppercase tracking-[0.22em] text-[#7894ff]">ALTER X</p>
+            <h2 className="mt-3 font-display text-2xl sm:text-3xl leading-tight text-white">Coming to the App Store</h2>
+            <p className="mt-2 font-display text-xs uppercase tracking-[0.12em] text-[#9ba8bc]">Currently in review</p>
+            <span aria-hidden="true" className="absolute right-0 top-0 h-full w-px bg-[#2457ff] shadow-[0_0_18px_#2457ff]" />
+          </section>
+          <section className="relative overflow-hidden border border-[#2457ff]/35 bg-black px-5 py-5 sm:px-6">
+            <p className="font-display text-[10px] uppercase tracking-[0.22em] text-[#7894ff]">ALTER-XTRA</p>
+            <h2 className="mt-3 font-display text-2xl sm:text-3xl leading-tight text-white">Premium unlock</h2>
+            <p className="mt-2 font-display text-xs uppercase tracking-[0.12em] text-[#9ba8bc]">Coming soon</p>
+            <span aria-hidden="true" className="absolute right-0 top-0 h-full w-px bg-[#2457ff]/50" />
+          </section>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { name: "The Gentleman", image: "male-bald-01.png" },
+            { name: "The Charmer", image: "male-curly-01.png" },
+            { name: "The Executive", image: "female-straight-01.png" },
+            { name: "The Muse", image: "female-curly-01.png" },
+          ].map((mascot) => (
+            <article key={mascot.image} className="relative flex min-h-48 flex-col items-center justify-end overflow-hidden border border-[#2457ff]/40 bg-[#05070c] px-2 pb-4 pt-3 text-center">
+              <img
+                src={`https://raw.githubusercontent.com/savtech-AlterX/AlterXtra/claude/hello-46bydk/assets/mascot/${mascot.image}`}
+                alt={mascot.name}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-contain object-center opacity-90"
+              />
+              <div className="relative z-10 mt-28 w-full bg-black/90 px-2 py-2">
+                <p className="font-display text-xs uppercase tracking-[0.12em] text-white">{mascot.name}</p>
+                <p className="mt-1 font-display text-[10px] uppercase tracking-[0.14em] text-[#7894ff]">Mascot coming soon</p>
+              </div>
+              <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-[#2457ff]/70" />
+            </article>
+          ))}
+        </div>
       </aside>
 
       <main className="flex flex-col gap-24 px-6 pb-24 max-w-5xl w-full mx-auto">
