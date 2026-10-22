@@ -1,157 +1,173 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { EmailCaptureForm } from "@/components/EmailCaptureForm";
-import { ReviewsSection } from "@/components/ReviewsSection";
 
 const FEATURES = [
   {
-    title: "Pick an identity",
-    body: "Choose the archetype of who you're becoming, and track every session you spend actually being them.",
+    number: "01",
+    title: "Identity",
+    body: "Choose the person you are working to become, then build consistency through deliberate action.",
   },
   {
-    title: "Rewrite limiting beliefs",
-    body: "Name the belief, trace where it came from, and write down what replaces it.",
+    number: "02",
+    title: "Habits",
+    body: "Recognise unhelpful patterns and replace them with routines that support your chosen identity.",
   },
   {
-    title: "Reprogram habits",
-    body: "Swap an old trigger-response loop for a new one, then check in on whether it actually stuck.",
+    number: "03",
+    title: "Belief work",
+    body: "Examine limiting beliefs and record the perspectives you want to practise instead.",
   },
   {
-    title: "Journal & log book",
-    body: "Daily journaling plus a log book for proof you stayed aligned — or a correction when you didn't.",
+    number: "04",
+    title: "Goals",
+    body: "Turn ambitions into clear steps, with target dates and visible progress.",
   },
   {
-    title: "Message your future self",
-    body: "Record a video or letter that unlocks on a date you choose, or once you've shown up enough times to earn it.",
+    number: "05",
+    title: "Journal",
+    body: "Keep a private record of your decisions, reflections and progress over time.",
   },
   {
-    title: "Goals with real steps",
-    body: "Break a goal into steps you can actually check off, with a target date keeping it honest.",
+    number: "06",
+    title: "Future self",
+    body: "Create letters or video messages for a future date or personal milestone.",
   },
 ];
-
-const MASCOTS = [
-  { image: "male-bald-01.png", alt: "Bald male mascot in a suit" },
-  { image: "male-curly-01.png", alt: "Curly-haired male mascot in a suit" },
-  { image: "female-straight-01.png", alt: "Female mascot with straight hair in business attire" },
-  { image: "female-curly-01.png", alt: "Female mascot with long curly hair" },
-];
-
-const MASCOT_BASE =
-  "https://raw.githubusercontent.com/savtech-AlterX/AlterXtra/claude/hello-46bydk/assets/mascot/";
 
 export default function Home() {
   return (
     <div className="min-h-screen overflow-hidden bg-black text-white">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
-        <Image src="/wordmark.png" alt="AlterX" width={148} height={34} priority />
-        <Link href="/privacy" className="text-[11px] uppercase tracking-[0.2em] text-white/45 transition hover:text-white">
-          Privacy
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between border-b border-white/10 px-5 py-5 sm:px-8">
+        <Link href="/" aria-label="AlterX home" className="shrink-0">
+          <Image src="/wordmark.png" alt="AlterX" width={142} height={32} priority />
         </Link>
+        <nav aria-label="Main navigation" className="flex items-center gap-5 text-[10px] uppercase tracking-[0.16em] text-white/55 sm:gap-8 sm:text-xs">
+          <a href="#approach" className="transition hover:text-white">Approach</a>
+          <a href="#features" className="transition hover:text-white">Features</a>
+          <a href="#xtra" className="transition hover:text-white">Alter-Xtra</a>
+          <Link href="/privacy" className="transition hover:text-white">Privacy</Link>
+        </nav>
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col px-5 pb-20 sm:px-8">
-        <section className="relative flex flex-col items-center pt-8 text-center sm:pt-14">
-          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-16 h-64 w-[min(80vw,700px)] -translate-x-1/2 rounded-full bg-[#1747ff]/10 blur-[100px]" />
-          <Image src="/icon.png" alt="" width={66} height={66} className="relative mb-7 rounded-[18px] shadow-[0_0_42px_rgba(36,87,255,0.18)]" />
-          <p className="relative mb-4 font-display text-[10px] font-semibold uppercase tracking-[0.38em] text-[#6284ff]">
-            ALTER X · IDENTITY REPROGRAMMING
-          </p>
-          <h1 className="relative max-w-3xl font-display text-5xl font-extrabold leading-[0.98] tracking-[-0.055em] sm:text-7xl md:text-8xl">
-            Become who you&apos;re
-            <span className="block text-[#5278ff]">building toward.</span>
-          </h1>
-          <p className="relative mt-6 max-w-xl text-sm leading-7 text-white/60 sm:text-base">
-            A private, on-device identity-transformation app — habits, journaling, belief work, and messages to your future self.
-            No account. No server. No tracking.
-          </p>
-          <div className="relative mt-7">
-            <EmailCaptureForm />
+      <main>
+        <section className="relative mx-auto flex min-h-[570px] w-full max-w-6xl flex-col items-start justify-center px-5 py-24 sm:min-h-[650px] sm:px-8">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-24 top-1/2 h-[430px] w-[430px] -translate-y-1/2 rounded-full bg-[#1747ff]/10 blur-[120px]" />
+          <div className="relative max-w-4xl">
+            <p className="mb-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#7894ff] sm:text-xs">
+              <span className="h-px w-8 bg-[#5278ff]" />
+              Identity. Intention. Action.
+            </p>
+            <h1 className="font-display max-w-4xl text-5xl font-semibold leading-[1.02] tracking-[-0.055em] sm:text-7xl md:text-8xl">
+              Change the way
+              <span className="block text-[#6284ff]">you become.</span>
+            </h1>
+            <p className="mt-7 max-w-xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
+              AlterX is a self-guided identity and personal development app designed to help you align your habits, beliefs and goals with the person you want to become.
+            </p>
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <a href="#features" className="inline-flex min-h-12 items-center justify-center border border-[#5278ff] bg-[#1747ff]/10 px-6 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#1747ff]/20">
+                Explore AlterX <span aria-hidden="true" className="ml-4 text-[#7894ff]">↘</span>
+              </a>
+              <p className="text-xs leading-5 text-white/40">iOS release pending App Store review</p>
+            </div>
+          </div>
+          <div className="relative mt-20 grid w-full grid-cols-3 border-y border-white/10 py-5 sm:mt-24 sm:py-7">
+            <div className="pr-3 sm:pr-6">
+              <p className="text-[9px] uppercase tracking-[0.16em] text-white/35 sm:text-[10px]">01 / Focus</p>
+              <p className="mt-2 text-xs font-medium text-white/80 sm:text-sm">Identity first</p>
+            </div>
+            <div className="border-x border-white/10 px-3 sm:px-6">
+              <p className="text-[9px] uppercase tracking-[0.16em] text-white/35 sm:text-[10px]">02 / Method</p>
+              <p className="mt-2 text-xs font-medium text-white/80 sm:text-sm">Daily practice</p>
+            </div>
+            <div className="pl-3 sm:pl-6">
+              <p className="text-[9px] uppercase tracking-[0.16em] text-white/35 sm:text-[10px]">03 / Outcome</p>
+              <p className="mt-2 text-xs font-medium text-white/80 sm:text-sm">Lasting change</p>
+            </div>
           </div>
         </section>
 
-        <section aria-label="AlterX mascots" className="mt-20 sm:mt-28">
-          <div className="mb-5 flex items-end justify-between border-b border-[#2457ff]/35 pb-4">
+        <section id="approach" className="border-y border-white/10 bg-[#05060a]">
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:grid-cols-[0.8fr_1.2fr] sm:gap-16 sm:px-8 sm:py-24">
             <div>
-              <p className="font-display text-[10px] uppercase tracking-[0.3em] text-[#6284ff]">THE ALTER X COLLECTION</p>
-              <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight sm:text-3xl">Identities. In progress.</h2>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#7894ff]">The approach</p>
+              <h2 className="mt-4 max-w-sm text-3xl font-semibold leading-tight tracking-[-0.035em] sm:text-4xl">Progress begins with who you practise being.</h2>
             </div>
-            <span className="hidden font-display text-[10px] uppercase tracking-[0.2em] text-white/35 sm:block">01 — 04</span>
+            <div className="max-w-2xl">
+              <p className="text-sm leading-7 text-white/60 sm:text-base sm:leading-8">
+                AlterX brings identity-based reflection and practical goal-setting into one focused space. Define the direction you want to take, make the work measurable, and review the choices that move you forward.
+              </p>
+              <p className="mt-5 text-sm leading-7 text-white/60 sm:text-base sm:leading-8">
+                The purpose is not to spend more time in an app. It is to make more intentional decisions outside it.
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-            {MASCOTS.map((mascot, index) => (
-              <article key={mascot.image} className="mascot-panel group relative isolate aspect-[3/4] overflow-hidden bg-[#03050b]">
-                <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(36,87,255,0.15),transparent_65%)]" />
-                <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black via-black/45 to-transparent" />
-                <img src={MASCOT_BASE + mascot.image} alt={mascot.alt} loading="lazy" className="absolute inset-0 h-full w-full object-contain object-bottom transition duration-500 group-hover:scale-[1.035]" />
-                <span className="mascot-ribbon absolute -left-[22%] top-[38%] z-10 w-[145%] -rotate-[18deg] border-y border-[#5b7dff]/90 bg-[#071344]/95 py-2 text-center font-display text-[9px] font-semibold uppercase tracking-[0.18em] text-white sm:py-3 sm:text-[10px] sm:tracking-[0.24em]">
-                  Mascot coming soon
-                </span>
-                <span className="absolute bottom-3 left-3 font-display text-[9px] tracking-[0.24em] text-white/40">0{index + 1}</span>
-                <span aria-hidden="true" className="absolute inset-0 border border-white/[0.08] transition group-hover:border-[#4770ff]/60" />
+        </section>
+
+        <section id="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+          <div className="mb-10 max-w-2xl sm:mb-14">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#7894ff]">Core capabilities</p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">A practical system for personal change.</h2>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-white/50 sm:text-base sm:leading-7">
+              Six connected tools. One clear purpose: help turn intention into consistent action.
+            </p>
+          </div>
+          <div className="grid border-l border-t border-white/10 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((feature) => (
+              <article key={feature.number} className="min-h-48 border-b border-r border-white/10 p-6 sm:min-h-52 sm:p-8">
+                <p className="text-[10px] tracking-[0.2em] text-[#7894ff]">{feature.number}</p>
+                <h3 className="mt-7 text-lg font-semibold tracking-tight">{feature.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-white/50">{feature.body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section aria-label="App Store announcement" className="launch-stage mt-16 sm:mt-20">
-          <div className="relative mx-auto max-w-4xl overflow-hidden px-4 py-12 text-center sm:px-12 sm:py-16">
-            <svg aria-hidden="true" viewBox="0 0 1200 360" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-              <defs>
-                <linearGradient id="marble-cloth" x1="0" y1="0" x2="0.9" y2="1">
-                  <stop offset="0%" stopColor="#fffdf5" />
-                  <stop offset="20%" stopColor="#d8d0c2" />
-                  <stop offset="37%" stopColor="#f7f1e5" />
-                  <stop offset="54%" stopColor="#bdb3a4" />
-                  <stop offset="72%" stopColor="#f4ecdd" />
-                  <stop offset="100%" stopColor="#c7bdaf" />
-                </linearGradient>
-                <linearGradient id="cloth-folds" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#6e655b" stopOpacity=".38" />
-                  <stop offset="9%" stopColor="#fffdf5" stopOpacity=".72" />
-                  <stop offset="20%" stopColor="#8e8375" stopOpacity=".48" />
-                  <stop offset="34%" stopColor="#fffaf0" stopOpacity=".8" />
-                  <stop offset="49%" stopColor="#786e62" stopOpacity=".42" />
-                  <stop offset="62%" stopColor="#fffaf0" stopOpacity=".76" />
-                  <stop offset="79%" stopColor="#938778" stopOpacity=".48" />
-                  <stop offset="91%" stopColor="#fffaf0" stopOpacity=".68" />
-                  <stop offset="100%" stopColor="#786e62" stopOpacity=".35" />
-                </linearGradient>
-              </defs>
-              <path d="M0 34 C110 5 160 72 260 43 S430 12 530 46 S690 78 790 38 S1010 8 1200 34 L1200 326 C1070 354 980 287 875 319 S690 352 590 316 S390 283 285 321 S100 351 0 324 Z" fill="url(#marble-cloth)" />
-              <path d="M0 34 C110 5 160 72 260 43 S430 12 530 46 S690 78 790 38 S1010 8 1200 34 L1200 326 C1070 354 980 287 875 319 S690 352 590 316 S390 283 285 321 S100 351 0 324 Z" fill="url(#cloth-folds)" />
-              <path d="M90 32 C145 105 76 210 125 333 M242 43 C300 120 212 222 284 319 M425 27 C475 118 393 221 458 326 M610 53 C668 133 580 230 652 326 M798 40 C854 123 765 231 835 319 M1000 23 C1062 112 970 227 1040 311" fill="none" stroke="#fffaf0" strokeOpacity=".65" strokeWidth="13" />
-              <path d="M160 46 C207 128 144 225 193 329 M348 40 C396 130 327 227 391 321 M525 44 C569 132 502 226 564 322 M716 49 C760 133 691 225 755 324 M912 34 C957 125 889 220 949 318 M1101 31 C1143 117 1080 219 1134 323" fill="none" stroke="#766c60" strokeOpacity=".4" strokeWidth="9" />
-            </svg>
-            <div className="relative mx-auto max-w-3xl py-4">
-              <h2 className="font-[cursive] text-4xl italic leading-tight text-[#17213a] drop-shadow-[0_1px_0_rgba(255,255,255,0.65)] sm:text-6xl">
-                Alter X coming to AppStore soon
-              </h2>
+        <section id="xtra" className="border-y border-[#2457ff]/35 bg-[#04060c]">
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:grid-cols-[1fr_1fr] sm:items-center sm:px-8 sm:py-20">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#7894ff]">The premium edition</p>
+              <h2 className="mt-4 text-4xl font-semibold tracking-[-0.04em] sm:text-6xl">Alter<span className="text-[#6284ff]">-Xtra.</span></h2>
+              <p className="mt-5 max-w-lg text-sm leading-7 text-white/55 sm:text-base">
+                An expanded toolkit for people who want more room to build, track and refine their identities.
+              </p>
+            </div>
+            <div className="border-l-2 border-[#5278ff] pl-6 sm:pl-8">
+              <ul className="space-y-4 text-sm leading-6 text-white/70">
+                <li><span className="mr-3 text-[#7894ff]">—</span>Multiple identity accounts</li>
+                <li><span className="mr-3 text-[#7894ff]">—</span>Unlimited habits and belief systems</li>
+                <li><span className="mr-3 text-[#7894ff]">—</span>Identity feedback, statistics and reports</li>
+              </ul>
+              <p className="mt-7 text-[10px] uppercase tracking-[0.2em] text-white/35">Premium details will be announced at launch.</p>
             </div>
           </div>
         </section>
 
-        <section className="mt-20 grid gap-4 sm:mt-24 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature, index) => (
-            <article key={feature.title} className="relative min-h-40 border border-white/[0.1] bg-white/[0.015] p-6 transition hover:border-[#2457ff]/50">
-              <span className="font-display text-[10px] tracking-[0.22em] text-[#6284ff]">0{index + 1}</span>
-              <h3 className="mt-5 font-display text-lg font-semibold">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-white/55">{feature.body}</p>
-            </article>
-          ))}
+        <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+          <div className="grid gap-10 sm:grid-cols-[0.9fr_1.1fr] sm:items-start">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#7894ff]">Launch updates</p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Be notified when AlterX is available.</h2>
+            </div>
+            <div>
+              <p className="mb-5 max-w-xl text-sm leading-6 text-white/55">
+                Leave your email to receive an availability announcement and occasional product updates.
+              </p>
+              <EmailCaptureForm />
+            </div>
+          </div>
         </section>
-
-        <div className="mt-20">
-          <ReviewsSection />
-        </div>
       </main>
 
-      <footer className="border-t border-white/10 px-5 py-8 text-center text-xs leading-6 text-white/35 sm:px-8">
-        <p className="mb-2 font-semibold tracking-[0.12em] text-white/60">AlterX <span className="text-[#6284ff]">by Tech Sav</span></p>
-        <p>AlterX is a self-guided personal development tool, not a substitute for professional mental health support.</p>
-        <p className="mt-2">
-          <Link href="/privacy" className="underline underline-offset-4 transition hover:text-white/70">Website privacy notice</Link>
-        </p>
+      <footer className="border-t border-white/10 px-5 py-8 sm:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-semibold tracking-[0.1em] text-white/65">AlterX <span className="font-normal text-[#7894ff]">by Tech Sav</span></p>
+          <p className="max-w-xl leading-5">AlterX is a self-guided personal development tool and is not a substitute for professional mental health support.</p>
+          <Link href="/privacy" className="underline underline-offset-4 transition hover:text-white">Website privacy notice</Link>
+        </div>
       </footer>
     </div>
   );
