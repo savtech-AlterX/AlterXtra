@@ -80,41 +80,31 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {MASCOTS.map((mascot, index) => (
-              <article
-                key={mascot.image}
-                className="mascot-panel group relative isolate aspect-[3/4] overflow-hidden bg-[#03050b]"
-              >
+              <article key={mascot.image} className="mascot-panel group relative isolate aspect-[3/4] overflow-hidden bg-[#03050b]">
                 <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(36,87,255,0.15),transparent_65%)]" />
                 <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black via-black/45 to-transparent" />
-                <img
-                  src={MASCOT_BASE + mascot.image}
-                  alt={mascot.alt}
-                  loading="lazy"
-                  className="absolute inset-0 h-full w-full object-contain object-bottom transition duration-500 group-hover:scale-[1.035]"
-                />
+                <img src={MASCOT_BASE + mascot.image} alt={mascot.alt} loading="lazy" className="absolute inset-0 h-full w-full object-contain object-bottom transition duration-500 group-hover:scale-[1.035]" />
                 <span className="mascot-ribbon absolute -left-[22%] top-[38%] z-10 w-[145%] -rotate-[18deg] border-y border-[#5b7dff]/90 bg-[#071344]/95 py-2 text-center font-display text-[9px] font-semibold uppercase tracking-[0.18em] text-white sm:py-3 sm:text-[10px] sm:tracking-[0.24em]">
                   Mascot coming soon
                 </span>
-                <span className="absolute bottom-3 left-3 font-display text-[9px] tracking-[0.24em] text-white/40">
-                  0{index + 1}
-                </span>
+                <span className="absolute bottom-3 left-3 font-display text-[9px] tracking-[0.24em] text-white/40">0{index + 1}</span>
                 <span aria-hidden="true" className="absolute inset-0 border border-white/[0.08] transition group-hover:border-[#4770ff]/60" />
               </article>
             ))}
           </div>
         </section>
 
-        <section aria-label="Launch announcements" className="launch-stage mt-16 grid sm:mt-20 sm:grid-cols-2">
-          <article className="launch-panel launch-panel-app flex min-h-36 flex-col justify-center py-7 sm:pr-10 sm:py-9">
-            <p className="font-display text-[10px] uppercase tracking-[0.28em] text-[#6284ff]">ALTER X</p>
-            <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">The next version of you.</h2>
-            <p className="mt-2 text-xs tracking-wide text-white/45">App Store launch approaching.</p>
-          </article>
-          <article className="launch-panel launch-panel-xtra flex min-h-36 flex-col justify-center border-t border-[#2457ff]/25 py-7 sm:border-l sm:border-t-0 sm:pl-10 sm:py-9">
-            <p className="font-display text-[10px] uppercase tracking-[0.28em] text-[#6284ff]">ALTER-XTRA</p>
-            <h2 className="mt-2 font-display text-xl font-semibold sm:text-2xl">Unlock your next level.</h2>
-            <p className="mt-2 text-xs tracking-wide text-white/45">Premium edition · Coming soon</p>
-          </article>
+        <section aria-label="App Store announcement" className="launch-stage mt-16 sm:mt-20">
+          <div className="relative isolate mx-auto max-w-4xl overflow-hidden px-5 py-10 text-center sm:px-12 sm:py-16">
+            <div aria-hidden="true" className="absolute inset-0 -z-20 rounded-[48%_52%_44%_56%/18%_20%_16%_22%] border border-[#6284ff]/50 bg-[#060b20] shadow-[0_0_70px_rgba(36,87,255,0.12)]" />
+            <div aria-hidden="true" className="absolute inset-[2%] -z-10 rounded-[48%_52%_44%_56%/18%_20%_16%_22%] opacity-90" style={{ background: "repeating-linear-gradient(112deg, transparent 0%, rgba(75,111,255,.08) 7%, rgba(255,255,255,.08) 10%, transparent 15%, rgba(20,45,140,.24) 21%, transparent 28%), linear-gradient(175deg, #101b4b 0%, #050817 32%, #111c48 52%, #03050d 77%, #14245c 100%)" }} />
+            <div aria-hidden="true" className="absolute inset-x-[8%] top-0 -z-10 h-px bg-gradient-to-r from-transparent via-[#8aa2ff] to-transparent" />
+            <p className="font-display text-[10px] uppercase tracking-[0.38em] text-[#8ca5ff]">ALTER X</p>
+            <h2 className="mt-5 font-[cursive] text-4xl italic leading-tight text-white drop-shadow-[0_0_18px_rgba(99,132,255,0.45)] sm:text-6xl">
+              Alter X coming to AppStore soon
+            </h2>
+            <div aria-hidden="true" className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#6284ff] to-transparent" />
+          </div>
         </section>
 
         <section className="mt-20 grid gap-4 sm:mt-24 sm:grid-cols-2 lg:grid-cols-3">
@@ -125,17 +115,6 @@ export default function Home() {
               <p className="mt-2 text-sm leading-6 text-white/55">{feature.body}</p>
             </article>
           ))}
-        </section>
-
-        <section className="relative mx-auto mt-20 w-full max-w-xl overflow-hidden border border-[#2457ff]/45 px-7 py-9 text-center sm:mt-24 sm:px-12 sm:py-12">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(36,87,255,0.12),transparent_65%)]" />
-          <p className="relative font-display text-[10px] uppercase tracking-[0.3em] text-[#6284ff]">ALTER-XTRA</p>
-          <p className="relative mt-4 font-display text-3xl font-semibold">$17.99</p>
-          <p className="relative mt-1 text-xs uppercase tracking-[0.16em] text-white/45">One-time unlock · no subscription</p>
-          <p className="relative mx-auto mt-5 max-w-sm text-sm leading-6 text-white/55">
-            Unlimited identities and habits, weekly reports, a full-year activity map, and more.
-          </p>
-          <p className="relative mt-5 font-display text-[10px] uppercase tracking-[0.22em] text-[#6284ff]">Coming soon — not on sale yet</p>
         </section>
 
         <div className="mt-20">
