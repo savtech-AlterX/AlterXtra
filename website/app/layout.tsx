@@ -17,15 +17,15 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://alterxtra.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "AlterX — Become who you're building toward",
+  title: "AlterX | Tech Sav",
   description:
     "AlterX is a private, on-device identity-transformation app: track habits, journal, rewrite limiting beliefs, and record messages to your future self.",
   openGraph: {
-    title: "AlterX — Become who you're building toward",
+    title: "AlterX | Tech Sav",
     description:
       "A private, on-device identity-transformation app: habits, journaling, belief work, and messages to your future self.",
     url: siteUrl,
-    siteName: "AlterX",
+    siteName: "AlterX | Tech Sav",
     images: ["/wordmark.png"],
   },
   icons: {
