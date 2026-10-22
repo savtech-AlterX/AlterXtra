@@ -144,6 +144,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-white/10 px-5 py-8 text-center text-xs leading-6 text-white/35 sm:px-8">
+        <p className="mb-2 font-semibold tracking-[0.12em] text-white/60">AlterX <span className="text-[#6284ff]">by Tech Sav</span></p>
         <p>AlterX is a self-guided personal development tool, not a substitute for professional mental health support.</p>
         <p className="mt-2">
           <Link href="/privacy" className="underline underline-offset-4 transition hover:text-white/70">Website privacy notice</Link>
