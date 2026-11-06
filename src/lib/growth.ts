@@ -57,7 +57,7 @@ function computeLongestStreak(activeDayKeys: Set<string>): number {
 }
 
 function isGoalComplete(goal: Goal) {
-  return goal.steps.length > 0 && goal.steps.every((s) => s.done);
+  return !!goal.completedAt || (goal.steps.length > 0 && goal.steps.every((s) => s.done));
 }
 
 function alignmentRate(entries: AppData['logEntries'], from: Date, to: Date) {

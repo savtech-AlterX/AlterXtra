@@ -4,7 +4,6 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
-import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
@@ -15,98 +14,95 @@ import type { AppTheme } from '../../src/theme/useAppTheme';
 
 function progress(goal: Goal) {
   const total = goal.steps.length;
-  const done = goal.steps.filter((s) => s.done).length;
-  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-  return { total, done, pct };
+  const done = goal.steps.filter((step) => step.done).length;
+  return { total, done, pct: total === 0 ? 0 : Math.round((done / total) * 100) };
 }
 
-function StepRow({
-  step,
-  onToggle,
-}: {
-  step: { text: string; done: boolean };
-  onToggle: () => void;
-}) {
-  const { colors, typography, iconGlow } = useAppTheme();
+function isComplete(goal: Goal) {
+  return !!goal.completedAt || (goal.steps.length > 0 && goal.steps.every((step) => step.done));
+}
+
+function isOverdue(goal: Goal) {
+  const now = new Date();
+  const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
+  return !isComplete(goal) && goal.targetDate < today;
+}
+
+function StepRow({ step, onToggle }: { step: { text: string; done: boolean }; onToggle: () => void }) {
+  const { colors, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   return (
-    <Pressable
-      style={styles.stepRow}
-      onPress={onToggle}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: step.done }}
-      accessibilityLabel={step.text}
-    >
-      <Ionicons
-        name={step.done ? 'checkbox' : 'square-outline'}
-        size={18}
-        color={step.done ? colors.success : colors.glow}
-        style={iconGlow}
-      />
+    <Pressable style={styles.stepRow} onPress={onToggle} accessibilityRole="checkbox" accessibilityState={{ checked: step.done }} accessibilityLabel={step.text}>
+      <Ionicons name={step.done ? 'checkbox' : 'square-outline'} size={18} color={step.done ? colors.success : colors.glow} style={iconGlow} />
       <Text style={[styles.stepText, step.done && styles.stepTextDone]}>{step.text}</Text>
     </Pressable>
   );
 }
 
-function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
-  const { colors, typography, iconGlow } = useAppTheme();
+function GoalCard({
+  goal, number, onToggleStep, onEdit, onCheckOut,
+}: {
+  goal: Goal;
+  number: number;
+  onToggleStep: (index: number) => void;
+  onEdit: () => void;
+  onCheckOut: () => void;
+}) {
+  const { colors, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const { total, done, pct } = progress(goal);
+  const overdue = isOverdue(goal);
   return (
-    <GlowCard strong style={styles.primaryCard}>
-      <Text style={styles.goalLabel}>PRIMARY OBJECTIVE</Text>
-      <GoalCountdownBar goal={goal} />
-      <View style={styles.targetRow}>
-        <Ionicons name="calendar-outline" size={14} color={colors.glow} style={iconGlow} />
-        <Text style={styles.targetLabel}>TARGET</Text>
-        <Text style={styles.targetValue}>{goal.targetDate || '—'}</Text>
+    <GlowCard strong={!overdue} style={styles.goalCard}>
+      <View style={styles.cardHeading}>
+        <View style={styles.headingText}>
+          <Text style={styles.goalLabel}>GOAL {number}</Text>
+          <Text style={styles.goalTitle}>{goal.objective}</Text>
+        </View>
+        <Pressable onPress={onEdit} hitSlop={10} accessibilityRole="button" accessibilityLabel="Edit goal" style={styles.editButton}>
+          <Ionicons name="create-outline" size={19} color={colors.glow} style={iconGlow} />
+        </Pressable>
       </View>
 
-      <View style={styles.progressRow}>
-        <View style={styles.ring}>
-          <Text style={styles.ringValue}>{pct}%</Text>
-          <Text style={styles.ringLabel}>COMPLETE</Text>
+      {overdue ? (
+        <View style={styles.overdueBanner}>
+          <Ionicons name="alert-circle-outline" size={16} color={colors.danger} />
+          <Text style={styles.overdueText}>OVERDUE</Text>
         </View>
-        <View style={styles.progressCol}>
-          <Text style={styles.goalLabel}>PROGRESS</Text>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${pct}%` }]} />
-          </View>
-          <Text style={styles.stepsComplete}>
-            {done}/{total} steps complete
-          </Text>
-        </View>
+      ) : null}
+
+      <Text style={styles.targetValue}>TARGET: {goal.targetDate || '—'}</Text>
+      {overdue && goal.consequence?.trim() ? (
+        <Text style={styles.consequence}>({goal.consequence.trim()})</Text>
+      ) : null}
+
+      <View style={styles.progressHeader}>
+        <Text style={styles.progressLabel}>PROGRESS</Text>
+        <Text style={styles.progressLabel}>{pct}%</Text>
       </View>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${pct}%` }]} />
+      </View>
+      <Text style={styles.stepsComplete}>{done}/{total} steps complete</Text>
 
       {total > 0 && (
         <View style={styles.steps}>
-          {goal.steps.map((step, i) => (
-            <StepRow key={i} step={step} onToggle={() => onToggleStep(i)} />
+          {goal.steps.map((step, index) => (
+            <StepRow key={index} step={step} onToggle={() => onToggleStep(index)} />
           ))}
         </View>
       )}
-    </GlowCard>
-  );
-}
 
-function SecondaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
-  const styles = useThemedStyles(makeStyles);
-  const { total, done, pct } = progress(goal);
-  return (
-    <GlowCard style={styles.secondaryCard}>
-      <Text style={styles.goalTitle}>{goal.objective}</Text>
-      <Text style={styles.targetValue}>TARGET: {goal.targetDate || '—'}</Text>
-      {total > 0 && (
-        <>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${pct}%` }]} />
-          </View>
-          <View style={styles.steps}>
-            {goal.steps.map((step, i) => (
-              <StepRow key={i} step={step} onToggle={() => onToggleStep(i)} />
-            ))}
-          </View>
-        </>
+      {overdue && (
+        <View style={styles.overdueActions}>
+          <Pressable onPress={onCheckOut} style={styles.checkOutButton} accessibilityRole="button">
+            <Text style={styles.checkOutText}>CHECK OUT</Text>
+          </Pressable>
+          <Pressable onPress={onEdit} style={styles.extendButton} accessibilityRole="button">
+            <Ionicons name="time-outline" size={15} color={colors.glow} style={iconGlow} />
+            <Text style={styles.extendText}>EXTEND TIMELINE</Text>
+          </Pressable>
+        </View>
       )}
     </GlowCard>
   );
@@ -116,17 +112,26 @@ export default function Goals() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data, toggleGoalStep } = useAppData();
+  const { data, toggleGoalStep, dismissGoal } = useAppData();
   const winFlash = useWinFlash();
 
-  const primary = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
-  const secondary = data.goals.length > 1 ? data.goals.slice(0, -1) : [];
+  const visibleGoals = [...data.goals]
+    .filter((goal) => !goal.dismissedAt)
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const activeGoals = visibleGoals.filter((goal) => !isComplete(goal));
+  const completedGoals = visibleGoals.filter(isComplete);
+  const goalNumber = (goal: Goal) => visibleGoals.findIndex((item) => item.id === goal.id) + 1;
 
   function handleToggleStep(goal: Goal, stepIndex: number) {
     const wasDone = goal.steps[stepIndex]?.done ?? false;
     toggleGoalStep(goal.id, stepIndex);
     if (!wasDone) winFlash();
   }
+
+  const openGoalEditor = (goalId?: string) => {
+    if (goalId) router.push({ pathname: '/goals/new', params: { id: goalId } });
+    else router.push('/goals/new');
+  };
 
   return (
     <HudScreen>
@@ -135,206 +140,81 @@ export default function Goals() {
           <CloseToHome />
           <Text style={typography.screenTitle}>GOALS</Text>
         </View>
-        <Pressable
-          style={styles.addButton}
-          onPress={() => router.push('/goals/new')}
-          accessibilityRole="button"
-          accessibilityLabel="Add new goal"
-        >
-          <Ionicons name="create-outline" size={20} color={colors.glow} style={iconGlow} />
+        <Pressable style={styles.addButton} onPress={() => openGoalEditor()} accessibilityRole="button" accessibilityLabel="Add new goal">
+          <Ionicons name="add" size={21} color={colors.glow} style={iconGlow} />
         </Pressable>
       </View>
 
-      {!primary && (
+      {activeGoals.length === 0 && completedGoals.length === 0 ? (
         <EmptyState
           icon="flag-outline"
-          title="NO OBJECTIVE SET"
-          body="Your primary objective sits at the top of this screen with a live countdown. Set one and every step you tick off moves the bar."
-          actionLabel="SET YOUR OBJECTIVE"
-          onAction={() => router.push('/goals/new')}
+          title="NO GOALS SET"
+          body="Create your first goal, set a deadline and track the steps that move you forward."
+          actionLabel="CREATE A GOAL"
+          onAction={() => openGoalEditor()}
         />
-      )}
+      ) : null}
 
-      {primary && (
-        <PrimaryGoalCard goal={primary} onToggleStep={(i) => handleToggleStep(primary, i)} />
-      )}
-
-      <View style={styles.header}>
-        <Text style={typography.label}>SECONDARY GOALS</Text>
-        <Pressable
-          style={styles.addButtonSmall}
-          onPress={() => router.push('/goals/new')}
-          accessibilityRole="button"
-          accessibilityLabel="Add secondary goal"
-        >
-          <Ionicons name="add" size={18} color={colors.glow} style={iconGlow} />
-        </Pressable>
-      </View>
-
-      {secondary.length === 0 && (
-        <EmptyState
-          compact
-          icon="add-circle-outline"
-          title="NO SECONDARY GOALS"
-          body="Smaller objectives that run alongside your main one."
-          actionLabel="ADD ONE"
-          onAction={() => router.push('/goals/new')}
+      {activeGoals.map((goal) => (
+        <GoalCard
+          key={goal.id}
+          goal={goal}
+          number={goalNumber(goal)}
+          onToggleStep={(index) => handleToggleStep(goal, index)}
+          onEdit={() => openGoalEditor(goal.id)}
+          onCheckOut={() => dismissGoal(goal.id)}
         />
-      )}
-
-      {secondary.map((goal) => (
-        <SecondaryGoalCard key={goal.id} goal={goal} onToggleStep={(i) => handleToggleStep(goal, i)} />
       ))}
+
+      {completedGoals.length > 0 && (
+        <>
+          <Text style={typography.label}>COMPLETED GOALS</Text>
+          {completedGoals.map((goal) => (
+            <GlowCard key={goal.id} style={styles.completedCard}>
+              <View style={styles.completedHeading}>
+                <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+                <Text style={styles.completedLabel}>GOAL {goalNumber(goal)} · COMPLETED</Text>
+              </View>
+              <Text style={styles.completedTitle}>{goal.objective}</Text>
+            </GlowCard>
+          ))}
+        </>
+      )}
     </HudScreen>
   );
 }
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonSmall: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryCard: {
-    gap: 6,
-  },
-  secondaryCard: {
-    gap: 8,
-  },
-  goalLabel: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 11,
-    color: colors.glow,
-    letterSpacing: 2,
-  },
-  goalTitle: {
-    fontFamily: typography.cardTitle.fontFamily,
-    fontSize: 18,
-    color: colors.textPrimary,
-    ...glowShadow,
-  },
-  targetRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
-  },
-  targetLabel: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 11,
-    color: colors.glow,
-    letterSpacing: 1,
-  },
-  targetValue: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 13,
-    lineHeight: 19,
-    color: colors.textSecondary,
-  },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginTop: 12,
-  },
-  ring: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.glow,
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  ringValue: {
-    fontFamily: typography.cardTitle.fontFamily,
-    fontSize: 18,
-    color: colors.textPrimary,
-  },
-  ringLabel: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 8,
-    color: colors.glow,
-    letterSpacing: 1,
-    marginTop: 2,
-  },
-  progressCol: {
-    flex: 1,
-    gap: 6,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  progressPct: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 11,
-    color: colors.glow,
-  },
-  progressTrack: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.panelSolid,
-    borderWidth: 1,
-    borderColor: colors.borderDim,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.glow,
-  },
-  stepsComplete: {
-    fontFamily: typography.bodyMuted.fontFamily,
-    fontSize: 12,
-    lineHeight: 17,
-    color: colors.textSecondary,
-  },
-  steps: {
-    gap: 8,
-    marginTop: 10,
-  },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepText: {
-    fontFamily: typography.body.fontFamily,
-    color: colors.textPrimary,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  stepTextDone: {
-    color: colors.textMuted,
-    textDecorationLine: 'line-through',
-  },
-});
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    addButton: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+    goalCard: { gap: 9 },
+    cardHeading: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
+    headingText: { flex: 1, gap: 5 },
+    goalLabel: { fontFamily: typography.label.fontFamily, fontSize: 10, color: colors.glow, letterSpacing: 2 },
+    goalTitle: { fontFamily: typography.cardTitle.fontFamily, fontSize: 18, color: colors.textPrimary, ...glowShadow },
+    editButton: { padding: 5 },
+    targetValue: { fontFamily: typography.body.fontFamily, fontSize: 12, color: colors.textSecondary },
+    overdueBanner: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 2 },
+    overdueText: { fontFamily: typography.label.fontFamily, color: colors.danger, fontSize: 11, letterSpacing: 1.7 },
+    consequence: { color: colors.textSecondary, fontFamily: typography.body.fontFamily, fontSize: 13, lineHeight: 19, fontStyle: 'italic' },
+    progressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+    progressLabel: { fontFamily: typography.label.fontFamily, fontSize: 10, color: colors.glow, letterSpacing: 1.3 },
+    progressTrack: { height: 6, borderRadius: 3, backgroundColor: colors.panelSolid, borderWidth: 1, borderColor: colors.borderDim, overflow: 'hidden' },
+    progressFill: { height: '100%', backgroundColor: colors.glow },
+    stepsComplete: { fontFamily: typography.bodyMuted.fontFamily, fontSize: 11, color: colors.textSecondary },
+    steps: { gap: 8, marginTop: 6 },
+    stepRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    stepText: { fontFamily: typography.body.fontFamily, color: colors.textPrimary, fontSize: 14, lineHeight: 20, flex: 1 },
+    stepTextDone: { color: colors.textMuted, textDecorationLine: 'line-through' },
+    overdueActions: { flexDirection: 'row', gap: 9, marginTop: 8 },
+    checkOutButton: { flex: 1, borderRadius: 999, paddingVertical: 12, alignItems: 'center', backgroundColor: colors.panelSolid, borderWidth: 1, borderColor: colors.borderDim },
+    checkOutText: { fontFamily: typography.label.fontFamily, color: colors.textSecondary, fontSize: 10, letterSpacing: 1.3 },
+    extendButton: { flex: 1.3, flexDirection: 'row', gap: 6, borderRadius: 999, paddingVertical: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+    extendText: { fontFamily: typography.label.fontFamily, color: colors.glow, fontSize: 10, letterSpacing: 1.1 },
+    completedCard: { gap: 6, opacity: 0.78 },
+    completedHeading: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+    completedLabel: { fontFamily: typography.label.fontFamily, fontSize: 10, color: colors.success, letterSpacing: 1.2 },
+    completedTitle: { fontFamily: typography.cardTitle.fontFamily, fontSize: 16, color: colors.textPrimary },
+  });

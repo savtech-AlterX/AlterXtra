@@ -460,7 +460,8 @@ export default function Growth() {
           <View style={styles.grid}>
             <StatCard icon="bulb-outline" value={String(stats.beliefsRewired)} label="Beliefs Rewired" recentAdd={stats.recentAdds.beliefs} />
             <StatCard icon="repeat-outline" value={String(stats.habitsReprogrammed)} label="Habits Reprogrammed" recentAdd={stats.recentAdds.habits} />
-            <StatCard icon="flag-outline" value={`${stats.goalsCompleted}/${stats.goalsTotal}`} label="Goals Completed" />
+            <StatCard icon="flag-outline" value={String(stats.goalsTotal)} label="Goals Set" />
+            <StatCard icon="checkmark-circle-outline" value={String(stats.goalsCompleted)} label="Goals Completed" />
             <StatCard
               icon="videocam-outline"
               value={`${stats.futureSelf.videosUnlocked}/${stats.futureSelf.videosSealed}`}
