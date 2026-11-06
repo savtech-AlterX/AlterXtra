@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
@@ -84,16 +83,6 @@ export default function NewGoal() {
   const [loadedExisting, setLoadedExisting] = useState(false);
   const activeGoalCount = data.goals.filter((g) => !g.dismissedAt && !g.completedAt && !(g.steps.length > 0 && g.steps.every((step) => step.done))).length;
   const atLimit = isLoaded && !existingGoal && goalLimitReached(activeGoalCount);
-  useEffect(() => {
-    if (!existingGoal || loadedExisting) return;
-    setObjective(existingGoal.objective);
-    setConsequence(existingGoal.consequence ?? '');
-    const [y, m, d] = existingGoal.targetDate.split('-').map(Number);
-    if (y && m && d) { setYear(y); setMonth(m); setDay(d); }
-    setSteps(existingGoal.steps.length ? existingGoal.steps.map((step) => step.text) : ['']);
-    setLoadedExisting(true);
-  }, [existingGoal, loadedExisting]);
-
   // Defaults a month out — a real, usable date already sitting there beats
   // an empty field the user has to first figure out how to fill in.
   const initial = useMemo(() => {
@@ -107,6 +96,16 @@ export default function NewGoal() {
   const thisYear = initial.getFullYear();
 
   const [steps, setSteps] = useState<string[]>(['', '', '']);
+
+  useEffect(() => {
+    if (!existingGoal || loadedExisting) return;
+    setObjective(existingGoal.objective);
+    setConsequence(existingGoal.consequence ?? '');
+    const [y, m, d] = existingGoal.targetDate.split('-').map(Number);
+    if (y && m && d) { setYear(y); setMonth(m); setDay(d); }
+    setSteps(existingGoal.steps.length ? existingGoal.steps.map((step) => step.text) : ['']);
+    setLoadedExisting(true);
+  }, [existingGoal, loadedExisting]);
 
   function adjustMonth(delta: number) {
     setMonth((m) => {
