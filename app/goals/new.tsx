@@ -77,13 +77,13 @@ export default function NewGoal() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { data, addGoal, updateGoal } = useAppData();
+  const { data, isLoaded, addGoal, updateGoal } = useAppData();
   const existingGoal = data.goals.find((g) => g.id === id);
   const [objective, setObjective] = useState('');
   const [consequence, setConsequence] = useState('');
   const [loadedExisting, setLoadedExisting] = useState(false);
   const activeGoalCount = data.goals.filter((g) => !g.dismissedAt && !g.completedAt && !(g.steps.length > 0 && g.steps.every((step) => step.done))).length;
-  const atLimit = !existingGoal && goalLimitReached(activeGoalCount);
+  const atLimit = isLoaded && !existingGoal && goalLimitReached(activeGoalCount);
   useEffect(() => {
     if (!existingGoal || loadedExisting) return;
     setObjective(existingGoal.objective);
@@ -290,7 +290,7 @@ export default function NewGoal() {
         </Pressable>
       </GlowCard>
 
-      <GlowButton label={existingGoal ? "SAVE CHANGES" : "SAVE GOAL"} onPress={save} disabled={!objective.trim()} style={styles.spacer} />
+      <GlowButton label={existingGoal ? "SAVE CHANGES" : "SAVE GOAL"} onPress={save} disabled={!objective.trim() || !isLoaded} style={styles.spacer} />
       <GlowButton label="CANCEL" variant="outline" onPress={() => router.back()} />
     </HudScreen>
   );
