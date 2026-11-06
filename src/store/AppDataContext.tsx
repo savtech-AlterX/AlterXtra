@@ -357,10 +357,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       ...p,
       goals: p.goals.map((g) =>
         g.id === goalId
-          ? {
-              ...g,
-              steps: g.steps.map((s, i) => (i === stepIndex ? { ...s, done: !s.done } : s)),
-            }
+          ? (() => {
+              const steps = g.steps.map((s, i) => (i === stepIndex ? { ...s, done: !s.done } : s));
+              const complete = steps.length > 0 && steps.every((step) => step.done);
+              return { ...g, steps, completedAt: complete ? (g.completedAt ?? new Date().toISOString()) : undefined };
+            })()
           : g
       ),
     }));
