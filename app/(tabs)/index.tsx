@@ -73,8 +73,11 @@ export default function Home() {
   const { settings } = useSettings();
   const { theme } = useThemeControls();
   const identity = data.identity;
-  // Same goal the Goals screen treats as primary: the oldest one.
-  const primaryGoal = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
+  // Keep the home countdown focused on the oldest active goal. Completed or
+  // checked-out overdue goals remain in history, not on the home screen.
+  const primaryGoal = [...data.goals]
+    .filter((goal) => !goal.dismissedAt && !(goal.completedAt || (goal.steps.length > 0 && goal.steps.every((step) => step.done))))
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0] ?? null;
 
   return (
     <HudScreen style={styles.screen}>
