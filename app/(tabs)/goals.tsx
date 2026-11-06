@@ -23,7 +23,9 @@ function isComplete(goal: Goal) {
 }
 
 function isOverdue(goal: Goal) {
-  return !isComplete(goal) && goal.targetDate < new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
+  return !isComplete(goal) && goal.targetDate < today;
 }
 
 function StepRow({ step, onToggle }: { step: { text: string; done: boolean }; onToggle: () => void }) {
@@ -127,7 +129,8 @@ export default function Goals() {
   }
 
   const openGoalEditor = (goalId?: string) => {
-    router.push(goalId ? { pathname: '/goals/new', params: { id: goalId } } : '/goals/new');
+    if (goalId) router.push({ pathname: '/goals/new', params: { id: goalId } });
+    else router.push('/goals/new');
   };
 
   return (
