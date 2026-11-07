@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://savtech-alterx.github.io/AlterXtra/sitemap.xml
