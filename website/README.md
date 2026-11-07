@@ -76,3 +76,8 @@ at `/privacy`. That's intentionally separate from — and more permissive
 than — the AlterX **app**'s privacy policy at the repo root
 (`../PRIVACY_POLICY.md`), which stays local-only with no analytics. Don't
 merge the two documents; they describe different products.
+
+
+## Automatic publishing
+
+The marketing website is published to GitHub Pages by `.github/workflows/deploy-website.yml`. Changes committed under `website/` on the `claude/hello-46bydk` branch automatically rebuild and publish the site to `https://savtech-alterx.github.io/AlterXtra/`. App-only changes outside `website/` do not alter the marketing site; update the files in this folder when the public website itself needs to change.
