@@ -1,4 +1,5 @@
 import { AppData, Goal, HabitCheckIn, IdentitySession, JournalEntry } from '../store/types';
+import { isGoalComplete } from './goals';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
@@ -54,10 +55,6 @@ function computeLongestStreak(activeDayKeys: Set<string>): number {
     longest = Math.max(longest, current);
   }
   return longest;
-}
-
-function isGoalComplete(goal: Goal) {
-  return goal.steps.length > 0 && goal.steps.every((s) => s.done);
 }
 
 function alignmentRate(entries: AppData['logEntries'], from: Date, to: Date) {
