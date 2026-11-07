@@ -8,6 +8,7 @@ import { GoalCountdownBar } from '../../src/components/GoalCountdownBar';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
 import { useAppData } from '../../src/store/AppDataContext';
+import { isGoalComplete } from '../../src/lib/goals';
 import { Goal } from '../../src/store/types';
 import { useWinFlash } from '../../src/store/WinFlashContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
@@ -119,8 +120,9 @@ export default function Goals() {
   const { data, toggleGoalStep } = useAppData();
   const winFlash = useWinFlash();
 
-  const primary = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
-  const secondary = data.goals.length > 1 ? data.goals.slice(0, -1) : [];
+  const activeGoals = data.goals.filter((goal) => !isGoalComplete(goal));
+  const primary = activeGoals.length > 0 ? activeGoals[activeGoals.length - 1] : null;
+  const secondary = activeGoals.length > 1 ? activeGoals.slice(0, -1) : [];
 
   function handleToggleStep(goal: Goal, stepIndex: number) {
     const wasDone = goal.steps[stepIndex]?.done ?? false;
