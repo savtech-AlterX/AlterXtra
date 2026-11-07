@@ -13,6 +13,7 @@ import { XtraLockedCard } from '../src/components/XtraLockedCard';
 import { useAlterXtra } from '../src/lib/entitlements';
 import { buildShareReport, computeGrowthStats, formatDurationShort, GrowthStats, HeatmapCell, MONTH_ABBR } from '../src/lib/growth';
 import { useAppData } from '../src/store/AppDataContext';
+import { isGoalComplete } from '../src/lib/goals';
 import { useSettings } from '../src/store/SettingsContext';
 import { useWinFlash } from '../src/store/WinFlashContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
@@ -188,6 +189,27 @@ function MomentumComparison({ stats }: { stats: GrowthStats }) {
       {(followThis !== null || followLast !== null) && (
         <MomentumRow icon="repeat-outline" label="Habit follow-through" thisValue={followThis ?? 0} lastValue={followLast ?? 0} suffix="%" />
       )}
+    </GlowCard>
+  );
+}
+
+function CompletedGoalsCard({ goals }: { goals: import('../src/store/types').Goal[] }) {
+  const { colors, iconGlow } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+  if (goals.length === 0) return null;
+  return (
+    <GlowCard style={styles.card}>
+      <Text style={styles.label}>COMPLETED GOALS</Text>
+      <Text style={styles.completedGoalsIntro}>Objectives you've finished. Your progress, kept.</Text>
+      {goals.map((goal) => (
+        <View key={goal.id} style={styles.completedGoalRow}>
+          <Ionicons name="checkmark-circle" size={17} color={colors.success} style={iconGlow} />
+          <View style={styles.completedGoalText}>
+            <Text style={styles.completedGoalTitle}>{goal.objective}</Text>
+            <Text style={styles.completedGoalMeta}>COMPLETED · {goal.steps.length} STEPS</Text>
+          </View>
+        </View>
+      ))}
     </GlowCard>
   );
 }
@@ -388,6 +410,7 @@ export default function Growth() {
   const { settings, setCelebratedStreakMilestone } = useSettings();
   const winFlash = useWinFlash();
   const stats = useMemo(() => computeGrowthStats(data), [data]);
+  const completedGoals = useMemo(() => data.goals.filter(isGoalComplete), [data.goals]);
 
   function handleStopSession() {
     stopIdentitySession();
@@ -432,6 +455,8 @@ export default function Growth() {
           <Text style={styles.heroSubtext}>Started {stats.daysSinceStart} days ago</Text>
         )}
       </GlowCard>
+
+      <CompletedGoalsCard goals={completedGoals} />
 
       <IdentitySessionCard
         session={stats.identitySession}
@@ -711,6 +736,32 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   },
   card: {
     gap: 12,
+  },
+  completedGoalsIntro: {
+    fontFamily: typography.bodyMuted.fontFamily,
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  completedGoalRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 9,
+    paddingVertical: 5,
+  },
+  completedGoalText: {
+    flex: 1,
+    gap: 3,
+  },
+  completedGoalTitle: {
+    fontFamily: typography.body.fontFamily,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  completedGoalMeta: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    letterSpacing: 1,
+    color: colors.textMuted,
   },
   trendHeaderRow: {
     flexDirection: 'row',
