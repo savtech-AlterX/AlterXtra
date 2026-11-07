@@ -16,6 +16,7 @@ const LIMITED_BELIEFS_INTRO_ENABLED = false;
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
 import { wordmarkSource } from '../../src/lib/avatar';
+import { isGoalComplete } from '../../src/lib/goals';
 import { useThemeControls } from '../../src/theme/ThemeContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
@@ -74,7 +75,8 @@ export default function Home() {
   const { theme } = useThemeControls();
   const identity = data.identity;
   // Same goal the Goals screen treats as primary: the oldest one.
-  const primaryGoal = data.goals.length > 0 ? data.goals[data.goals.length - 1] : null;
+  const activeGoals = data.goals.filter((goal) => !isGoalComplete(goal));
+  const primaryGoal = activeGoals.length > 0 ? activeGoals[activeGoals.length - 1] : null;
 
   return (
     <HudScreen style={styles.screen}>
