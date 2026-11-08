@@ -76,8 +76,8 @@ export default function NewGoal() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
-  const editingGoal = data.goals.find((g) => g.id === params.id);
   const { data, addGoal, updateGoal } = useAppData();
+  const editingGoal = data.goals.find((g) => g.id === params.id);
   const [objective, setObjective] = useState('');
   const [consequence, setConsequence] = useState('');
   const atLimit = goalLimitReached(data.goals.length);
@@ -92,6 +92,9 @@ export default function NewGoal() {
   const [month, setMonth] = useState(initial.getMonth() + 1);
   const [day, setDay] = useState(initial.getDate());
   const [year, setYear] = useState(initial.getFullYear());
+  const thisYear = initial.getFullYear();
+
+  const [steps, setSteps] = useState<string[]>(['', '', '']);
   useEffect(() => {
     if (!editingGoal) return;
     setObjective(editingGoal.objective);
@@ -100,9 +103,7 @@ export default function NewGoal() {
     if (!Number.isNaN(parsed.getTime())) { setMonth(parsed.getMonth() + 1); setDay(parsed.getDate()); setYear(parsed.getFullYear()); }
     setSteps(editingGoal.steps.map((step) => step.text));
   }, [editingGoal?.id]);
-  const thisYear = initial.getFullYear();
 
-  const [steps, setSteps] = useState<string[]>(['', '', '']);
 
   function adjustMonth(delta: number) {
     setMonth((m) => {
