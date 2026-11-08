@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { FlatList, Image, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
@@ -16,6 +16,7 @@ export default function AlbumDetail() {
   const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, addPhotosToAlbum } = useAppData();
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const album = data.albums.find((a) => a.id === id);
 
   async function pickImages() {
