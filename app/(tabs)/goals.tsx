@@ -96,7 +96,7 @@ function PrimaryGoalCard({ goal, number, overdue, onToggleStep, onEdit, onChecko
   );
 }
 
-function SecondaryGoalCard({ goal, number, overdue, onToggleStep, onEdit, onCheckout }: { goal: Goal; number: number; overdue: boolean; onToggleStep: (i: number) => void; onEdit: () => void; onCheckout: () => void }) {
+function SecondaryGoalCard({ goal, number, overdue, onToggleStep, onEdit, onCheckout, onExtend }: { goal: Goal; number: number; overdue: boolean; onToggleStep: (i: number) => void; onEdit: () => void; onCheckout: () => void; onExtend: () => void }) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const { total, done, pct } = progress(goal);
