@@ -86,7 +86,9 @@ type AppDataContextValue = {
     unlockAfterLogEntries?: number
   ) => void;
   addFutureSelfVideoReply: (id: string, replyVideoUri: string) => void;
-  addGoal: (objective: string, targetDate: string, steps: string[]) => void;
+  addGoal: (objective: string, targetDate: string, steps: string[], consequence?: string) => void;
+  updateGoal: (goalId: string, objective: string, targetDate: string, steps: string[], consequence?: string) => void;
+  deleteGoal: (goalId: string) => void;
   toggleGoalStep: (goalId: string, stepIndex: number) => void;
   addLogEntry: (aligned: boolean, proof: string, correction: string) => void;
   deleteLogEntry: (id: string) => void;
@@ -309,7 +311,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     }));
   }, [updateActiveProfile]);
 
-  const addGoal = useCallback((objective: string, targetDate: string, steps: string[]) => {
+  const addGoal = useCallback((objective: string, targetDate: string, steps: string[], consequence = '') => {
     const goalSteps: GoalStep[] = steps.map((text) => ({ text, done: false }));
     const goal: Goal = {
       id: makeId(),
@@ -317,8 +319,17 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       objective,
       targetDate,
       steps: goalSteps,
+      consequence: consequence.trim() || undefined,
     };
     updateActiveProfile((p) => ({ ...p, goals: [goal, ...p.goals] }));
+  }, [updateActiveProfile]);
+
+  const updateGoal = useCallback((goalId: string, objective: string, targetDate: string, steps: string[], consequence = '') => {
+    updateActiveProfile((p) => ({ ...p, goals: p.goals.map((g) => g.id === goalId ? { ...g, objective, targetDate, steps: steps.map((text, i) => ({ text, done: g.steps[i]?.text === text ? g.steps[i].done : false })), consequence: consequence.trim() || undefined } : g) }));
+  }, [updateActiveProfile]);
+
+  const deleteGoal = useCallback((goalId: string) => {
+    updateActiveProfile((p) => ({ ...p, goals: p.goals.filter((g) => g.id !== goalId) }));
   }, [updateActiveProfile]);
 
   const toggleGoalStep = useCallback((goalId: string, stepIndex: number) => {
@@ -516,6 +527,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addFutureSelfVideo,
       addFutureSelfVideoReply,
       addGoal,
+      updateGoal,
+      deleteGoal,
       toggleGoalStep,
       addLogEntry,
       deleteLogEntry,
@@ -549,6 +562,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       addFutureSelfVideo,
       addFutureSelfVideoReply,
       addGoal,
+      updateGoal,
+      deleteGoal,
       toggleGoalStep,
       addLogEntry,
       deleteLogEntry,
