@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlowButton } from '../../src/components/GlowButton';
 import { GlowCard } from '../../src/components/GlowCard';
@@ -75,9 +75,12 @@ export default function NewGoal() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data, addGoal } = useAppData();
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { data, addGoal, updateGoal } = useAppData();
+  const editingGoal = data.goals.find((g) => g.id === params.id);
   const [objective, setObjective] = useState('');
-  const atLimit = goalLimitReached(data.goals.length);
+  const [consequence, setConsequence] = useState('');
+  const atLimit = !editingGoal && goalLimitReached(data.goals.length);
 
   // Defaults a month out — a real, usable date already sitting there beats
   // an empty field the user has to first figure out how to fill in.
@@ -92,6 +95,15 @@ export default function NewGoal() {
   const thisYear = initial.getFullYear();
 
   const [steps, setSteps] = useState<string[]>(['', '', '']);
+  useEffect(() => {
+    if (!editingGoal) return;
+    setObjective(editingGoal.objective);
+    setConsequence(editingGoal.consequence ?? '');
+    const parsed = new Date(`${editingGoal.targetDate}T12:00:00`);
+    if (!Number.isNaN(parsed.getTime())) { setMonth(parsed.getMonth() + 1); setDay(parsed.getDate()); setYear(parsed.getFullYear()); }
+    setSteps(editingGoal.steps.map((step) => step.text));
+  }, [editingGoal?.id]);
+
 
   function adjustMonth(delta: number) {
     setMonth((m) => {
@@ -139,14 +151,15 @@ export default function NewGoal() {
   function save() {
     if (!objective.trim()) return;
     const cleanSteps = steps.map((s) => s.trim()).filter(Boolean);
-    addGoal(objective.trim(), targetDate, cleanSteps);
+    if (editingGoal) updateGoal(editingGoal.id, objective.trim(), targetDate, cleanSteps, consequence);
+    else addGoal(objective.trim(), targetDate, cleanSteps, consequence);
     router.back();
   }
 
   if (atLimit) {
     return (
       <HudScreen>
-        <StackHeader title="NEW GOAL" />
+        <StackHeader title={editingGoal ? 'EDIT GOAL' : 'NEW GOAL'} />
         <GlowCard style={styles.limitCard}>
           <Text style={typography.label}>FREE PLAN LIMIT REACHED</Text>
           <Text style={styles.limitText}>
@@ -180,6 +193,11 @@ export default function NewGoal() {
           style={styles.spacer}
           accessibilityLabel="Goal"
         />
+      </GlowCard>
+
+      <GlowCard>
+        <Text style={typography.label}>CONSEQUENCE (OPTIONAL)</Text>
+        <HudTextInput placeholder="What happens if this goal isn't completed?" value={consequence} onChangeText={setConsequence} style={styles.spacer} accessibilityLabel="Optional consequence" />
       </GlowCard>
 
       <GlowCard>
@@ -256,7 +274,7 @@ export default function NewGoal() {
         </Pressable>
       </GlowCard>
 
-      <GlowButton label="SAVE GOAL" onPress={save} disabled={!objective.trim()} style={styles.spacer} />
+      <GlowButton label={editingGoal ? "SAVE CHANGES" : "SAVE GOAL"} onPress={save} disabled={!objective.trim()} style={styles.spacer} />
       <GlowButton label="CANCEL" variant="outline" onPress={() => router.back()} />
     </HudScreen>
   );

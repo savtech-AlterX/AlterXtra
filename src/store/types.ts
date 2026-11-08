@@ -109,6 +109,7 @@ export type Goal = {
   objective: string;
   targetDate: string;
   steps: GoalStep[];
+  consequence?: string;
 };
 
 export type LogEntry = {

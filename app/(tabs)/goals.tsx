@@ -49,14 +49,16 @@ function StepRow({
   );
 }
 
-function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
+function PrimaryGoalCard({ goal, number, overdue, onToggleStep, onEdit, onCheckout, onExtend }: { goal: Goal; number: number; overdue: boolean; onToggleStep: (i: number) => void; onEdit: () => void; onCheckout: () => void; onExtend: () => void }) {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const { total, done, pct } = progress(goal);
   return (
     <GlowCard strong style={styles.primaryCard}>
-      <Text style={styles.goalLabel}>PRIMARY OBJECTIVE</Text>
+      <Text style={styles.goalLabel}>{number === 1 ? "FIRST GOAL" : `${number === 2 ? "SECOND" : number === 3 ? "THIRD" : `${number}TH`} GOAL`}</Text>
       <GoalCountdownBar goal={goal} />
+      {overdue && <Text style={[styles.goalLabel, { color: colors.danger }]}>OVERDUE</Text>}
+      {!!goal.consequence && <Text style={styles.stepsComplete}>CONSEQUENCE · {goal.consequence}</Text>}
       <View style={styles.targetRow}>
         <Ionicons name="calendar-outline" size={14} color={colors.glow} style={iconGlow} />
         <Text style={styles.targetLabel}>TARGET</Text>
@@ -79,6 +81,10 @@ function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i:
         </View>
       </View>
 
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+        <Pressable onPress={onEdit}><Text style={styles.goalLabel}>EDIT</Text></Pressable>
+        {overdue && <><Pressable onPress={onCheckout}><Text style={[styles.goalLabel, { color: colors.danger }]}>CHECK OUT</Text></Pressable><Pressable onPress={onExtend}><Text style={styles.goalLabel}>EXTEND TIMELINE</Text></Pressable></>}
+      </View>
       {total > 0 && (
         <View style={styles.steps}>
           {goal.steps.map((step, i) => (
@@ -90,12 +96,17 @@ function PrimaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i:
   );
 }
 
-function SecondaryGoalCard({ goal, onToggleStep }: { goal: Goal; onToggleStep: (i: number) => void }) {
+function SecondaryGoalCard({ goal, number, overdue, onToggleStep, onEdit, onCheckout, onExtend }: { goal: Goal; number: number; overdue: boolean; onToggleStep: (i: number) => void; onEdit: () => void; onCheckout: () => void; onExtend: () => void }) {
+  const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const { total, done, pct } = progress(goal);
   return (
     <GlowCard style={styles.secondaryCard}>
+      <Text style={styles.goalLabel}>{number === 2 ? 'SECOND GOAL' : number === 3 ? 'THIRD GOAL' : `${number}TH GOAL`}</Text>
       <Text style={styles.goalTitle}>{goal.objective}</Text>
+      {overdue && <Text style={[styles.goalLabel, { color: colors.danger }]}>OVERDUE</Text>}
+      {!!goal.consequence && <Text style={styles.stepsComplete}>CONSEQUENCE · {goal.consequence}</Text>}
+      <View style={{ flexDirection: 'row', gap: 12 }}><Pressable onPress={onEdit}><Text style={styles.goalLabel}>EDIT</Text></Pressable>{overdue && <><Pressable onPress={onCheckout}><Text style={[styles.goalLabel, { color: colors.danger }]}>CHECK OUT</Text></Pressable><Pressable onPress={onExtend}><Text style={styles.goalLabel}>EXTEND TIMELINE</Text></Pressable></>}</View>
       <Text style={styles.targetValue}>TARGET: {goal.targetDate || '—'}</Text>
       {total > 0 && (
         <>
@@ -117,7 +128,7 @@ export default function Goals() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data, toggleGoalStep } = useAppData();
+  const { data, toggleGoalStep, deleteGoal, updateGoal } = useAppData();
   const winFlash = useWinFlash();
 
   const activeGoals = data.goals.filter((goal) => !isGoalComplete(goal));
@@ -158,7 +169,7 @@ export default function Goals() {
       )}
 
       {primary && (
-        <PrimaryGoalCard goal={primary} onToggleStep={(i) => handleToggleStep(primary, i)} />
+        <PrimaryGoalCard goal={primary} number={activeGoals.indexOf(primary) + 1} overdue={!!primary.targetDate && new Date(`${primary.targetDate}T23:59:59`) < new Date()} onEdit={() => router.push({ pathname: '/goals/new', params: { id: primary.id } })} onCheckout={() => deleteGoal(primary.id)} onExtend={() => updateGoal(primary.id, primary.objective, new Date(new Date(`${primary.targetDate}T12:00:00`).getTime() + 7 * 86400000).toISOString().slice(0,10), primary.steps.map((x) => x.text), primary.consequence)} onToggleStep={(i) => handleToggleStep(primary, i)} />
       )}
 
       <View style={styles.header}>
@@ -185,7 +196,7 @@ export default function Goals() {
       )}
 
       {secondary.map((goal) => (
-        <SecondaryGoalCard key={goal.id} goal={goal} onToggleStep={(i) => handleToggleStep(goal, i)} />
+        <SecondaryGoalCard key={goal.id} goal={goal} number={activeGoals.indexOf(goal) + 1} overdue={!!goal.targetDate && new Date(`${goal.targetDate}T23:59:59`) < new Date()} onEdit={() => router.push({ pathname: '/goals/new', params: { id: goal.id } })} onCheckout={() => deleteGoal(goal.id)} onExtend={() => updateGoal(goal.id, goal.objective, new Date(new Date(`${goal.targetDate}T12:00:00`).getTime() + 7 * 86400000).toISOString().slice(0,10), goal.steps.map((x) => x.text), goal.consequence)} onToggleStep={(i) => handleToggleStep(goal, i)} />
       ))}
     </HudScreen>
   );

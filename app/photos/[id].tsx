@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { FlatList, Image, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { FlatList, Image, Modal, Pressable, StyleSheet, Text } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { HudScreen } from '../../src/components/HudScreen';
 import { StackHeader } from '../../src/components/StackHeader';
@@ -16,6 +16,7 @@ export default function AlbumDetail() {
   const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, addPhotosToAlbum } = useAppData();
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const album = data.albums.find((a) => a.id === id);
 
   async function pickImages() {
@@ -73,7 +74,9 @@ export default function AlbumDetail() {
         columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.gridContent}
         renderItem={({ item, index }) => (
-          <Image source={{ uri: item }} style={styles.gridImage} accessibilityLabel={`Photo ${index + 1}`} />
+          <Pressable onPress={() => setSelectedPhoto(item)} accessibilityRole="button" accessibilityLabel={`Open photo ${index + 1}`}>
+            <Image source={{ uri: item }} style={styles.gridImage} accessibilityLabel={`Photo ${index + 1}`} />
+          </Pressable>
         )}
         ListEmptyComponent={
           <EmptyState
@@ -85,6 +88,12 @@ export default function AlbumDetail() {
           />
         }
       />
+      <Modal visible={!!selectedPhoto} transparent animationType="fade" onRequestClose={() => setSelectedPhoto(null)}>
+        <Pressable style={{ flex: 1, backgroundColor: '#000000F2', justifyContent: 'center', alignItems: 'center', padding: 16 }} onPress={() => setSelectedPhoto(null)} accessibilityRole="button" accessibilityLabel="Close photo">
+          {selectedPhoto && <Image source={{ uri: selectedPhoto }} style={{ width: '100%', height: '82%' }} resizeMode="contain" />}
+          <Text style={{ color: '#FFFFFF', marginTop: 18, letterSpacing: 2 }}>TAP TO CLOSE</Text>
+        </Pressable>
+      </Modal>
     </HudScreen>
   );
 }
