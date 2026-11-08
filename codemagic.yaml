@@ -1,17 +1,15 @@
 workflows:
   ios-build:
     name: AlterX iOS Build
-    
 
     integrations:
-
       app_store_connect: Codemagicc
 
     max_build_duration: 120
-    
+
     instance_type: mac_mini_m2
 
-    environment: 
+    environment:
       groups:
         - apple_upload
       ios_signing:
@@ -37,6 +35,10 @@ workflows:
           cd ios
           pod install
 
+      - name: Set NODE_BINARY for Xcode scripts
+        script: |
+          echo "export NODE_BINARY=$(which node)" > ios/.xcode.env.local
+
       - name: Set up code signing
         script: |
           xcode-project use-profiles --project ios/*.xcodeproj
@@ -47,7 +49,7 @@ workflows:
             --workspace "$CM_BUILD_DIR/ios/$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"
 
-      - name: Upload to App Store Connect
+      - name: Upload to App Store Connect (TestFlight)
         script: |
           unset APP_STORE_CONNECT_ISSUER_ID
           unset APP_STORE_CONNECT_KEY_IDENTIFIER
