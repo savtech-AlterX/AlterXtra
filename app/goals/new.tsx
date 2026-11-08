@@ -80,7 +80,7 @@ export default function NewGoal() {
   const editingGoal = data.goals.find((g) => g.id === params.id);
   const [objective, setObjective] = useState('');
   const [consequence, setConsequence] = useState('');
-  const atLimit = goalLimitReached(data.goals.length);
+  const atLimit = !editingGoal && goalLimitReached(data.goals.length);
 
   // Defaults a month out — a real, usable date already sitting there beats
   // an empty field the user has to first figure out how to fill in.
