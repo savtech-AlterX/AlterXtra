@@ -21,12 +21,6 @@ const THEMES: { key: ThemeName; label: string }[] = [
   { key: 'vintage', label: 'VINTAGE' },
 ];
 
-/**
- * HUD-panel style, not plain swatches: a bordered card per theme with the
- * same corner-bracket / progress-bar / status-ring language used elsewhere
- * in the app (Calendar's selected-day reticle, the goal progress bars) —
- * so this reads as part of the interface, not a decoration bolted onto it.
- */
 export function ThemePicker() {
   useAlterXtra();
   const styles = useThemedStyles(makeStyles);
@@ -43,7 +37,16 @@ export function ThemePicker() {
           <Pressable
             key={key}
             onPress={() => (free ? setTheme(key) : router.push('/alter-xtra'))}
-            style={[styles.panel, { borderColor: selected ? p.glowStrong : p.border }]}
+            style={[
+              styles.panel,
+              {
+                borderColor: selected ? p.glowStrong : p.border,
+                shadowColor: p.glow,
+                shadowOpacity: selected ? 0.7 : 0.4,
+                shadowRadius: selected ? 12 : 6,
+                elevation: selected ? 8 : 4,
+              },
+            ]}
             accessibilityRole="radio"
             accessibilityState={{ checked: selected, disabled: !free }}
             accessibilityLabel={free ? `${label} theme` : `${label} theme. Unlock with Alter-Xtra.`}
@@ -53,12 +56,12 @@ export function ThemePicker() {
 
             <View style={[styles.row, !free && styles.dimmed]}>
               <View style={[styles.barTrack, { borderColor: p.borderDim }]}>
-                <View style={[styles.barFill, { backgroundColor: p.glow, width: '55%' }]} />
+                <View style={[styles.barFill, { backgroundColor: p.glow, width: '70%', shadowColor: p.glow, shadowOpacity: 0.8, shadowRadius: 4 }]} />
               </View>
               <View
                 style={[
                   styles.ring,
-                  { borderColor: p.glow },
+                  { borderColor: p.glow, shadowColor: p.glow, shadowOpacity: 0.6, shadowRadius: 4 },
                   selected && { backgroundColor: p.glow },
                 ]}
               >
@@ -66,7 +69,7 @@ export function ThemePicker() {
               </View>
             </View>
 
-            <Text style={[styles.label, { color: selected ? p.glowStrong : p.textSecondary }]}>{label}</Text>
+            <Text style={[styles.label, { color: selected ? p.glowStrong : p.textSecondary, textShadowColor: p.glow, textShadowRadius: selected ? 4 : 0 }]}>{label}</Text>
           </Pressable>
         );
       })}
