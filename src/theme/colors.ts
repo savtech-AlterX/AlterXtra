@@ -24,11 +24,6 @@ function rgba(hex: string, alpha: number) {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
-/**
- * The neon themes all share the same ground: pure black, as sampled from the
- * reference screens (#000000 page, #00040c card interiors). Only the accent
- * changes. Every accent clears WCAG AA against that ground.
- */
 function neon(glow: string, glowStrong: string, accent: string): Palette {
   return {
     background: '#000000',
@@ -56,7 +51,8 @@ function neon(glow: string, glowStrong: string, accent: string): Palette {
 }
 
 const navy = neon('#5d84b8', '#9db8dc', '#4a7db0');
-const blue = neon('#3da8f5', '#88cbfc', '#26cced');
+// Pure electric blue — no teal/cyan tint
+const blue = neon('#2b6cff', '#6b9fff', '#2455ff');
 const purple = neon('#a164f7', '#c49cfc', '#c74cf0');
 const pink = neon('#f65aae', '#fc9ccf', '#f0426e');
 const green = neon('#3eea86', '#7efcb2', '#1dedb9');
@@ -93,7 +89,5 @@ const vintage: Palette = {
 export const palettes = { navy, blue, purple, pink, green, amber, white, red, cyan, lime, vintage } as const;
 export type ThemeName = keyof typeof palettes;
 
-// Changed from 'blue' (teal) to 'purple' as the new default neon theme.
-export const DEFAULT_THEME: ThemeName = 'purple';
-
-export const colors = purple;
+export const DEFAULT_THEME: ThemeName = 'blue';
+export const colors = blue;
