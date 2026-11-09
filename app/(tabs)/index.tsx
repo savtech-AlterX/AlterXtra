@@ -11,7 +11,6 @@ import { IdentityVoiceNudge } from '../../src/components/IdentityVoiceNudge';
 import { IdentityMarkRing } from '../../src/components/IdentityMarkRing';
 import { LimitedBeliefsIntro } from '../../src/components/LimitedBeliefsIntro';
 
-// Off for now. Flip back to true to restore it; nothing else needs to change.
 const LIMITED_BELIEFS_INTRO_ENABLED = false;
 import { useAppData } from '../../src/store/AppDataContext';
 import { useSettings } from '../../src/store/SettingsContext';
@@ -57,8 +56,6 @@ function GridCard({
     <GlowCard containerStyle={styles.gridCardContainer} style={styles.gridCard} onPress={onPress}>
       <Ionicons name={icon} size={18} color={colors.glow} style={iconGlow} />
       <Text style={styles.gridTitle}>{title}</Text>
-      {/* Two lines are reserved whether or not they're used, so cards sitting
-          side by side in the wrapped grid always line up. */}
       <Text style={styles.gridSubtitle} numberOfLines={2}>
         {subtitle}
       </Text>
@@ -74,7 +71,6 @@ export default function Home() {
   const { settings } = useSettings();
   const { theme } = useThemeControls();
   const identity = data.identity;
-  // Same goal the Goals screen treats as primary: the oldest one.
   const activeGoals = data.goals.filter((goal) => !isGoalComplete(goal));
   const primaryGoal = activeGoals.length > 0 ? activeGoals[activeGoals.length - 1] : null;
 
@@ -121,7 +117,6 @@ export default function Home() {
         <Text style={styles.welcome}>
           {identity?.name ? `Welcome back, ${identity.name}` : 'Welcome back'}
         </Text>
-        {/* No archetype yet is a normal state, not a value to print. */}
         {!!identity?.archetype && (
           <Text style={[typography.cardTitle, styles.archetype]}>
             {identity.archetype.toUpperCase()}
@@ -200,7 +195,7 @@ export default function Home() {
         <GridCard
           icon="settings-sharp"
           title="Settings"
-          subtitle="Lock, reminders, backup"
+          subtitle="Lock, backup"
           onPress={() => router.push('/(tabs)/settings')}
         />
       </View>
@@ -210,19 +205,8 @@ export default function Home() {
   );
 }
 
-// Sized to fit the header, hero card, and all 8 grid cards on one screen
-// with no scrolling, down to a 667pt-tall device (iPhone SE) — the
-// original sizing (32pt hero padding, 130pt identity ring, 16pt grid
-// titles, HudScreen's default 16pt gap between every block) added up to
-// well past a phone's fold, forcing a scroll the reference design doesn't
-// show.
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
-  // Overrides HudScreen's default 16pt gap between top-level blocks (topRow,
-  // welcome text, hero, grid) — with four of those on one screen, the
-  // default gap alone was costing 48pt of the fold. Also trims HudScreen's
-  // default 40pt bottom padding (sized for shorter, scrolling screens) down
-  // to what a fixed non-scrolling screen actually needs.
   screen: {
     gap: 8,
     paddingTop: 12,
@@ -238,8 +222,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     width: 50,
     height: 44,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,
@@ -253,8 +235,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     width: 40,
     height: 44,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,
@@ -361,7 +341,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.bodyMuted.fontFamily,
     fontSize: 10,
     lineHeight: 12,
-    height: 24, // exactly two lines — the grid's alignment depends on it
+    height: 24,
     color: colors.textSecondary,
   },
 });
