@@ -1,13 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { DissonanceReflection } from '../../src/components/DissonanceReflection';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
 import { HudScreen } from '../../src/components/HudScreen';
-import { confirmDestructive } from '../../src/lib/confirm';
 import { useAppData } from '../../src/store/AppDataContext';
 import { LogEntry } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
@@ -26,8 +24,7 @@ function StatBox({ value, label }: { value: string | number; label: string }) {
   );
 }
 
-function LogEntryRow({ entry, onDelete }: { entry: LogEntry; onDelete: () => void }) {
-  const { colors, iconGlow } = useAppTheme();
+function LogEntryRow({ entry }: { entry: LogEntry }) {
   const styles = useThemedStyles(makeStyles);
   const d = new Date(entry.createdAt);
   return (
@@ -44,9 +41,6 @@ function LogEntryRow({ entry, onDelete }: { entry: LogEntry; onDelete: () => voi
         </Text>
         <Text style={styles.entryProof}>{entry.proof}</Text>
       </View>
-      <Pressable onPress={onDelete} hitSlop={8} accessibilityRole="button" accessibilityLabel="Delete log entry">
-        <Ionicons name="trash-outline" size={18} color={colors.danger} />
-      </Pressable>
     </GlowCard>
   );
 }
@@ -55,9 +49,9 @@ export default function LogBook() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data, deleteLogEntry } = useAppData();
+  const { data } = useAppData();
 
-  const { thisWeekEntries, alignedDays, corrections } = useMemo(() => {
+  const { thisWeekEntries, alignedDays } = useMemo(() => {
     const now = Date.now();
     const weekEntries = data.logEntries.filter(
       (e) => now - new Date(e.createdAt).getTime() <= WEEK_MS
@@ -65,16 +59,11 @@ export default function LogBook() {
     return {
       thisWeekEntries: weekEntries,
       alignedDays: weekEntries.filter((e) => e.aligned).length,
-      corrections: weekEntries.filter((e) => !e.aligned).length,
     };
   }, [data.logEntries]);
 
   return (
     <HudScreen scroll={false} style={styles.noPad}>
-      {/* A FlatList, not the ScrollView+map every other screen used to use —
-          this is the full log, unbounded, and it needs to stay smooth once
-          someone has hundreds of entries instead of only ever rendering the
-          most recent 20. */}
       <FlatList
         data={data.logEntries}
         keyExtractor={(entry) => entry.id}
@@ -93,7 +82,7 @@ export default function LogBook() {
               </View>
               <View style={styles.logTodayText}>
                 <Text style={styles.logTodayTitle}>LOG TODAY</Text>
-                <Text style={styles.logTodaySubtitle}>Record proof, misalignment, and corrections.</Text>
+                <Text style={styles.logTodaySubtitle}>Aligning your actions</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
             </GlowCard>
@@ -102,10 +91,7 @@ export default function LogBook() {
             <GlowCard style={styles.statsRow}>
               <StatBox value={thisWeekEntries.length} label="ENTRIES" />
               <StatBox value={alignedDays} label="ALIGNED DAYS" />
-              <StatBox value={corrections} label="CORRECTIONS" />
             </GlowCard>
-
-            <DissonanceReflection />
 
             <Text style={typography.label}>RECENT ENTRIES</Text>
           </View>
@@ -120,14 +106,7 @@ export default function LogBook() {
           />
         }
         renderItem={({ item }) => (
-          <LogEntryRow
-            entry={item}
-            onDelete={() =>
-              confirmDestructive('Delete Entry', 'This log entry will be permanently deleted.', 'Delete', () =>
-                deleteLogEntry(item.id)
-              )
-            }
-          />
+          <LogEntryRow entry={item} />
         )}
       />
     </HudScreen>
@@ -136,8 +115,6 @@ export default function LogBook() {
 
 const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   StyleSheet.create({
-  // Zeroes out HudScreen's own padding/gap so the FlatList's
-  // contentContainerStyle is the only thing controlling spacing.
   noPad: {
     padding: 0,
     gap: 0,
