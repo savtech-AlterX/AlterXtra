@@ -53,6 +53,8 @@ export default function RootLayout() {
     'ChakraPetch-Regular': require('../assets/fonts/ChakraPetch-Regular.ttf'),
     'ChakraPetch-Medium': require('../assets/fonts/ChakraPetch-Medium.ttf'),
     'ChakraPetch-SemiBold': require('../assets/fonts/ChakraPetch-SemiBold.ttf'),
+    // Manually load Ionicons so the EAS build does not try to mkdir the .ttf as a directory
+    Ionicons: require('../node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
   });
 
   useEffect(() => {
