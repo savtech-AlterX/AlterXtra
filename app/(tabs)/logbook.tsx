@@ -94,6 +94,16 @@ export default function LogBook() {
               <StatBox value={alignedDays} label="ALIGNED DAYS" />
             </GlowCard>
 
+            <View style={styles.categoryButtons}>
+              <Pressable style={styles.categoryButton} onPress={() => router.push('/logbook/aligned')}>
+                <Text style={styles.categoryButtonText}>ALIGNED</Text>
+                <Ionicons name="arrow-forward" size={13} color={colors.success} />
+              </Pressable>
+              <Pressable style={styles.categoryButton} onPress={() => router.push('/logbook/misaligned')}>
+                <Text style={styles.categoryButtonText}>MISALIGNED</Text>
+                <Ionicons name="arrow-forward" size={13} color={colors.glow} />
+              </Pressable>
+            </View>
             <Text style={typography.label}>RECENT ENTRIES</Text>
           </View>
         }
@@ -179,6 +189,9 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     lineHeight: 19,
     color: colors.textSecondary,
   },
+  categoryButtons: { flexDirection: 'row', gap: 10 },
+  categoryButton: { flex: 1, minHeight: 42, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.borderDim, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  categoryButtonText: { fontFamily: typography.label.fontFamily, fontSize: 10, letterSpacing: 1, color: colors.textPrimary },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
