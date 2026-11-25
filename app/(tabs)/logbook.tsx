@@ -11,6 +11,7 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { LogEntry } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
+import { fonts } from '../../src/theme/typography';
 
 function LogEntryRow({ entry }: { entry: LogEntry }) {
   const styles = useThemedStyles(makeStyles);
