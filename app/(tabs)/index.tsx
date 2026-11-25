@@ -305,7 +305,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     fontFamily: typography.body.fontFamily,
     fontStyle: 'italic',
     fontSize: 12,
-    color: colors.accentTeal,
+    color: colors.glow,
     marginTop: 2,
     marginBottom: 5,
   },
