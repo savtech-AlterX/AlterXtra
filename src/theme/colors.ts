@@ -59,7 +59,6 @@ const green = neon('#3eea86', '#7efcb2', '#1dedb9');
 const amber = neon('#f7b23b', '#fcd188', '#ed6f26');
 const white = neon('#c7cfdb', '#f2f5fa', '#99a6ba');
 const red = neon('#ff4d4d', '#ff9494', '#ff2e63');
-const cyan = neon('#2fe6e0', '#8ff9f5', '#19c3ce');
 const lime = neon('#c6f22d', '#e2fa8f', '#9fd91a');
 
 const vintage: Palette = {
@@ -86,7 +85,7 @@ const vintage: Palette = {
   overlay: 'rgba(0, 0, 0, 0.7)',
 };
 
-export const palettes = { navy, blue, purple, pink, green, amber, white, red, cyan, lime, vintage } as const;
+export const palettes = { navy, blue, purple, pink, green, amber, white, red, lime, vintage } as const;
 export type ThemeName = keyof typeof palettes;
 
 export const DEFAULT_THEME: ThemeName = 'blue';
