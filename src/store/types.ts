@@ -187,6 +187,7 @@ export type IdentityProfile = {
   id: string;
   identity: Identity;
   journalEntries: JournalEntry[];
+  calendarEntries: CalendarEntry[];
   futureSelfLetters: FutureSelfLetter[];
   futureSelfVideos: FutureSelfVideo[];
   goals: Goal[];
@@ -205,6 +206,7 @@ export function emptyIdentityProfile(id: string, identity: Identity): IdentityPr
     id,
     identity,
     journalEntries: [],
+    calendarEntries: [],
     futureSelfLetters: [],
     futureSelfVideos: [],
     goals: [],
