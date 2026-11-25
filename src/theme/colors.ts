@@ -41,7 +41,7 @@ function neon(glow: string, glowStrong: string, accent: string): Palette {
     textSecondary: '#8fa3b8',
     textMuted: '#6b7a8c',
 
-    accentTeal: accent,
+    accentTeal: glow,
     danger: '#ff4d5e',
     success: '#3fe08a',
     warning: '#ffb648',
@@ -78,7 +78,7 @@ const vintage: Palette = {
   textSecondary: '#a89f93',
   textMuted: '#8a8175',
 
-  accentTeal: '#c8bda8',
+  accentTeal: '#d5cec4',
   danger: '#c2564b',
   success: '#8a9a6b',
   warning: '#c99a4e',
