@@ -9,7 +9,7 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 
-const DATE_RE = /^\\d{4}-\\d{2}-\\d{2}$/;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export default function NewCalendarEntry() {
   const params = useLocalSearchParams<{ date?: string }>();
@@ -20,7 +20,13 @@ export default function NewCalendarEntry() {
   const [date, setDate] = useState(typeof params.date === 'string' ? params.date : new Date().toISOString().slice(0, 10));
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
-  const validDate = DATE_RE.test(date.trim()) && !Number.isNaN(new Date(date + 'T12:00:00').getTime());
+  const validDate = (() => {
+    const value = date.trim();
+    if (!DATE_RE.test(value)) return false;
+    const [year, month, day] = value.split('-').map(Number);
+    const parsed = new Date(year, month - 1, day);
+    return parsed.getFullYear() === year && parsed.getMonth() === month - 1 && parsed.getDate() === day;
+  })();
 
   function save() {
     if (!validDate || !title.trim()) return;
