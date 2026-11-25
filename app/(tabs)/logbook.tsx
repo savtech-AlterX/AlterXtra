@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { EmptyState } from '../../src/components/EmptyState';
@@ -11,19 +11,6 @@ import { useAppData } from '../../src/store/AppDataContext';
 import { LogEntry } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
-import { fonts } from '../../src/theme/typography';
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-function StatBox({ value, label }: { value: string | number; label: string }) {
-  const styles = useThemedStyles(makeStyles);
-  return (
-    <View style={styles.statBox}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
 
 function LogEntryRow({ entry }: { entry: LogEntry }) {
   const styles = useThemedStyles(makeStyles);
@@ -52,17 +39,6 @@ export default function LogBook() {
   const router = useRouter();
   const { data, deleteLogEntry } = useAppData();
 
-  const { thisWeekEntries, alignedDays } = useMemo(() => {
-    const now = Date.now();
-    const weekEntries = data.logEntries.filter(
-      (e) => now - new Date(e.createdAt).getTime() <= WEEK_MS
-    );
-    return {
-      thisWeekEntries: weekEntries,
-      alignedDays: weekEntries.filter((e) => e.aligned).length,
-    };
-  }, [data.logEntries]);
-
   return (
     <HudScreen scroll={false} style={styles.noPad}>
       <FlatList
@@ -86,12 +62,6 @@ export default function LogBook() {
                 <Text style={styles.logTodaySubtitle}>Aligning your actions</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
-            </GlowCard>
-
-            <Text style={typography.label}>THIS WEEK</Text>
-            <GlowCard style={styles.statsRow}>
-              <StatBox value={thisWeekEntries.length} label="ENTRIES" />
-              <StatBox value={alignedDays} label="ALIGNED DAYS" />
             </GlowCard>
 
             <View style={styles.categoryButtons}>
@@ -192,26 +162,6 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   categoryButtons: { flexDirection: 'row', gap: 10 },
   categoryButton: { flex: 1, minHeight: 42, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.borderDim, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   categoryButtonText: { fontFamily: typography.label.fontFamily, fontSize: 10, letterSpacing: 1, color: colors.textPrimary },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statBox: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  statValue: {
-    fontFamily: fonts.title,
-    fontSize: 22,
-    color: colors.textPrimary,
-  },
-  statLabel: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 9,
-    color: colors.glow,
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
   empty: {
     fontFamily: typography.bodyMuted.fontFamily,
     color: colors.textSecondary,
