@@ -5,6 +5,7 @@ import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-nativ
 import { CloseToHome } from '../src/components/CloseToHome';
 import { EmptyState } from '../src/components/EmptyState';
 import { GlowCard } from '../src/components/GlowCard';
+import { GlowButton } from '../src/components/GlowButton';
 import { HudScreen } from '../src/components/HudScreen';
 import { useAppData } from '../src/store/AppDataContext';
 import { useAppTheme, useThemedStyles } from '../src/theme/useAppTheme';
@@ -37,12 +38,14 @@ type DayItem = {
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
   label: string;
+  onDelete?: () => void;
 };
 
 export default function Calendar() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { data } = useAppData();
+  const { data, deleteCalendarEntry } = useAppData();
+  const router = useRouter();
 
   const todayKey = localDateKey(new Date());
   const [cursor, setCursor] = useState(() => {
@@ -72,6 +75,16 @@ export default function Calendar() {
       list.push(item);
       map.set(key, list);
     };
+
+    (data.calendarEntries ?? []).forEach((e) => {
+      push(e.date, {
+        key: `calendar-${e.id}`,
+        icon: 'calendar',
+        color: colors.glow,
+        label: e.title + (e.notes ? ` — ${e.notes}` : ''),
+        onDelete: () => deleteCalendarEntry(e.id),
+      });
+    });
 
     data.journalEntries.forEach((e) => {
       push(dateKeyFrom(e.date, e.createdAt), {
@@ -107,7 +120,7 @@ export default function Calendar() {
     });
 
     return map;
-  }, [data, colors]);
+  }, [data, colors, deleteCalendarEntry]);
 
   const grid = useMemo(() => {
     const year = cursor.getFullYear();
@@ -223,6 +236,13 @@ export default function Calendar() {
         <View pointerEvents="none" style={[styles.cornerBracket, styles.cornerBR]} />
       </View>
 
+      <GlowButton
+        label="ADD TO CALENDAR"
+        variant="outline"
+        icon={<Ionicons name="add" size={16} color={colors.glow} style={iconGlow} />}
+        onPress={() => router.push({ pathname: '/calendar/new', params: { date: selectedKey } })}
+      />
+
       <View style={styles.selectedHeader}>
         <View style={styles.selectedHeaderBar} />
         <Text style={typography.label}>{selectedLabel.toUpperCase()}</Text>
@@ -242,6 +262,11 @@ export default function Calendar() {
               <Text style={styles.itemLabel} numberOfLines={2}>
                 {item.label}
               </Text>
+              {item.onDelete && (
+                <Pressable onPress={item.onDelete} hitSlop={10} accessibilityRole="button" accessibilityLabel="Delete calendar entry">
+                  <Ionicons name="trash-outline" size={17} color={colors.danger} />
+                </Pressable>
+              )}
             </GlowCard>
           ))}
         </View>
