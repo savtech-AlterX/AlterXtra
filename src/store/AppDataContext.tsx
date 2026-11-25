@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { AppState, AppStateStatus } from 'react-native';
 import {
   Album,
+  CalendarEntry,
   AppData,
   AppStore,
   emptyAppData,
@@ -77,6 +78,8 @@ type AppDataContextValue = {
   deleteIdentity: (id: string) => void;
   setOnboardingDraft: (partial: Partial<OnboardingDraft>) => void;
   addJournalEntry: (date: string, title: string, body: string) => void;
+  addCalendarEntry: (date: string, title: string, notes?: string) => void;
+  deleteCalendarEntry: (id: string) => void;
   addFutureSelfLetter: (title: string, body: string, unlockDate?: string) => void;
   addFutureSelfVideo: (
     question: string,
@@ -267,6 +270,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       body,
     };
     updateActiveProfile((p) => ({ ...p, journalEntries: [entry, ...p.journalEntries] }));
+  }, [updateActiveProfile]);
+
+  const addCalendarEntry = useCallback((date: string, title: string, notes = '') => {
+    const entry: CalendarEntry = { id: makeId(), createdAt: new Date().toISOString(), date, title: title.trim(), notes: notes.trim() || undefined };
+    updateActiveProfile((p) => ({ ...p, calendarEntries: [entry, ...(p.calendarEntries ?? [])] }));
+  }, [updateActiveProfile]);
+
+  const deleteCalendarEntry = useCallback((id: string) => {
+    updateActiveProfile((p) => ({ ...p, calendarEntries: (p.calendarEntries ?? []).filter((entry) => entry.id !== id) }));
   }, [updateActiveProfile]);
 
   const addFutureSelfLetter = useCallback((title: string, body: string, unlockDate?: string) => {
@@ -523,6 +535,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       deleteIdentity,
       setOnboardingDraft,
       addJournalEntry,
+      addCalendarEntry,
+      deleteCalendarEntry,
       addFutureSelfLetter,
       addFutureSelfVideo,
       addFutureSelfVideoReply,
@@ -558,6 +572,8 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       deleteIdentity,
       setOnboardingDraft,
       addJournalEntry,
+      addCalendarEntry,
+      deleteCalendarEntry,
       addFutureSelfLetter,
       addFutureSelfVideo,
       addFutureSelfVideoReply,
