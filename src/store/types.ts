@@ -120,6 +120,14 @@ export type LogEntry = {
   correction: string;
 };
 
+export type CalendarEntry = {
+  id: string;
+  createdAt: string;
+  date: string;
+  title: string;
+  notes?: string;
+};
+
 export type Album = {
   id: string;
   createdAt: string;
@@ -135,6 +143,7 @@ export type AppData = {
   identity: Identity | null;
   onboardingDraft: OnboardingDraft | null;
   journalEntries: JournalEntry[];
+  calendarEntries: CalendarEntry[];
   futureSelfLetters: FutureSelfLetter[];
   futureSelfVideos: FutureSelfVideo[];
   goals: Goal[];
@@ -156,6 +165,7 @@ export const emptyAppData: AppData = {
   identity: null,
   onboardingDraft: null,
   journalEntries: [],
+  calendarEntries: [],
   futureSelfLetters: [],
   futureSelfVideos: [],
   goals: [],
