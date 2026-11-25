@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
@@ -49,7 +50,7 @@ export default function LogBook() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data } = useAppData();
+  const { data, deleteLogEntry } = useAppData();
 
   const { thisWeekEntries, alignedDays } = useMemo(() => {
     const now = Date.now();
@@ -106,7 +107,22 @@ export default function LogBook() {
           />
         }
         renderItem={({ item }) => (
-          <LogEntryRow entry={item} />
+          <Swipeable
+            overshootRight={false}
+            renderRightActions={() => (
+              <Pressable
+                style={styles.deleteAction}
+                onPress={() => deleteLogEntry(item.id)}
+                accessibilityRole="button"
+                accessibilityLabel={'Delete log entry from ' + new Date(item.createdAt).toLocaleDateString()}
+              >
+                <Ionicons name="trash-outline" size={19} color="#ffffff" />
+                <Text style={styles.deleteActionText}>DELETE</Text>
+              </Pressable>
+            )}
+          >
+            <LogEntryRow entry={item} />
+          </Swipeable>
         )}
       />
     </HudScreen>
@@ -188,6 +204,22 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 8,
+  },
+  deleteAction: {
+    width: 86,
+    marginLeft: 8,
+    marginBottom: 2,
+    borderRadius: 14,
+    backgroundColor: colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  deleteActionText: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    letterSpacing: 1,
+    color: '#ffffff',
   },
   entryRow: {
     flexDirection: 'row',
