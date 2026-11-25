@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CloseToHome } from '../src/components/CloseToHome';
@@ -251,7 +252,7 @@ export default function Calendar() {
         <EmptyState
           icon="calendar-outline"
           title="NOTHING RECORDED"
-          body="Diary entries, habit check-ins, log entries, and goal due dates for this day show up here."
+          body="Your calendar entries, diary, habit check-ins, log entries, and goal due dates for this day show up here."
           compact
         />
       ) : (
