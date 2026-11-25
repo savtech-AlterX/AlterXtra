@@ -128,7 +128,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     lineHeight: 20,
   },
   replacement: {
-    color: colors.accentTeal,
+    color: colors.glow,
     ...glowShadow,
   },
 });
