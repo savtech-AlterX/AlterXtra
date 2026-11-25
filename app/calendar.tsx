@@ -101,7 +101,7 @@ export default function Calendar() {
       push(dateKeyFrom(g.targetDate, g.createdAt), {
         key: `goal-${g.id}`,
         icon: 'flag',
-        color: colors.accentTeal,
+        color: colors.glow,
         label: `Due: ${g.objective}`,
       });
     });
