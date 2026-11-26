@@ -7,7 +7,7 @@ import { AppStore, emptyAppStore } from './types';
  * upgrades FROM, so existing users' data is upgraded instead of crashing or
  * silently losing content on their next app open.
  */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 type Migration = (data: any) => any;
 
@@ -72,6 +72,14 @@ const migrations: Record<number, Migration> = {
       appOpens: appOpens ?? [],
     };
     return { onboardingDraft: onboardingDraft ?? null, activeIdentityId: id, profiles: [profile] };
+  },
+  // v3 -> v4: add user-created calendar entries to each identity profile.
+  3: (data) => {
+    if (!data || typeof data !== 'object') return data;
+    if (Array.isArray((data as any).profiles)) {
+      return { ...data, profiles: (data as any).profiles.map((profile: any) => ({ ...profile, calendarEntries: profile.calendarEntries ?? [] })) };
+    }
+    return { ...data, calendarEntries: (data as any).calendarEntries ?? [] };
   },
 };
 

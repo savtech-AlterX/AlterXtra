@@ -29,7 +29,7 @@ export function useAlterXtra(): boolean {
 }
 
 // Free-plan content limits — Alter-Xtra removes every one of these entirely.
-export const FREE_HABIT_LIMIT = 4;
+export const FREE_HABIT_LIMIT = 6;
 export const FREE_GOAL_LIMIT = 3;
 export const FREE_LIMITED_BELIEFS_LIMIT = 2;
 export const FREE_IDENTITY_LIMIT = 1;

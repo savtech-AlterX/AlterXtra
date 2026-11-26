@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { EmptyState } from '../../src/components/EmptyState';
 import { GlowCard } from '../../src/components/GlowCard';
 import { CloseToHome } from '../../src/components/CloseToHome';
@@ -11,18 +12,6 @@ import { LogEntry } from '../../src/store/types';
 import { useAppTheme, useThemedStyles } from '../../src/theme/useAppTheme';
 import type { AppTheme } from '../../src/theme/useAppTheme';
 import { fonts } from '../../src/theme/typography';
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-function StatBox({ value, label }: { value: string | number; label: string }) {
-  const styles = useThemedStyles(makeStyles);
-  return (
-    <View style={styles.statBox}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
 
 function LogEntryRow({ entry }: { entry: LogEntry }) {
   const styles = useThemedStyles(makeStyles);
@@ -49,18 +38,7 @@ export default function LogBook() {
   const { colors, typography, iconGlow } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
-  const { data } = useAppData();
-
-  const { thisWeekEntries, alignedDays } = useMemo(() => {
-    const now = Date.now();
-    const weekEntries = data.logEntries.filter(
-      (e) => now - new Date(e.createdAt).getTime() <= WEEK_MS
-    );
-    return {
-      thisWeekEntries: weekEntries,
-      alignedDays: weekEntries.filter((e) => e.aligned).length,
-    };
-  }, [data.logEntries]);
+  const { data, deleteLogEntry } = useAppData();
 
   return (
     <HudScreen scroll={false} style={styles.noPad}>
@@ -87,12 +65,16 @@ export default function LogBook() {
               <Ionicons name="chevron-forward" size={18} color={colors.glow} style={iconGlow} />
             </GlowCard>
 
-            <Text style={typography.label}>THIS WEEK</Text>
-            <GlowCard style={styles.statsRow}>
-              <StatBox value={thisWeekEntries.length} label="ENTRIES" />
-              <StatBox value={alignedDays} label="ALIGNED DAYS" />
-            </GlowCard>
-
+            <View style={styles.categoryButtons}>
+              <Pressable style={styles.categoryButton} onPress={() => router.push('/logbook/aligned')}>
+                <Text style={styles.categoryButtonText}>ALIGNED</Text>
+                <Ionicons name="arrow-forward" size={13} color={colors.success} />
+              </Pressable>
+              <Pressable style={styles.categoryButton} onPress={() => router.push('/logbook/misaligned')}>
+                <Text style={styles.categoryButtonText}>MISALIGNED</Text>
+                <Ionicons name="arrow-forward" size={13} color={colors.glow} />
+              </Pressable>
+            </View>
             <Text style={typography.label}>RECENT ENTRIES</Text>
           </View>
         }
@@ -106,7 +88,22 @@ export default function LogBook() {
           />
         }
         renderItem={({ item }) => (
-          <LogEntryRow entry={item} />
+          <Swipeable
+            overshootRight={false}
+            renderRightActions={() => (
+              <Pressable
+                style={styles.deleteAction}
+                onPress={() => deleteLogEntry(item.id)}
+                accessibilityRole="button"
+                accessibilityLabel={'Delete log entry from ' + new Date(item.createdAt).toLocaleDateString()}
+              >
+                <Ionicons name="trash-outline" size={19} color="#ffffff" />
+                <Text style={styles.deleteActionText}>DELETE</Text>
+              </Pressable>
+            )}
+          >
+            <LogEntryRow entry={item} />
+          </Swipeable>
         )}
       />
     </HudScreen>
@@ -163,31 +160,30 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
     lineHeight: 19,
     color: colors.textSecondary,
   },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statBox: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  statValue: {
-    fontFamily: fonts.title,
-    fontSize: 22,
-    color: colors.textPrimary,
-  },
-  statLabel: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 9,
-    color: colors.glow,
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
+  categoryButtons: { flexDirection: 'row', gap: 10 },
+  categoryButton: { flex: 1, minHeight: 42, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.borderDim, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  categoryButtonText: { fontFamily: typography.label.fontFamily, fontSize: 10, letterSpacing: 1, color: colors.textPrimary },
   empty: {
     fontFamily: typography.bodyMuted.fontFamily,
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 8,
+  },
+  deleteAction: {
+    width: 86,
+    marginLeft: 8,
+    marginBottom: 2,
+    borderRadius: 14,
+    backgroundColor: colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  deleteActionText: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 9,
+    letterSpacing: 1,
+    color: '#ffffff',
   },
   entryRow: {
     flexDirection: 'row',

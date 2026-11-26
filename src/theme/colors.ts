@@ -41,7 +41,7 @@ function neon(glow: string, glowStrong: string, accent: string): Palette {
     textSecondary: '#8fa3b8',
     textMuted: '#6b7a8c',
 
-    accentTeal: accent,
+    accentTeal: glow,
     danger: '#ff4d5e',
     success: '#3fe08a',
     warning: '#ffb648',
@@ -55,11 +55,10 @@ const navy = neon('#5d84b8', '#9db8dc', '#4a7db0');
 const blue = neon('#2b6cff', '#6b9fff', '#2455ff');
 const purple = neon('#a164f7', '#c49cfc', '#c74cf0');
 const pink = neon('#f65aae', '#fc9ccf', '#f0426e');
-const green = neon('#3eea86', '#7efcb2', '#1dedb9');
+const green = neon('#3eea86', '#7efcb2', '#22c96e');
 const amber = neon('#f7b23b', '#fcd188', '#ed6f26');
 const white = neon('#c7cfdb', '#f2f5fa', '#99a6ba');
 const red = neon('#ff4d4d', '#ff9494', '#ff2e63');
-const cyan = neon('#2fe6e0', '#8ff9f5', '#19c3ce');
 const lime = neon('#c6f22d', '#e2fa8f', '#9fd91a');
 
 const vintage: Palette = {
@@ -78,7 +77,7 @@ const vintage: Palette = {
   textSecondary: '#a89f93',
   textMuted: '#8a8175',
 
-  accentTeal: '#c8bda8',
+  accentTeal: '#d5cec4',
   danger: '#c2564b',
   success: '#8a9a6b',
   warning: '#c99a4e',
@@ -86,7 +85,7 @@ const vintage: Palette = {
   overlay: 'rgba(0, 0, 0, 0.7)',
 };
 
-export const palettes = { navy, blue, purple, pink, green, amber, white, red, cyan, lime, vintage } as const;
+export const palettes = { navy, blue, purple, pink, green, amber, white, red, lime, vintage } as const;
 export type ThemeName = keyof typeof palettes;
 
 export const DEFAULT_THEME: ThemeName = 'blue';

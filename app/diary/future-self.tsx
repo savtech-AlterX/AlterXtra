@@ -167,10 +167,10 @@ function LettersPanel() {
                 <Ionicons
                   name={locked ? 'lock-closed' : 'lock-open-outline'}
                   size={16}
-                  color={locked ? colors.textMuted : colors.accentTeal}
+                  color={locked ? colors.textMuted : colors.glow}
                   style={iconGlow}
                 />
-                <Text style={[styles.statusLabel, !locked && { color: colors.accentTeal }]}>
+                <Text style={[styles.statusLabel, !locked && { color: colors.glow }]}>
                   {locked ? `LOCKED UNTIL ${letter.unlockDate}` : 'SEALED ' + formatDate(letter.createdAt)}
                 </Text>
               </View>
@@ -222,14 +222,14 @@ function VideoPanel() {
                 <Ionicons
                   name={completed ? 'checkmark-circle' : unlocked ? 'lock-open-outline' : 'lock-closed'}
                   size={16}
-                  color={completed ? colors.success : unlocked ? colors.accentTeal : colors.textMuted}
+                  color={completed ? colors.success : unlocked ? colors.glow : colors.textMuted}
                   style={iconGlow}
                 />
                 <Text
                   style={[
                     styles.statusLabel,
                     completed && { color: colors.success },
-                    !completed && unlocked && { color: colors.accentTeal },
+                    !completed && unlocked && { color: colors.glow },
                   ]}
                 >
                   {completed ? 'COMPLETED' : unlocked ? 'READY TO ANSWER' : lockStatusLabel(v, data.logEntries)}

@@ -16,7 +16,6 @@ const THEMES: { key: ThemeName; label: string }[] = [
   { key: 'amber', label: 'AMBER' },
   { key: 'white', label: 'WHITE' },
   { key: 'red', label: 'RED' },
-  { key: 'cyan', label: 'CYAN' },
   { key: 'lime', label: 'LIME' },
   { key: 'vintage', label: 'VINTAGE' },
 ];

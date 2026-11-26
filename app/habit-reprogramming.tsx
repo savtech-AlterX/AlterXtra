@@ -276,7 +276,7 @@ const makeStyles = ({ colors, typography, glowShadow, iconGlow }: AppTheme) =>
   entryIdentity: {
     fontFamily: typography.body.fontFamily,
     fontStyle: 'italic',
-    color: colors.accentTeal,
+    color: colors.glow,
     fontSize: 14,
     lineHeight: 20,
   },

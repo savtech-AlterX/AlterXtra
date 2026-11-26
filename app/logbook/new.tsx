@@ -22,7 +22,7 @@ export default function NewLogEntry() {
 
   function save() {
     if (aligned === null || !proof.trim()) return;
-    addLogEntry(aligned, proof.trim(), correction.trim());
+    addLogEntry(aligned, proof.trim(), aligned ? '' : correction.trim());
     if (aligned) winFlash();
     router.back();
   }
@@ -64,14 +64,18 @@ export default function NewLogEntry() {
         accessibilityLabel="Proof"
       />
 
-      <Text style={[typography.label, styles.spacer]}>CORRECTION</Text>
-      <HudTextInput
-        placeholder="Where did you drift, and how will you correct it?"
-        value={correction}
-        onChangeText={setCorrection}
-        multiline
-        accessibilityLabel="Correction"
-      />
+      {aligned === false && (
+        <>
+          <Text style={[typography.label, styles.spacer]}>CORRECTION</Text>
+          <HudTextInput
+            placeholder="Where did you drift, and what will you change next time?"
+            value={correction}
+            onChangeText={setCorrection}
+            multiline
+            accessibilityLabel="Correction"
+          />
+        </>
+      )}
 
       <GlowButton
         label="SAVE LOG"
